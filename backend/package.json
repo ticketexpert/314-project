@@ -80,7 +80,7 @@
     "yocto-queue": "^0.1.0"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint --config eslint.config.cjs .",
     "test": "react-scripts test",
     "build": "react-scripts build"
 
