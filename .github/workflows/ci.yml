@@ -29,7 +29,7 @@ jobs:
         working-directory: backend
 
       - name: Run ESLint
-        run: npm run lint
+        run: eslint --config eslint.config.cjs .
         working-directory: backend
 
       - name: Run tests
