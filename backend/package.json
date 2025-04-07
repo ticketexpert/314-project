@@ -81,9 +81,7 @@
   },
   "scripts": {
     "lint": "eslint --config eslint.config.cjs .",
-    "test": "react-scripts test",
-    "build": "react-scripts build"
-
+    "test": "echo \"No backend tests yet\" && exit 0"
   },
   "keywords": [],
   "author": "",
