@@ -84,6 +84,7 @@
   },
   "scripts": {
     "lint": "eslint --config eslint.config.cjs .",
+    "dev": "nodemon index.js",
     "test": "echo \"No backend tests yet\" && exit 0"
   },
   "keywords": [],
