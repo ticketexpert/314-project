@@ -53,7 +53,7 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
-  frontend:
+ frontend:
     name: Frontend CI
     runs-on: ubuntu-latest
 
