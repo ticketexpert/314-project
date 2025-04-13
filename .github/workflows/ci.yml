@@ -72,7 +72,7 @@ jobs:
           cache: 'npm'
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm install
         working-directory: frontend
 
       - name: Run frontend lint
@@ -99,7 +99,7 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
-      - name: Build React app
+      - name: Build React app using Vite
         run: npm run build
         working-directory: frontend
 
@@ -107,4 +107,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: frontend/build/
+          path: frontend/dist/
