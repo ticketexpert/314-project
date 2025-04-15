@@ -1,8 +1,8 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-chai.use(chaiHttp); // Moved immediately after chaiHttp is imported
+chai.use(chaiHttp);
 const expect = chai.expect;
-const app = require('../app'); // Your Express app
+const app = require('../app'); // This is just a boilerplate but it keeps it working 
 const Event = require('../models'); // Sequelize model
 const { sequelize } = require('../models'); // Sequelize instance
 
@@ -41,6 +41,13 @@ describe('Events API', () => {
       expect(res).to.have.status(200);
       expect(res.body).to.be.an('array');
       console.log(res.body);
+    });
+  });
+
+  describe('User Creation', () => {
+    //When I have written user creation I need to write this out 
+    it('Need to return true', () => {
+      expect(true).to.be.true;
     });
   });
 });
