@@ -43,11 +43,4 @@ describe('Events API', () => {
       console.log(res.body);
     });
   });
-
-  describe('User Creation', () => {
-    //When I have written user creation I need to write this out 
-    it('Need to return true', () => {
-      expect(true).to.be.true;
-    });
-  });
 });
