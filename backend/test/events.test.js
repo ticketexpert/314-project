@@ -36,11 +36,10 @@ describe('Events API', () => {
   });
 
   describe('GET /api/events', () => {
-    it('should fetch events (possibly filtered)', async () => {
+    it('Get events', async () => {
       const res = await chai.request(app).get('/api/events');
       expect(res).to.have.status(200);
       expect(res.body).to.be.an('array');
-      console.log(res.body);
     });
   });
 });

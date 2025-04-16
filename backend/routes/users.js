@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
     if (lastName) where.lastName = { [Op.iLike]: `%${lastName}%` };
 
     const users = await User.findAll({ where });
-    res.json(users);
+    res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
