@@ -21,16 +21,15 @@ describe('Users API', () => {
   describe('POST /api/users', () => {
     it('should create a new user', async () => {
       const newUser = {
-        username: 'johnTest',
+        name: 'johnTest',
         email: 'john.doe@example.com',
         password: 'securepassword123',
-        firstName: 'John',
-        lastName: 'Doe'
+        role: 'Customer'
       };
 
       const res = await chai.request(app).post('/api/users').send(newUser);
       expect(res).to.have.status(201);
-      expect(res.body).to.have.property('username', newUser.username);
+      expect(res.body).to.have.property('name', newUser.name);
     });
   });
 
@@ -39,7 +38,7 @@ describe('Users API', () => {
       const res = await chai.request(app).get('/api/users');
       expect(res).to.have.status(200);
       expect(res.body).to.be.an('array');
-      expect(res.body[0]).to.have.property('username', 'johnTest');
+      expect(res.body[0]).to.have.property('name', 'johnTest');
       console.log(res.body);
     });
   });

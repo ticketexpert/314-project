@@ -21,14 +21,13 @@ router.post('/', async (req, res) => {
 // GET /api/users → with optional filters
 router.get('/', async (req, res) => {
   try {
-    const { username, email, firstName, lastName } = req.query;
+    const { name, email, userId} = req.query;
 
     const where = {};
 
-    if (username) where.username = { [Op.iLike]: `%${username}%` };
+    if (name) where.name = { [Op.iLike]: `%${name}%` };
     if (email) where.email = { [Op.iLike]: `%${email}%` };
-    if (firstName) where.firstName = { [Op.iLike]: `%${firstName}%` };
-    if (lastName) where.lastName = { [Op.iLike]: `%${lastName}%` };
+    if (userId) where.userId = { [Op.iLike]: `%${userId}%` };
 
     const users = await User.findAll({ where });
     res.status(200).json(users);

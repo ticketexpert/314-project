@@ -1,5 +1,3 @@
-const { Sequelize } = require('sequelize');
-
-const sequelize = new Sequelize('sqlite::memory:'); // or your config
+const sequelize = require('../db');
 
 module.exports = { sequelize };
