@@ -2,9 +2,9 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const expect = chai.expect;
-const app = require('../app'); // This is just a boilerplate but it keeps it working 
-const User = require('../models'); // Sequelize model
-const { sequelize } = require('../models'); // Sequelize instance
+const app = require('../app');
+const User = require('../models/user');
+const sequelize = require('../db');
 
 //This one is just testing mocha and chai are working and return when run
 describe('Sample Test Suite', () => {
@@ -15,14 +15,13 @@ describe('Sample Test Suite', () => {
 
 describe('Users API', () => {
   before(async () => {
-    await sequelize.sync({ force: true }); // Reset DB before tests
+    await User.destroy({ where: {}, truncate: true }); // Clear the users table
   });
 
   describe('POST /api/users', () => {
     it('should create a new user', async () => {
       const newUser = {
-        id: '1',
-        username: 'johndoe',
+        username: 'johnTest',
         email: 'john.doe@example.com',
         password: 'securepassword123',
         firstName: 'John',

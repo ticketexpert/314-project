@@ -10,7 +10,11 @@ router.post('/', async (req, res) => {
     console.log("This worked");
     res.status(201).json(user);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    if (err.message === 'Validation error'){
+      res.status(401).json({ 'error': 'User already exists'});
+    } else {
+      res.status(400).json({ error: err.message });
+    }
   }
 });
 
