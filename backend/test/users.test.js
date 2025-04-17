@@ -3,7 +3,7 @@ const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const expect = chai.expect;
 const app = require('../app');
-const User = require('../models/User');
+const User = require('../models/user');
 const sequelize = require('../db');
 
 //This one is just testing mocha and chai are working and return when run
