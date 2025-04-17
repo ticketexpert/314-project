@@ -22,9 +22,10 @@ describe('Events API', () => {
   describe('POST /api/events', () => {
     it('should create a new event', async () => {
       const newEvent = {
-        title: 'Test Conference',
+        title: 'Conference',
         type: 'conference',
         date: '2025-05-01',
+        description: 'This is a test event, created in the events.test.js test case, do not forget',
         price: 100,
         location: 'Wollongong'
       };
