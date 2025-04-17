@@ -8,6 +8,7 @@ interface Event {
   description: string;
   date: string;
   location: string;
+  price: number;
 }
 
 function App() {
@@ -68,6 +69,7 @@ function App() {
                   <th>Title</th>
                   <th>Description</th>
                   <th>Date</th>
+                  <th>Price</th>
                   <th>Location</th>
                 </tr>
               </thead>
@@ -77,6 +79,7 @@ function App() {
                     <td>{event.title}</td>
                     <td>{event.description}</td>
                     <td>{new Date(event.date).toLocaleDateString()}</td>
+                    <td>{event.price}</td>
                     <td>{event.location}</td>
                   </tr>
                 ))}
