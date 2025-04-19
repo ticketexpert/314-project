@@ -20,19 +20,53 @@ describe('Events API', () => {
   });
 
   describe('POST /api/events', () => {
-    it('should create a new event', async () => {
-      const newEvent = {
-        title: 'Conference',
-        type: 'conference',
-        date: '2025-05-01',
-        description: 'This is a test event, created in the events.test.js test case, do not forget',
-        price: 100,
-        location: 'Wollongong'
-      };
+    it('should create multiple different types of events', async () => {
+      const events = [
+        {
+          title: 'Tech Conference 2025',
+          type: 'conference',
+          date: '2025-05-01',
+          description: 'Annual technology conference featuring industry leaders',
+          price: 299.99,
+          location: 'Sydney'
+        },
+        {
+          title: 'Summer Music Festival',
+          type: 'festival', 
+          date: '2025-01-15',
+          description: 'Three day outdoor music festival',
+          price: 150,
+          location: 'Melbourne'
+        },
+        {
+          title: 'Business Workshop',
+          type: 'workshop',
+          date: '2025-03-20',
+          description: 'Professional development and networking event',
+          price: 75,
+          location: 'Brisbane'
+        },
+        {
+          title: 'Art Exhibition',
+          type: 'exhibition',
+          date: '2025-09-10',
+          description: 'Contemporary art showcase featuring local artists',
+          price: 25,
+          location: 'Perth'
+        }
+      ];
 
-      const res = await chai.request(app).post('/api/events').send(newEvent);
-      expect(res).to.have.status(201);
-      expect(res.body).to.have.property('title', newEvent.title);
+      // Create each event and verify its creation
+      for (const event of events) {
+        const res = await chai.request(app).post('/api/events').send(event);
+        expect(res).to.have.status(201);
+        expect(res.body).to.have.property('title', event.title);
+        expect(res.body).to.have.property('type', event.type);
+        expect(res.body).to.have.property('date').that.is.a('string');
+        expect(res.body).to.have.property('location', event.location);
+        expect(res.body).to.have.property('price', event.price);
+        expect(res.body).to.have.property('description', event.description);
+      }
     });
   });
 

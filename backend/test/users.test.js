@@ -35,7 +35,7 @@ describe('Users API', () => {
 
   describe('GET /api/users', () => {
     it('should get all users', async () => {
-      const res = await chai.request(app).get('/api/users');
+      const res = await chai.request(app).get('/api/users?userId=1');
       expect(res).to.have.status(200);
       expect(res.body).to.be.an('array');
       expect(res.body[0]).to.have.property('name', 'johnTest');
