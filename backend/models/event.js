@@ -2,6 +2,11 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 
 const Event = sequelize.define('Event', {
+  eventId: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
   title: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -13,6 +18,13 @@ const Event = sequelize.define('Event', {
   date: {
     type: DataTypes.DATE,
     allowNull: false,
+    get() {
+      const rawValue = this.getDataValue('date');
+      return rawValue ? rawValue.toISOString() : null;
+    },
+    set(value) {
+      this.setDataValue('date', new Date(value));
+    }
   },
   location: {
     type: DataTypes.STRING,
