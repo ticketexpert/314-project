@@ -13,5 +13,6 @@ export default defineConfig({
   },
   server: {
     host: true, 
+    allowedHosts: ["www.ticketexpert.me", "ticketexpert.me"]
   },
 })
