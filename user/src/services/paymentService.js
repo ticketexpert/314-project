@@ -1,5 +1,5 @@
 // API endpoints
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = 'http://localhost:3001/api';
 
 // Save a new payment method
 export const savePaymentMethod = async (cardData) => {

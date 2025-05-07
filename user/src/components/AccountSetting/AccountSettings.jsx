@@ -9,7 +9,6 @@ import TicketsContent from "./TicketsContent";
 import BillingContent from "./BillingContent";
 import NotificationContent from "./NotificationContent";
 import SecurityContent from "./SecurityContent";
-import { useNavigate } from "react-router-dom";
 
 const menuItems = [
   "Profile",
@@ -20,7 +19,6 @@ const menuItems = [
 ];
 
 export default function AccountSettings() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Profile");
 
   const renderContent = () => {

@@ -3,13 +3,10 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  server: {
-    host: '0.0.0.0',
-    port: 5173
-  },
   plugins: [react()],
   server: {
     host: true,
+    port: 5173,
     allowedHosts: ["www.ticketexpert.me", "ticketexpert.me"]
   },
 })
