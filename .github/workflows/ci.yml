@@ -90,7 +90,7 @@ jobs:
         working-directory: user
 
       - name: Run frontend tests
-        run: npm run test -- --coverage --watchAll=false
+        run: npm run test -- --coverage
         working-directory: user
 
       - name: Code Climate after-build (frontend)
