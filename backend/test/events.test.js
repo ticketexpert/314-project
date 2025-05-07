@@ -2,9 +2,9 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const expect = chai.expect;
-const app = require('../app');
-const Event = require('../models/event');
-const sequelize = require('../db');
+const app = require('../app'); // This is just a boilerplate but it keeps it working 
+const Event = require('../models'); // Sequelize model
+const { sequelize } = require('../models'); // Sequelize instance
 
 //This one is just testing mocha and chai are working and return when run
 describe('Sample Test Suite', () => {
@@ -16,13 +16,8 @@ describe('Sample Test Suite', () => {
 //Testing the events route js
 describe('Events API', () => {
   before(async function() {
-    this.timeout(10000); // Increase timeout to 10 seconds
-    try {
-      await sequelize.sync({ force: true }); // Reset DB before tests
-    } catch (error) {
-      console.error('Error in before hook:', error);
-      throw error;
-    }
+    this.timeout(5000); // Increase timeout to 5 seconds
+    await sequelize.sync({ force: true }); // Reset DB before tests
   });
 
   describe('POST /api/events', () => {
