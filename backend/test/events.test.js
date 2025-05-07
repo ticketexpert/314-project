@@ -4,10 +4,7 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 const app = require('../app');
 const Event = require('../models/event');
-const { sequelize } = require('../models');
-
-// Set NODE_ENV to test
-process.env.NODE_ENV = 'test';
+const sequelize = require('../db');
 
 //This one is just testing mocha and chai are working and return when run
 describe('Sample Test Suite', () => {
@@ -19,19 +16,13 @@ describe('Sample Test Suite', () => {
 //Testing the events route js
 describe('Events API', () => {
   before(async function() {
-    this.timeout(5000);
-    // Use migrations instead of sync
-    const { Umzug, SequelizeStorage } = require('umzug');
-    const umzug = new Umzug({
-      migrations: { glob: 'migrations/*.js' },
-      context: sequelize.getQueryInterface(),
-      storage: new SequelizeStorage({ sequelize }),
-      logger: console,
-    });
-    
-    // Run migrations
-    await umzug.down({ to: 0 }); // Revert all migrations
-    await umzug.up(); // Run all migrations
+    this.timeout(10000); // Increase timeout to 10 seconds
+    try {
+      await sequelize.sync({ force: true }); // Reset DB before tests
+    } catch (error) {
+      console.error('Error in before hook:', error);
+      throw error;
+    }
   });
 
   describe('POST /api/events', () => {

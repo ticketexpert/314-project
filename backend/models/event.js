@@ -1,9 +1,7 @@
-const { Model, DataTypes } = require('sequelize');
+const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 
-class Event extends Model {}
-
-Event.init({
+const Event = sequelize.define('Event', {
   eventId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -11,36 +9,37 @@ Event.init({
   },
   title: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
   },
   type: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
   },
   date: {
     type: DataTypes.DATE,
-    allowNull: false
+    allowNull: false,
+    get() {
+      const rawValue = this.getDataValue('date');
+      return rawValue ? rawValue.toISOString() : null;
+    },
+    set(value) {
+      this.setDataValue('date', new Date(value));
+    }
   },
   location: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
   },
   price: {
     type: DataTypes.FLOAT,
-    allowNull: false
+    allowNull: false,
   },
   description: {
     type: DataTypes.TEXT,
-    allowNull: true
   },
   createdBy: {
     type: DataTypes.STRING,
-    allowNull: true
   }
-}, {
-  sequelize,
-  modelName: 'Event',
-  timestamps: true
 });
 
 module.exports = Event;
