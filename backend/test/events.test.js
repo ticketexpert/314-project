@@ -15,7 +15,8 @@ describe('Sample Test Suite', () => {
 
 //Testing the events route js
 describe('Events API', () => {
-  before(async () => {
+  before(async function() {
+    this.timeout(5000); // Increase timeout to 5 seconds
     await sequelize.sync({ force: true }); // Reset DB before tests
   });
 
