@@ -8,7 +8,7 @@ const statusRoutes = require('./routes/status');
 
 // Enable CORS for specific origins
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://www.ticketexpert.me'],
+    origin: ['http://localhost:5173', 'https://www.ticketexpert.me', 'https://www.organiser.ticketexpert.me'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
