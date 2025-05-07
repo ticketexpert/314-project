@@ -93,6 +93,12 @@ jobs:
         run: npm run test -- --coverage
         working-directory: user
 
+      - name: Format code coverage (frontend)
+        run: ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.json
+        working-directory: user
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+
       - name: Code Climate after-build (frontend)
         run: ./cc-test-reporter after-build --exit-code $?
         working-directory: user
