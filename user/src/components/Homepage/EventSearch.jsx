@@ -22,7 +22,7 @@ const events = [
     title: "Illawarra Hawks Celebrate with the City",
     location: "Crown Street Mall, Wollongong",
     date: "27 MAR",
-    image: "https://content.api.news/v3/images/bin/646402e6eb12d917fbf41a42737b95d3",
+    image: "pics/Hawks.png",
     description: "Join the Illawarra Hawks for a day of celebration, live music, and family fun in the heart of Wollongong!"
   },
   {
