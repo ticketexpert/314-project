@@ -1,5 +1,6 @@
 import { Flex, Text, Button } from "@radix-ui/themes";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 import NavigationMenuDemo from "./components/NavBar/NavigationMenuDemo";
 import Navbar from "./components/NavBar/Navbar";
 import EventSearch from "./components/Homepage/EventSearch";
@@ -79,7 +80,25 @@ function NotFound() {
 	return <Text>404 - Page Not Found</Text>;
 }
 
+
+//TESTING - Backend check, remove later
 export default function MyApp() {
+	useEffect(() => {
+		console.log('Checking backend status');
+		fetch('https://www.api.ticketexpert.com/status')
+			.then(response => {
+				console.log('Response received:', response.status);
+				if (response.ok) {
+					alert('Backend is up!');
+				} else {
+					console.error('Bad Response from the backend for soem reason:', response.status);
+				}
+			})
+			.catch(error => {
+				console.error('Error checking backend:', error);
+			});
+	}, []);
+
 	return (
 		<Router>
 			<Routes>
