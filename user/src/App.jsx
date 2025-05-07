@@ -1,4 +1,5 @@
 import { Flex, Text, Button } from "@radix-ui/themes";
+import "@fontsource/instrument-sans";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import NavigationMenuDemo from "./components/NavBar/NavigationMenuDemo";
 import Navbar from "./components/NavBar/Navbar";
@@ -10,6 +11,8 @@ import Signup from "./components/Auth/Signup";
 import FavoritePage from "./components/Auth/FavoritePage";
 import EnterPlace from "./components/Auth/EnterPlace";
 import AccountSettings from "./components/AccountSetting/AccountSettings";
+import EventDetail from "./components/Homepage/EventDetail";
+import EventsList from "./components/Homepage/EventsList";
 
 // Layout component to wrap pages with common elements
 function Layout({ children }) {
@@ -33,26 +36,25 @@ function AuthLayout({ children }) {
 
 // Home page component
 function Home() {
-	const trendingEvents = [
-		{ name: 'Event One', category: 'Music' },
-		{ name: 'Event Two', category: 'Sport', isLabel: true, label: 'Trending' },
-		{ name: 'Event Three', category: 'Family' },
-		{ name: 'Event Four', category: 'Theatre', isLabel: true, label: 'Almost Sold Out' },
-		{ name: 'Event Three', category: 'Family' },
-		{ name: 'Event Four', category: 'Theatre', isLabel: true, label: 'Almost Sold Out' },
-		{ name: 'Event Three', category: 'Family' },
-	];
+const trendingEvents = [
+  { name: 'ZZ Top & Friends – Stuart Park', category: 'Music', isLabel: true, label: 'Almost Sold Out' },
+  { name: 'The Ten Tenors – 30th Anniversary Tour', category: 'Music' },
+  { name: 'Scenes from the Climate Era', category: 'Theatre', isLabel: true, label: 'Trending' },
+  { name: 'Wollongong Chilli Festival', category: 'Family' },
+  { name: 'Ride Wollongong – Festival of Cycling', category: 'Sport', isLabel: true, label: 'Trending' },
+  { name: 'Live Baby Live – INXS Tribute', category: 'Music' },
+  { name: 'Bernard Fanning & Paul Dempsey', category: 'Music', isLabel: true, label: 'Hot Pick' },
+];
 
-	const topArtists = [
-		{ name: 'Artist One', category: 'Sport' },
-		{ name: 'Artist Two', category: 'Music' },
-		{ name: 'Artist Three', category: 'Comedy' },
-		{ name: 'Artist Four', category: 'Festival' },
-		{ name: 'Artist Three', category: 'Comedy' },
-		{ name: 'Artist Four', category: 'Festival' },
-		{ name: 'Artist Four', category: 'Festival' },
-	];
-
+const topArtists = [
+  { name: 'ZZ Top', category: 'Music' },
+  { name: 'George Thorogood & The Destroyers', category: 'Music' },
+  { name: 'The Living End', category: 'Music' },
+  { name: 'The Ten Tenors', category: 'Classical' },
+  { name: 'Bernard Fanning', category: 'Folk Rock' },
+  { name: 'Paul Dempsey', category: 'Indie Rock' },
+  { name: 'Alpha Wolf', category: 'Metal' },
+];
 	return (
 		<>
 			<EventSearch />
@@ -90,7 +92,7 @@ export default function MyApp() {
 				} />
 				<Route path="/events" element={
 					<Layout>
-						<Events />
+						<EventsList />
 					</Layout>
 				} />
 				<Route path="/artists" element={
@@ -123,7 +125,7 @@ export default function MyApp() {
 						<FavoritePage />
 					</AuthLayout>
 				} />
-				<Route path="/signup/plac" element={
+				<Route path="/signup/place" element={
 					<AuthLayout>
 						<EnterPlace />
 					</AuthLayout>
@@ -133,7 +135,11 @@ export default function MyApp() {
 						<AccountSettings/>
 					</AuthLayout>
 				} />
-				
+				<Route path="/event/:id" element={
+					<Layout>
+						<EventDetail />
+					</Layout>
+				} />
 			</Routes>
 		</Router>
 	);

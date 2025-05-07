@@ -1,6 +1,14 @@
-import React, { useState } from "react";
-import { Box, Button, Paper, TextField, Typography, Divider, Snackbar, Alert } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  Box, Button, Paper, TextField, Typography,
+  Divider, Snackbar, Alert, Avatar, Stack, IconButton, Tooltip
+} from "@mui/material";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PaymentMethodPopup from './PaymentMethodPopup';
+import { getCards, saveCard, updateCard, deleteCard, maskCardNumber } from '../../data/cards';
+import visaLogo from '../../assets/visa.png';
+import mastercardLogo from '../../assets/Mastercard.png';
+import amexLogo from '../../assets/Amex.png';
 
 export default function BillingContent() {
   const [address, setAddress] = useState({
@@ -12,61 +20,25 @@ export default function BillingContent() {
     country: "Australia",
   });
 
-  const [cards, setCards] = useState([
-    {
-      id: 1,
-      cardNumber: "0123 **** **** 4567",
-      cardHolder: "MATTHEW GALE",
-      expiryDate: "12/25",
-      cvv: "123",
-    },
-    {
-      id: 2,
-      cardNumber: "0123 **** **** 8910",
-      cardHolder: "MATTHEW GALE",
-      expiryDate: "03/26",
-      cvv: "456",
-    },
-  ]);
-
+  const [cards, setCards] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupMode, setPopupMode] = useState('view');
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
 
-  const validateCard = (card) => {
-    // Card number validation (Luhn algorithm)
-    const cardNumber = card.cardNumber.replace(/\s/g, '');
-    if (!/^\d{16}$/.test(cardNumber)) {
-      return { isValid: false, message: 'Card number must be 16 digits' };
-    }
+  // Load cards on component mount
+  useEffect(() => {
+    const loadedCards = getCards();
+    setCards(loadedCards);
+  }, []);
 
-    // Card holder validation
-    if (!card.cardHolder.trim()) {
-      return { isValid: false, message: 'Card holder name is required' };
+  const getBrandLogo = (cardType) => {
+    switch (cardType) {
+      case 'visa': return visaLogo;
+      case 'mastercard': return mastercardLogo;
+      case 'amex': return amexLogo;
+      default: return null;
     }
-
-    // Expiry date validation
-    const [month, year] = card.expiryDate.split('/');
-    if (!/^\d{2}\/\d{2}$/.test(card.expiryDate)) {
-      return { isValid: false, message: 'Expiry date must be in MM/YY format' };
-    }
-    
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear() % 100;
-    const currentMonth = currentDate.getMonth() + 1;
-    
-    if (parseInt(year) < currentYear || 
-        (parseInt(year) === currentYear && parseInt(month) < currentMonth)) {
-      return { isValid: false, message: 'Card has expired' };
-    }
-
-    // CVV validation
-    if (!/^\d{3,4}$/.test(card.cvv)) {
-      return { isValid: false, message: 'CVV must be 3 or 4 digits' };
-    }
-
-    return { isValid: true };
   };
 
   const handleChange = (e) => {
@@ -80,83 +52,45 @@ export default function BillingContent() {
   };
 
   const handleAddCard = () => {
-    setSelectedCard({
-      id: null,
-      cardNumber: '',
-      cardHolder: '',
-      expiryDate: '',
-      cvv: ''
-    });
+    setSelectedCard(null);
     setPopupMode('add');
     setPopupOpen(true);
   };
 
-  const handleUpdateCard = (card, mode = 'edit') => {
-    if (mode === 'edit') {
-      setSelectedCard(card);
-      setPopupMode('edit');
-      setPopupOpen(true);
-    } else if (mode === 'add') {
-      const validation = validateCard(card);
-      if (!validation.isValid) {
-        setNotification({
-          open: true,
-          message: validation.message,
-          severity: 'error'
-        });
-        return;
+  const handleUpdateCard = (cardData, mode) => {
+    try {
+      if (mode === 'add') {
+        const newCard = saveCard(cardData);
+        setCards(prevCards => [...prevCards, newCard]);
+        setNotification({ open: true, message: 'Card added successfully', severity: 'success' });
+      } else {
+        const updatedCard = updateCard(cardData);
+        setCards(prevCards => prevCards.map(card => 
+          card.id === updatedCard.id ? updatedCard : card
+        ));
+        setNotification({ open: true, message: 'Card updated successfully', severity: 'success' });
       }
-
-      // Format card number to show only last 4 digits
-      const formattedCardNumber = card.cardNumber.replace(/\d(?=\d{4})/g, '*');
-      
-      const newCard = {
-        ...card,
-        id: cards.length + 1,
-        cardNumber: formattedCardNumber
-      };
-      
-      setCards([...cards, newCard]);
       setPopupOpen(false);
-      setNotification({
-        open: true,
-        message: 'Card added successfully',
-        severity: 'success'
-      });
-    } else {
-      const updatedCards = cards.map(c => 
-        c.id === card.id ? card : c
-      );
-      setCards(updatedCards);
+      setSelectedCard(null);
+    } catch (error) {
+      setNotification({ open: true, message: 'Failed to save card', severity: 'error' });
     }
   };
 
   const handleDeleteCard = (card) => {
-    setCards(cards.filter(c => c.id !== card.id));
-    setPopupOpen(false);
-    setNotification({
-      open: true,
-      message: 'Card deleted successfully',
-      severity: 'success'
-    });
+    try {
+      deleteCard(card.id);
+      setCards(prevCards => prevCards.filter(c => c.id !== card.id));
+      setPopupOpen(false);
+      setSelectedCard(null);
+      setNotification({ open: true, message: 'Card deleted successfully', severity: 'success' });
+    } catch (error) {
+      setNotification({ open: true, message: 'Failed to delete card', severity: 'error' });
+    }
   };
 
   const handleCloseNotification = () => {
     setNotification({ ...notification, open: false });
-  };
-
-  const textFieldStyles = {
-    '& .MuiOutlinedInput-root': {
-      '&:hover fieldset': {
-        borderColor: '#166534',
-      },
-      '&.Mui-focused fieldset': {
-        borderColor: '#166534',
-      },
-    },
-    '& .MuiInputLabel-root.Mui-focused': {
-      color: '#166534',
-    },
   };
 
   return (
@@ -167,34 +101,95 @@ export default function BillingContent() {
 
       {/* Payment Methods */}
       <Typography variant="h6" mb={2}>
-        Saved Payment Method
+        Saved Payment Methods
       </Typography>
 
-      {cards.map((card) => (
-        <Paper 
-          key={card.id} 
-          elevation={2} 
-          sx={{ p: 2, mb: 2, cursor: 'pointer' }}
-          onClick={() => handleCardClick(card)}
-        >
-          <Typography>💳 {card.cardNumber} — {card.cardHolder}</Typography>
-        </Paper>
-      ))}
+      {cards.map((card) => {
+        const logo = getBrandLogo(card.cardType);
+        return (
+          <Paper
+            key={card.id}
+            elevation={0}
+            sx={{
+              borderRadius: 3,
+              border: "1px solid rgba(0,128,128,0.3)",
+              p: 2,
+              mb: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              cursor: "pointer",
+              '&:hover': {
+                backgroundColor: 'rgba(22, 101, 52, 0.04)',
+              },
+            }}
+            onClick={() => handleCardClick(card)}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              {logo ? (
+                <Avatar 
+                  src={logo} 
+                  alt="Card Brand" 
+                  sx={{ 
+                    width: 48, 
+                    height: 48,
+                    backgroundColor: 'transparent',
+                    '& img': {
+                      objectFit: 'contain'
+                    }
+                  }} 
+                />
+              ) : (
+                <Avatar 
+                  sx={{ 
+                    width: 48, 
+                    height: 48,
+                    backgroundColor: '#e0e0e0'
+                  }}
+                >
+                  💳
+                </Avatar>
+              )}
+              <Box>
+                <Typography fontWeight={600}>
+                  {maskCardNumber(card.cardNumber)}
+                </Typography> <br/>
+                <Typography variant="body2" color="text.secondary">
+                  {card.cardHolder}
+                </Typography>
+              </Box>
+            </Stack>
+            <Tooltip title="Options">
+              <IconButton 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCardClick(card);
+                }}
+              >
+                <MoreVertIcon />
+              </IconButton>
+            </Tooltip>
+          </Paper>
+        );
+      })}
 
       <Button
         variant="contained"
         sx={{ backgroundColor: "#166534", mb: 4 }}
         onClick={handleAddCard}
       >
-        Add your card
+        Add Your Card
       </Button>
 
       <PaymentMethodPopup
         open={popupOpen}
-        onClose={() => setPopupOpen(false)}
+        onClose={() => {
+          setPopupOpen(false);
+          setSelectedCard(null);
+        }}
         card={selectedCard}
         onUpdate={handleUpdateCard}
-        onDelete={() => handleDeleteCard(selectedCard)}
+        onDelete={handleDeleteCard}
         mode={popupMode}
       />
 
@@ -204,8 +199,8 @@ export default function BillingContent() {
         onClose={handleCloseNotification}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert 
-          onClose={handleCloseNotification} 
+        <Alert
+          onClose={handleCloseNotification}
           severity={notification.severity}
           sx={{ width: '100%' }}
         >
@@ -227,7 +222,15 @@ export default function BillingContent() {
           name="address1"
           value={address.address1}
           onChange={handleChange}
-          sx={textFieldStyles}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              '&:hover fieldset': { borderColor: '#166534' },
+              '&.Mui-focused fieldset': { borderColor: '#166534' },
+            },
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#166534',
+            },
+          }}
         />
         <TextField
           label="Address Line 2 (optional)"
@@ -235,7 +238,15 @@ export default function BillingContent() {
           name="address2"
           value={address.address2}
           onChange={handleChange}
-          sx={textFieldStyles}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              '&:hover fieldset': { borderColor: '#166534' },
+              '&.Mui-focused fieldset': { borderColor: '#166534' },
+            },
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#166534',
+            },
+          }}
         />
         <Box display="flex" gap={2}>
           <TextField
@@ -244,7 +255,15 @@ export default function BillingContent() {
             name="city"
             value={address.city}
             onChange={handleChange}
-            sx={textFieldStyles}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': { borderColor: '#166534' },
+                '&.Mui-focused fieldset': { borderColor: '#166534' },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#166534',
+              },
+            }}
           />
           <TextField
             label="Postcode"
@@ -252,7 +271,15 @@ export default function BillingContent() {
             name="postcode"
             value={address.postcode}
             onChange={handleChange}
-            sx={textFieldStyles}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': { borderColor: '#166534' },
+                '&.Mui-focused fieldset': { borderColor: '#166534' },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#166534',
+              },
+            }}
           />
         </Box>
         <Box display="flex" gap={2}>
@@ -262,7 +289,15 @@ export default function BillingContent() {
             name="state"
             value={address.state}
             onChange={handleChange}
-            sx={textFieldStyles}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': { borderColor: '#166534' },
+                '&.Mui-focused fieldset': { borderColor: '#166534' },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#166534',
+              },
+            }}
           />
           <TextField
             label="Country"
@@ -270,7 +305,15 @@ export default function BillingContent() {
             name="country"
             value={address.country}
             onChange={handleChange}
-            sx={textFieldStyles}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': { borderColor: '#166534' },
+                '&.Mui-focused fieldset': { borderColor: '#166534' },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#166534',
+              },
+            }}
           />
         </Box>
 

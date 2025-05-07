@@ -18,10 +18,8 @@ export default function SignUp() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically make an API call to create the account
-    // For now, we'll simulate a successful signup
     localStorage.setItem('isLoggedIn', 'true');
-    navigate("/favorites");
+    navigate("/signup/favorite");
   };
 
   return (

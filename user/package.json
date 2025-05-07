@@ -10,8 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mui/icons-material": "^7.0.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fontsource/instrument-sans": "^5.2.5",
+    "@mui/icons-material": "^7.1.0",
+    "@mui/material": "^7.1.0",
+    "@radix-ui/react-icons": "^1.3.2",
+    "@radix-ui/react-navigation-menu": "^1.2.12",
     "@radix-ui/themes": "^3.2.1",
+    "classnames": "^2.5.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

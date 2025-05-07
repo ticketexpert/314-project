@@ -17,7 +17,6 @@ export default function EventCard({ name, category, type = 'events', isLabel, la
         justifyContent: 'flex-end',
       }}
     >
-      {/* Label: used in both modes */}
       {(isLabel || type === 'artists') && (
         <Box
           sx={{
@@ -43,7 +42,7 @@ export default function EventCard({ name, category, type = 'events', isLabel, la
           <Typography variant="body2" fontWeight={400}>
             {category}
           </Typography>
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" fontWeight="bold" sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
             {name}
           </Typography>
         </>
@@ -52,7 +51,7 @@ export default function EventCard({ name, category, type = 'events', isLabel, la
           <Typography variant="body2" fontWeight={400}>
             Events from
           </Typography>
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" fontWeight="bold" sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
             {name}
           </Typography>
         </>
