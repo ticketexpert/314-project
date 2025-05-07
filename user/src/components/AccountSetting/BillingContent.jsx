@@ -72,7 +72,7 @@ export default function BillingContent() {
       }
       setPopupOpen(false);
       setSelectedCard(null);
-    } catch (error) {
+    } catch {
       setNotification({ open: true, message: 'Failed to save card', severity: 'error' });
     }
   };
@@ -84,7 +84,7 @@ export default function BillingContent() {
       setPopupOpen(false);
       setSelectedCard(null);
       setNotification({ open: true, message: 'Card deleted successfully', severity: 'success' });
-    } catch (error) {
+    } catch {
       setNotification({ open: true, message: 'Failed to delete card', severity: 'error' });
     }
   };
