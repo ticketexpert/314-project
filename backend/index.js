@@ -6,8 +6,12 @@ const eventRoutes = require('./routes/events');
 const userRoutes = require('./routes/users');
 const statusRoutes = require('./routes/status');
 
-// Enable CORS for all routes
-app.use(cors());
+// Enable CORS for specific origins
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://www.ticketexpert.me'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 
 app.use(express.json());
 app.use('/api/events', eventRoutes);

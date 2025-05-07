@@ -85,7 +85,7 @@ function NotFound() {
 export default function MyApp() {
 	useEffect(() => {
 		console.log('Checking backend status');
-		fetch('https://www.api.ticketexpert.com/status')
+		fetch('https://www.api.ticketexpert.me/status')
 			.then(response => {
 				console.log('Response received:', response.status);
 				if (response.ok) {
