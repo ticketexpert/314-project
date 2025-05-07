@@ -1,7 +1,5 @@
 .rootNavBar {
-    position: fixed;
-    top: 0;
-    left: 0;
+    position: relative;
     width: 100vw;
     z-index: 1000;
     background: rgba(255, 255, 255, 0.20);
@@ -13,7 +11,15 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px 16px;
-    transition: background 0.3s, box-shadow 0.3s, padding 0.3s;
+    transition: background 0.3s, box-shadow 0.3s, padding 0.7s, position 0.3s;
+}
+
+.rootNavBar.scrolled {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    padding: 10px 10vw;
 }
 
 .rootNavBar img {
@@ -21,9 +27,6 @@
     transition: height 0.2s;
 }
 
-.rootNavBar.scrolled {
-    padding: 4px 6vw;
-}
 .rootNavBar.scrolled img {
     height: 28px;
 }

@@ -36,7 +36,7 @@ export default function EventsList() {
   }, [search, category, sort]);
 
   return (
-    <Box sx={{ width: '100vw', maxWidth: 1200, mx: 'auto', my: 4, px: { xs: 1, md: 3 } }}>
+    <Box sx={{ width: '100vw', maxWidth: 1200, mx: 'auto', my: 4, px: { xs: 1, md: 3 }, pt: '100px' }}>
       <Typography variant="h4" fontWeight="bold" color="#9F1B32" mb={3}>
         All Events
       </Typography>
@@ -92,12 +92,12 @@ export default function EventsList() {
         ) : (
           filteredEvents.map(event => (
             <Grid item xs={12} key={event.id}>
-              <Card sx={{width: '1000px', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, borderRadius: 4, boxShadow: '0 2px 8px rgba(22,101,52,0.08)', height: { sm: 180, xs: 'auto' } }}>
+              <Card sx={{width: { xs: '100%', sm: '80vw' }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, borderRadius: 4, boxShadow: '0 2px 8px rgba(22,101,52,0.08)', height: { sm: 180, xs: 'auto' } }}>
                 <Box
                   component="img"
                   src={event.image}
                   alt={event.title}
-                  sx={{ width: { xs: '100%', sm: 180 }, height: { xs: 180, sm: '100%' }, objectFit: 'cover', borderTopLeftRadius: 4, borderBottomLeftRadius: { sm: 4, xs: 0 }, borderTopRightRadius: { xs: 4, sm: 0 } }}
+                  sx={{ width: { xs: '100%', sm: 200 }, height: { xs: 180, sm: '100%' }, objectFit: 'cover', borderTopLeftRadius: 4, borderBottomLeftRadius: { sm: 4, xs: 0 }, borderTopRightRadius: { xs: 4, sm: 0 } }}
                 />
                 <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 2 }}>
                   <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">

@@ -11,6 +11,7 @@ export default function Footer() {
   return (
     <Box
       sx={{
+        width: { xs: '100%', sm: '100vw' },
         mt: 6,
         px: 6,
         py: 4,
@@ -47,7 +48,7 @@ export default function Footer() {
         </Grid>
 
         {/* Right side: Links */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={5} md={3}>
           <Grid container spacing={4}>
             {footerLinks.map((section, index) => (
               <Grid item xs={6} md={4} key={index}>

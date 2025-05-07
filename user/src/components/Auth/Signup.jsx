@@ -1,7 +1,30 @@
 import React, { useState } from "react";
-import { Box, Button, Grid, TextField, Typography, Link as MuiLink, Paper, Divider } from "@mui/material";
+import { Box, Button, Grid, TextField, Typography, Link as MuiLink, Paper, Divider, Alert, LinearProgress, List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import TELogo from "../../logo";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+
+function getPasswordStrength(password) {
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  if (password.length >= 12) score++;
+  return score;
+}
+
+function getStrengthLabel(score) {
+  switch (score) {
+    case 0: return { label: "Very Weak", color: "error" };
+    case 1: return { label: "Weak", color: "warning" };
+    case 2: return { label: "Fair", color: "warning" };
+    case 3: return { label: "Good", color: "info" };
+    case 4: return { label: "Strong", color: "success" };
+    case 5: return { label: "Very Strong", color: "success" };
+    default: return { label: "Very Weak", color: "error" };
+  }
+}
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -10,106 +33,124 @@ export default function SignUp() {
     lastName: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
+    setSuccess("");
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    if (getPasswordStrength(formData.password) < 3) {
+      setError("Password is too weak. Please use a stronger password.");
+      return;
+    }
+    setSuccess("Account created successfully!");
     localStorage.setItem('isLoggedIn', 'true');
-    navigate("/signup/favorite");
+    setTimeout(() => navigate("/signup/favorite"), 1000);
   };
+
+  const passwordStrength = getPasswordStrength(formData.password);
+  const { label: strengthLabel, color: strengthColor } = getStrengthLabel(passwordStrength);
 
   return (
     <Box
-      minHeight="100vh"
       display="flex"
+      minHeight ='100vh'
       minWidth="100vw"
       justifyContent="center"
       alignItems="center"
       bgcolor="#f5f5f5"
     >
       <Paper
-        elevation={6}
+        elevation={8}
         sx={{
-          width: { xs: "90%", md: "70vw" },
-          height: { xs: "auto", md: "80vh" },
+          width: { xs: "100%", md: "90vw" },
+          maxWidth: '90vw',
           display: "flex",
-          borderRadius: "16px",
+          borderRadius: "20px",
           overflow: "hidden",
+          boxShadow: '0 8px 32px rgba(3,58,166,0.10)',
         }}
       >
-        {/* Left Side */}
         <Box
           sx={{
-            width: "60%",
-            background: "linear-gradient(to bottom right, #b3001b, #990017)",
-            display: "flex",
+            width: { xs: '0%', md: '70%' },
+            background: "linear-gradient(135deg, #02735E 60%, #04D9B1 100%)",
+            display: { xs: 'none', md: 'flex' },
             flexDirection: "column",
-            alignItems: "flex-start",
-            padding: 4,
+            alignContent: 'flex-end',
+            alignItems: 'flex-end',
+            p: 4,
           }}
         >
-        <TELogo/>
+          <TELogo style={{ width: 120, marginBottom: 0 }} />
         </Box>
+        {/* Right Side */}
         <Box
           sx={{
-            width: "60%",
+            width: { xs: '100%', md: '55%' },
             backgroundColor: "#ffffff",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "flex-start",
-            alignItems: "flex-start",
-            padding: 6,
+            justifyContent: "left",
+            alignItems: "left",
+            p: { xs: 3, md: 6 },
           }}
         >
-          <Typography variant="h5" fontWeight="bold" color="#1e40af" mb={3}>
-            Create your TicketExpert Account
+          <Typography variant="h5" fontWeight="bold" color="#1e40af" mb={2}>
+          Create your TicketExpert Account
           </Typography>
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }}>
-            <Grid container spacing={12}>
-              <Grid item xs={6}>
-                <TextField
+          <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%", maxWidth: 400 }}>
+              <TextField
+                  margin="dense"
                   fullWidth
-                  placeholder="First Name"
+                  label="First Name"
                   name="firstName"
                   variant="outlined"
                   value={formData.firstName}
                   onChange={handleChange}
-                  sx={{ height: '56px' , width: "140%"}}
+                  sx={{ height: '56px' }}
                 />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  placeholder="Last Name"
-                  name="lastName"
-                  variant="outlined"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  sx={{ height: '56px' , width: "140%"}}
-                />
-              </Grid>
-            </Grid>
-
+              <TextField
+                margin="dense"
+                fullWidth
+                label="Last Name"
+                name="lastName"
+                variant="outlined"
+                value={formData.lastName}
+                onChange={handleChange}
+                sx={{ height: '56px' }}
+              />
             <TextField
-              margin="normal"
+              margin="dense"
               fullWidth
-              placeholder="Email Address"
+              label="Email Address"
               name="email"
               variant="outlined"
               value={formData.email}
               onChange={handleChange}
               sx={{ height: '56px'}}
             />
-
             <TextField
-              margin="normal"
+              margin="dense"
               fullWidth
-              placeholder="Password"
+              label="Password"
               name="password"
               type="password"
               variant="outlined"
@@ -117,19 +158,89 @@ export default function SignUp() {
               onChange={handleChange}
               sx={{ height: '56px' }}
             />
+            {formData.password && (
+              <Box mb={2}>
+                <Box display="flex" alignItems="center" mb={0.5}>
+                  <Typography fontSize="0.95rem" color="text.secondary" mr={1}>
+                    Password Strength:
+                  </Typography>
+                  <Typography fontWeight="bold" color={`${strengthColor}.main`}>
+                    {strengthLabel}
+                  </Typography>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={(passwordStrength / 5) * 100}
+                  color={strengthColor}
+                  sx={{
+                    height: 10,
+                    borderRadius: 5,
+                    background: "#e0e0e0",
+                    "& .MuiLinearProgress-bar": {
+                      transition: "width 0.4s",
+                    },
+                  }}
+                />
+              </Box>
+            )}
+            <TextField
+              margin="dense"
+              fullWidth
+              label="Reconfirm Password"
+              name="confirmPassword"
+              type="password"
+              variant="outlined"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              sx={{ height: '56px' }}
+            />
+
+            {/* Password Requirements */}
+            <List dense sx={{ mb: 2 }}>
+              <ListItem>
+                <ListItemIcon>
+                  <CheckCircleIcon color={formData.password.length >= 8 ? "success" : "disabled"} fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="At least 8 characters" />
+              </ListItem>
+              <ListItem>
+                <ListItemIcon>
+                  <CheckCircleIcon color={/[A-Z]/.test(formData.password) ? "success" : "disabled"} fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="At least one uppercase letter" />
+              </ListItem>
+              <ListItem>
+                <ListItemIcon>
+                  <CheckCircleIcon color={/[0-9]/.test(formData.password) ? "success" : "disabled"} fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="At least one number" />
+              </ListItem>
+              <ListItem>
+                <ListItemIcon>
+                  <CheckCircleIcon color={/[^A-Za-z0-9]/.test(formData.password) ? "success" : "disabled"} fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="At least one special character" />
+              </ListItem>
+            </List>
+
+            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+            {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{
-                width: "300px",
+                width: "100%",
                 height: "50px",
-                mt: 3,
+                mt: 2,
                 backgroundColor: "#1e40af",
                 borderRadius: "9999px",
                 textTransform: "none",
                 fontWeight: "bold",
+                fontSize: '1.1rem',
+                letterSpacing: 0.5,
+                boxShadow: '0 2px 8px rgba(30,64,175,0.10)',
                 "&:hover": { backgroundColor: "#1e3a8a" },
               }}
             >
@@ -138,7 +249,7 @@ export default function SignUp() {
 
             <Divider sx={{ my: 3, width: '100%' }} />
 
-            <Typography mt={2} color="#1e40af">
+            <Typography mt={2} color="#1e40af" align="center">
               Already have a TicketExpert account?{" "}
               <MuiLink component={Link} to="/login" underline="hover" color="#1e40af" fontWeight="bold">
                 Log in
