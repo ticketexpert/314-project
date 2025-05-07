@@ -8,4 +8,8 @@ export default defineConfig({
     port: 5173
   },
   plugins: [react()],
+  server: {
+    host: true,
+    allowedHosts: ["www.ticketexpert.me", "ticketexpert.me"]
+  },
 })
