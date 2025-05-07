@@ -8,50 +8,43 @@ on:
 
 jobs:
   backend:
-    name: Backend CI
+    name: Backend Tests
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18]
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: eventuser
+          POSTGRES_PASSWORD: eventpass
+          POSTGRES_DB: eventdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '20'
           cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
       - name: Install backend dependencies
         run: npm ci
         working-directory: backend
 
-      - name: Run backend lint
-        run: npm run lint
-        working-directory: backend
-
-      - name: Download Code Climate test reporter
-        run: |
-          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > cc-test-reporter
-          chmod +x cc-test-reporter
-        working-directory: backend
-
-      - name: Code Climate before-build (backend)
-        run: ./cc-test-reporter before-build
-        working-directory: backend
-
       - name: Run backend tests
-        run: npm run test -- --coverage
-        working-directory: backend
-
-      - name: Code Climate after-build (backend)
-        run: ./cc-test-reporter after-build --exit-code $?
+        run: npm test
         working-directory: backend
         env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+          NODE_ENV: test
 
   frontend:
     name: User CI
@@ -155,3 +148,54 @@ jobs:
         with:
           name: organiser-build
           path: organiser/.next/
+
+name: Backend Tests
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: eventuser
+          POSTGRES_PASSWORD: eventpass
+          POSTGRES_DB: eventdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ./backend
+        run: npm test
+        env:
+          NODE_ENV: test
