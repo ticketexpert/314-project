@@ -156,7 +156,7 @@ jobs:
         run: npm run test -- --coverage
         working-directory: organiser
 
-        - name: Format code coverage for Code Climate
+      - name: Format code coverage for Code Climate
         run: ./cc-test-reporter format-coverage coverage/lcov.info -t lcov --prefix app -o coverage/codeclimate.json
         working-directory: organiser
         env:
@@ -166,8 +166,7 @@ jobs:
         run: ./cc-test-reporter upload-coverage -i coverage/codeclimate.json
         working-directory: organiser
         env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-      
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}      
 
       - name: Build Next.js app
         run: npm run build
