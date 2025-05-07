@@ -92,9 +92,13 @@ export default function MyApp() {
 				console.log('Response received:', response.status);
 				if (response.ok) {
 					alert('Backend is up!');
-				} else {
-					console.error('Bad Response from the backend for soem reason:', response.status);
+				} else if (response.status === 404) {
+					alert('Backend is not up! 404 error');
 				}
+				else {
+					console.error('Bad Response from the backend for soem reason:', response.status);
+					alert('Backend is not up!');
+				} 
 			})
 			.catch(error => {
 				console.error('Error checking backend:', error);
