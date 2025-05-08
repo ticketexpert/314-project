@@ -54,6 +54,46 @@ describe('Events API', () => {
           description: 'Contemporary art showcase featuring local artists',
           price: 25,
           location: 'Perth'
+        },
+        {
+          title: 'Food & Wine Festival',
+          type: 'festival',
+          date: '2025-07-15',
+          description: 'Celebration of local cuisine and wines',
+          price: 120,
+          location: 'Adelaide'
+        },
+        {
+          title: 'Startup Pitch Night',
+          type: 'conference',
+          date: '2025-06-20',
+          description: 'Entrepreneurs pitch their innovative ideas',
+          price: 50,
+          location: 'Sydney'
+        },
+        {
+          title: 'Fitness Bootcamp',
+          type: 'workshop',
+          date: '2025-08-05',
+          description: 'Intensive fitness training program',
+          price: 85,
+          location: 'Gold Coast'
+        },
+        {
+          title: 'Photography Masterclass',
+          type: 'workshop',
+          date: '2025-10-12',
+          description: 'Learn advanced photography techniques',
+          price: 199,
+          location: 'Melbourne'
+        },
+        {
+          title: 'Comedy Night',
+          type: 'show',
+          date: '2025-11-25',
+          description: 'Stand-up comedy featuring top comedians',
+          price: 45,
+          location: 'Brisbane'
         }
       ];
 
@@ -76,6 +116,62 @@ describe('Events API', () => {
       const res = await chai.request(app).get('/api/events');
       expect(res).to.have.status(200);
       expect(res.body).to.be.an('array');
+    });
+  });
+
+  describe('Create registrations', () => {
+    it('register 50 customers', async function() {
+      this.timeout(30000); // Increase timeout to 30 seconds
+      const users = [];
+      
+      // Create 50 Customers
+      for (let i = 1; i <= 50; i++) {
+        users.push({
+          name: `Customer${i}`,
+          email: `customer${i}@example.com`,
+          password: 'password123',
+          role: 'Customer'
+        });
+      }
+
+      // Create each user
+      for (const user of users) {
+        const res = await chai.request(app).post('/api/users').send(user);
+        expect(res).to.have.status(201);
+        expect(res.body).to.have.property('name', user.name);
+        expect(res.body).to.have.property('role', user.role);
+      }
+
+      // Get all events
+      const eventsRes = await chai.request(app).get('/api/events');
+      expect(eventsRes).to.have.status(200);
+      const allEvents = eventsRes.body;
+      expect(allEvents).to.be.an('array');
+
+      // Create 50 registrations by randomly assigning events to customers
+      const registrations = [];
+      for (let customerId = 1; customerId <= 50; customerId++) {
+        // Randomly select an event
+        const randomEvent = allEvents[Math.floor(Math.random() * allEvents.length)];
+        
+        // Add event to customer
+        const res = await chai.request(app)
+          .post('/api/users/addEvent')
+          .send({
+            userId: customerId,
+            eventId: randomEvent.eventId
+          });
+        
+        expect(res).to.have.status(200);
+        expect(res.body).to.have.property('message', 'Event added to user\'s events');
+        registrations.push({
+          userId: customerId,
+          eventId: randomEvent.eventId
+        });
+      }
+
+      // Verify total number of registrations
+      expect(registrations.length).to.equal(50);
     });
   });
 });

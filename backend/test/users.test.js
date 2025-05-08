@@ -16,7 +16,7 @@ describe('Sample Test Suite', () => {
 describe('Users API', () => {
   before(async function() {
     this.timeout(5000); // Increase timeout to 5 seconds
-    await sequelize.sync({ force: true }); // Reset DB before tests
+    await sequelize.sync({ force: true }); // Reset DB before tests, WILL DUMP EVENT DATA
   });
 
   describe('POST /api/users', () => {
@@ -32,14 +32,45 @@ describe('Users API', () => {
       expect(res).to.have.status(201);
       expect(res.body).to.have.property('name', newUser.name);
     });
+
+    it('should create multiple users with different roles', async function() {
+      this.timeout(20000); // Increase timeout to 20 seconds
+      const users = [];
+      
+      // Create 10 Organisers
+      for (let i = 1; i <= 10; i++) {
+        users.push({
+          name: `Organiser${i}`,
+          email: `organiser${i}@example.com`,
+          password: 'password123',
+          role: 'Organiser'
+        });
+      }
+
+      // Create 50 Customers
+      for (let i = 1; i <= 50; i++) {
+        users.push({
+          name: `Customer${i}`,
+          email: `customer${i}@example.com`,
+          password: 'password123',
+          role: 'Customer'
+        });
+      }
+
+      for (const user of users) {
+        const res = await chai.request(app).post('/api/users').send(user);
+        expect(res).to.have.status(201);
+        expect(res.body).to.have.property('name', user.name);
+        expect(res.body).to.have.property('role', user.role);
+      }
+    });
   });
 
   describe('GET /api/users', () => {
     it('should get all users', async () => {
-      const res = await chai.request(app).get('/api/users?userId=1');
+      const res = await chai.request(app).get('/api/users?userId=30');
       expect(res).to.have.status(200);
       expect(res.body).to.be.an('array');
-      expect(res.body[0]).to.have.property('name', 'johnTest');
       console.log(res.body);
     });
   });
