@@ -16,7 +16,7 @@ describe('Sample Test Suite', () => {
 describe('Users API', () => {
   before(async function() {
     this.timeout(5000); // Increase timeout to 5 seconds
-    await sequelize.sync({ force: true }); // Reset DB before tests, WILL DUMP EVENT DATA
+    await sequelize.sync({ force: true }); // Reset DB before tests
   });
 
   describe('POST /api/users', () => {
