@@ -1,7 +1,7 @@
 import { Flex, Text, Button } from "@radix-ui/themes";
 import "@fontsource/instrument-sans";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import NavigationMenuDemo from "./components/NavBar/NavigationMenuDemo";
 import Navbar from "./components/NavBar/Navbar";
 import EventSearch from "./components/Homepage/EventSearch";
@@ -37,30 +37,57 @@ function AuthLayout({ children }) {
 
 // Home page component
 function Home() {
-const trendingEvents = [
-  { name: 'ZZ Top & Friends – Stuart Park', category: 'Music', isLabel: true, label: 'Almost Sold Out' },
-  { name: 'The Ten Tenors – 30th Anniversary Tour', category: 'Music' },
-  { name: 'Scenes from the Climate Era', category: 'Theatre', isLabel: true, label: 'Trending' },
-  { name: 'Wollongong Chilli Festival', category: 'Family' },
-  { name: 'Ride Wollongong – Festival of Cycling', category: 'Sport', isLabel: true, label: 'Trending' },
-  { name: 'Live Baby Live – INXS Tribute', category: 'Music' },
-  { name: 'Bernard Fanning & Paul Dempsey', category: 'Music', isLabel: true, label: 'Hot Pick' },
-];
+	const [events, setEvents] = useState([]);
+	const [formattedEvents, setFormattedEvents] = useState([]);
+	const [loading, setLoading] = useState(true);
 
-const topArtists = [
-  { name: 'ZZ Top', category: 'Music' },
-  { name: 'George Thorogood & The Destroyers', category: 'Music' },
-  { name: 'The Living End', category: 'Music' },
-  { name: 'The Ten Tenors', category: 'Classical' },
-  { name: 'Bernard Fanning', category: 'Folk Rock' },
-  { name: 'Paul Dempsey', category: 'Indie Rock' },
-  { name: 'Alpha Wolf', category: 'Metal' },
-];
+	useEffect(() => {
+		const fetchEvents = async () => {
+			try {
+				const apiEvents = await fetch('https://www.api.ticketexpert.me/api/events');
+				const data = await apiEvents.json();
+				const formatted = data.map(event => ({
+					name: event.title,
+					category: new Date(event.date).toLocaleString('en-US', {
+						day: 'numeric',
+						month: 'long', 
+						year: 'numeric',
+						hour: 'numeric',
+						minute: 'numeric'
+					}),
+					type: event.type
+				}));
+				setEvents(data);
+				setFormattedEvents(formatted);
+			} catch (error) {
+				console.error("Error fetching events:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchEvents();
+	}, []); // Empty dependency array
+
+	const topArtists = [
+		{ name: 'ZZ Top', category: 'Music' },
+		{ name: 'George Thorogood & The Destroyers', category: 'Music' },
+		{ name: 'The Living End', category: 'Music' },
+		{ name: 'The Ten Tenors', category: 'Classical' },
+		{ name: 'Bernard Fanning', category: 'Folk Rock' },
+		{ name: 'Paul Dempsey', category: 'Indie Rock' },
+		{ name: 'Alpha Wolf', category: 'Metal' },
+	];
+
 	return (
 		<>
 			<EventSearch />
-			<TrendingEvents title="Trending Events" type="events" data={trendingEvents} />
-			<TrendingEvents title="Top Artists/ Organiser" type="artists" data={topArtists} />
+			{!loading && (
+				<>
+					<TrendingEvents title="Trending Events" type="events" data={formattedEvents} />
+					<TrendingEvents title="Top Artists/ Organiser" type="artists" data={topArtists} />
+				</>
+			)}
 		</>
 	);
 }
@@ -85,25 +112,37 @@ function NotFound() {
 
 //TESTING - Backend check, remove later
 export default function MyApp() {
+	const [backendStatus, setBackendStatus] = useState(null);
+
 	useEffect(() => {
-		console.log('Checking backend status');
-		fetch('https://www.api.ticketexpert.me/status')
-			.then(response => {
-				console.log('Response received:', response.status);
+		const checkBackend = async () => {
+			try {
+				const response = await fetch('https://www.api.ticketexpert.me/status');
 				if (response.ok) {
-					alert('Backend is up!');
+					setBackendStatus('up');
 				} else if (response.status === 404) {
-					alert('Backend is not up! 404 error');
+					setBackendStatus('down-404');
+				} else {
+					setBackendStatus('down');
 				}
-				else {
-					console.error('Bad Response from the backend for soem reason:', response.status);
-					alert('Backend is not up!');
-				} 
-			})
-			.catch(error => {
+			} catch (error) {
 				console.error('Error checking backend:', error);
-			});
-	}, []);
+				setBackendStatus('error');
+			}
+		};
+
+		checkBackend();
+	}, []); // Empty dependency array
+
+	useEffect(() => {
+		if (backendStatus === 'up') {
+			alert('Backend is up!');
+		} else if (backendStatus === 'down-404') {
+			alert('Backend is not up! 404 error');
+		} else if (backendStatus === 'down') {
+			alert('Backend is not up!');
+		}
+	}, [backendStatus]); // Only show alert when backend status changes
 
 	return (
 		<Router>
