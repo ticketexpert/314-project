@@ -44,7 +44,19 @@ function Home() {
 	useEffect(() => {
 		const fetchEvents = async () => {
 			try {
-				const apiEvents = await fetch('https://www.api.ticketexpert.me/api/events');
+				const apiEvents = await fetch('https://www.api.ticketexpert.me/api/events', {
+					method: 'GET',
+					credentials: 'include',
+					headers: {
+						'Accept': 'application/json',
+						'Content-Type': 'application/json',
+					},
+				});
+				
+				if (!apiEvents.ok) {
+					throw new Error(`HTTP error! status: ${apiEvents.status}`);
+				}
+				
 				const data = await apiEvents.json();
 				const formatted = data.map(event => ({
 					name: event.title,
@@ -61,6 +73,7 @@ function Home() {
 				setFormattedEvents(formatted);
 			} catch (error) {
 				console.error("Error fetching events:", error);
+				alert(`Failed to load events: ${error.message}`);
 			} finally {
 				setLoading(false);
 			}
