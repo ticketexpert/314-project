@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Chip, Divider, Stack, IconButton, Card, CardContent } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import GroupWorkIcon from '@mui/icons-material/GroupWork';
 import ShareIcon from '@mui/icons-material/Share';
-import eventSamples from '../../data/eventSample';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import FacebookIcon from '@mui/icons-material/Facebook';
@@ -14,23 +13,71 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 
 const shareIcons = {
-  snapchat: <ShareIcon />,
-  discord: <ShareIcon />,
   instagram: <InstagramIcon sx={{ color: '#e1306c' }} />,
   whatsapp: <WhatsAppIcon sx={{ color: '#25d366' }} />,
-  messenger: <FacebookIcon sx={{ color: '#0084ff' }} />,
+  facebook: <FacebookIcon sx={{ color: '#0084ff' }} />,
 };
 
 export default function EventDetail() {
   const { id } = useParams();
-  const event = eventSamples.find(e => e.id === id);
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!event) {
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const response = await fetch(`https://api.ticketexpert.me/api/events/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch event');
+        }
+        const data = await response.json();
+        setEvent(data);
+      } catch (error) {
+        console.error('Error fetching event:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvent();
+  }, [id]);
+
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      return date.toLocaleDateString('en-AU', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
+  };
+
+  if (loading) {
     return (
-      <div style={{ padding: 40, textAlign: 'center' }}>
-        <h2>Event Not Found</h2>
-        <p>The event you are looking for does not exist.</p>
-      </div>
+      <Box sx={{ maxWidth: 1100, mx: 'auto', my: 4, px: { xs: 1, md: 3 }, textAlign: 'center' }}>
+        <Typography variant="h6">Loading event details...</Typography>
+      </Box>
+    );
+  }
+
+  if (error || !event) {
+    return (
+      <Box sx={{ maxWidth: 1100, mx: 'auto', my: 4, px: { xs: 1, md: 3 }, textAlign: 'center' }}>
+        <Typography variant="h6" color="error">Event Not Found</Typography>
+        <Typography variant="body1" color="text.secondary">The event you are looking for does not exist.</Typography>
+      </Box>
     );
   }
 
@@ -72,9 +119,9 @@ export default function EventDetail() {
         </Button>
         <Stack direction="row" alignItems="center" spacing={1}>
           <Typography variant="body2" color="text.secondary">Share with your friend</Typography>
-          {Object.entries(event.shareLinks).map(([key, url]) => (
-            <IconButton key={key} href={url} size="small" target="_blank" rel="noopener" sx={{ p: 0.5 }}>
-              {shareIcons[key] || <ShareIcon />}
+          {event.eventShareLinks?.map((link, index) => (
+            <IconButton key={index} href={link} size="small" target="_blank" rel="noopener" sx={{ p: 0.5 }}>
+              <ShareIcon />
             </IconButton>
           ))}
         </Stack>
@@ -97,24 +144,29 @@ export default function EventDetail() {
             <AccessTimeIcon sx={{ color: '#f59e42' }} />
             <Typography variant="subtitle1" fontWeight={600} color="#f59e42">Time and Location</Typography>
           </Stack>
-          <Typography variant="body1" mb={0.5}>{event.dateRange}</Typography>
-          <br/>
-          {event.venues.map((venue, idx) => (
-            <Typography key={idx} variant="body2" color="text.secondary">{venue}</Typography>
-          ))}
+          <Typography variant="body1" mb={0.5}>
+            {formatDate(event.fromDateTime)} - {formatDate(event.toDateTime)}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {event.venue}, {event.region}
+          </Typography>
 
           {/* Pricing */}
           <Stack direction="row" alignItems="center" spacing={1} mt={3} mb={1}>
             <AttachMoneyIcon sx={{ color: '#166534' }} />
             <Typography variant="subtitle1" fontWeight={600} color="#166534">Pricing</Typography>
           </Stack>
-          <Typography variant="body1" mb={0.5}><b>Music on the street:</b> {event.pricing.musicOnStreet}</Typography>
-          <Divider sx={{ my: 1 }} />
-          <Typography variant="body1" mb={0.5}><b>Weekend Pass:</b> {event.pricing.weekendPass}</Typography>
-          <Divider sx={{ my: 1 }} />
-          <Typography variant="body1" mb={0.5}><b>Day Pass:</b> {event.pricing.dayPass}</Typography>
-          <Divider sx={{ my: 1 }} />
-          <Typography variant="body2" color="text.secondary" mb={2}><b>Refund Policy:</b> {event.pricing.refundPolicy}</Typography>
+          {event.pricing.map((price, index) => (
+            <React.Fragment key={index}>
+              <Typography variant="body1" mb={0.5}>
+                <b>{price.type}:</b> ${price.price.toFixed(2)}
+              </Typography>
+              {index < event.pricing.length - 1 && <Divider sx={{ my: 1 }} />}
+            </React.Fragment>
+          ))}
+          <Typography variant="body2" color="text.secondary" mb={2}>
+            <b>Refund Policy:</b> {event.refundPolicy}
+          </Typography>
         </Box>
 
         {/* Organiser Card */}
@@ -125,10 +177,10 @@ export default function EventDetail() {
           </Stack>
           <Card sx={{ background: '#f8fafc', borderRadius: 4, boxShadow: '0 2px 8px rgba(22,101,52,0.08)' }}>
             <CardContent>
-              <Typography variant="subtitle1" fontWeight={700} mb={0.5}>{event.organiser.name}</Typography>
-              <Typography variant="body2" color="text.secondary" mb={2}>{event.organiser.description}</Typography>
+              <Typography variant="subtitle1" fontWeight={700} mb={0.5}>{event.organiser}</Typography>
+              <Typography variant="body2" color="text.secondary" mb={2}>{event.orgDescription}</Typography>
               <Stack direction="row" spacing={2}>
-                <Button variant="outlined" size="small" href={event.organiser.contact} sx={{ borderRadius: 99, fontWeight: 600, color: '#166534', borderColor: '#166534' }}>Contact</Button>
+                <Button variant="outlined" size="small" href={`mailto:${event.orgContact}`} sx={{ borderRadius: 99, fontWeight: 600, color: '#166534', borderColor: '#166534' }}>Contact</Button>
                 <Button variant="contained" size="small" sx={{ borderRadius: 99, fontWeight: 600, background: '#166534', color: 'white', '&:hover': { background: '#14532d' } }}>Follow</Button>
               </Stack>
             </CardContent>

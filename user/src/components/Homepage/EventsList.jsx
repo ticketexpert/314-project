@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Box, Typography, TextField, InputAdornment, MenuItem, Select, FormControl, InputLabel, Stack, Grid, Card, CardContent, Button, Chip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 
 const getUniqueCategories = (events) => [
   'All',
@@ -10,7 +10,7 @@ const getUniqueCategories = (events) => [
 
 const getUniqueLocations = (events) => [
   'All',
-  ...Array.from(new Set(events.map(e => e.venue)))
+  ...Array.from(new Set(events.map(e => e.region)))
 ];
 
 const sortOptions = [
@@ -19,22 +19,45 @@ const sortOptions = [
 ];
 
 export default function EventsList() {
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [location, setLocation] = useState('All');
+  const [date, setDate] = useState(null);
   const [sort, setSort] = useState('title');
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Handle URL parameters on component mount
+  useEffect(() => {
+    const locationParam = searchParams.get('location');
+    const categoryParam = searchParams.get('category');
+    const searchParam = searchParams.get('search');
+    const dateParam = searchParams.get('date');
+
+    if (locationParam) setLocation(locationParam);
+    if (categoryParam) setCategory(categoryParam);
+    if (searchParam) setSearch(searchParam);
+    if (dateParam) {
+      try {
+        const parsedDate = new Date(dateParam);
+        if (!isNaN(parsedDate.getTime())) {
+          setDate(parsedDate);
+        }
+      } catch (error) {
+        console.error('Error parsing date:', error);
+      }
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('https://www.api.ticketexpert.me/api/events');
-        const data = await response.json();
-        console.log('API Response:', data);
-        if (data.length > 0) {
-          console.log('First event structure:', data[0]);
+        const response = await fetch('https://api.ticketexpert.me/api/events');
+        if (!response.ok) {
+          throw new Error('Failed to fetch events');
         }
+        const data = await response.json();
         setEvents(data);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -46,26 +69,116 @@ export default function EventsList() {
     fetchEvents();
   }, []);
 
-  const categories = useMemo(() => {
-    console.log('Current events:', events);
-    return getUniqueCategories(events);
-  }, [events]);
+  const categories = useMemo(() => getUniqueCategories(events), [events]);
   const locations = useMemo(() => getUniqueLocations(events), [events]);
 
   const filteredEvents = useMemo(() => {
-    let filtered = events.filter(event =>
-      (category === 'All' || event.category === category) &&
-      (location === 'All' || event.region === location) &&
-      (event.title.toLowerCase().includes(search.toLowerCase()) ||
-        event.description.toLowerCase().includes(search.toLowerCase()))
-    );
+    let filtered = events.filter(event => {
+      // Category and location filtering
+      const categoryMatch = category === 'All' || event.category === category;
+      const locationMatch = location === 'All' || event.region === location;
+
+      // Date filtering
+      const dateMatch = !date || (() => {
+        const eventDate = new Date(event.fromDateTime);
+        const searchDate = new Date(date);
+        return eventDate.toDateString() === searchDate.toDateString();
+      })();
+
+      // Improved search matching with prefix priority
+      const searchTerms = search.toLowerCase().split(' ').filter(term => term.length > 0);
+      const searchMatch = searchTerms.length === 0 || searchTerms.every(term => {
+        // Check title
+        const titleWords = event.title.toLowerCase().split(' ');
+        const titleMatch = titleWords.some(word => word.startsWith(term) || term.startsWith(word));
+        
+        // Check description
+        const descriptionWords = event.description.toLowerCase().split(' ');
+        const descriptionMatch = descriptionWords.some(word => word.startsWith(term) || term.startsWith(word));
+        
+        // Check category
+        const categoryMatch = event.category.toLowerCase().startsWith(term) || term.startsWith(event.category.toLowerCase());
+        
+        // Check tags
+        const tagsMatch = event.tags?.some(tag => tag.toLowerCase().startsWith(term) || term.startsWith(tag.toLowerCase()));
+
+        return titleMatch || descriptionMatch || categoryMatch || tagsMatch;
+      });
+
+      return categoryMatch && locationMatch && dateMatch && searchMatch;
+    });
+
     if (sort === 'title') {
       filtered = filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sort === 'date') {
-      filtered = filtered.sort((a, b) => new Date(a.fromDateTime) - new Date(b.fromDateTime));
+      filtered = filtered.sort((a, b) => {
+        const dateA = new Date(a.fromDateTime);
+        const dateB = new Date(b.fromDateTime);
+        return dateA - dateB;
+      });
     }
     return filtered;
-  }, [search, category, location, sort, events]);
+  }, [search, category, location, date, sort, events]);
+
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      return date.toLocaleDateString('en-AU', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
+  };
+
+  const getLowestPrice = (pricing) => {
+    if (!pricing || pricing.length === 0) return 'N/A';
+    const prices = pricing.map(p => p.price).filter(price => price !== null && price !== undefined);
+    return prices.length > 0 ? Math.min(...prices) : 'N/A';
+  };
+
+  // Update URL when filters change
+  const updateURL = (newLocation, newCategory, newSearch, newDate) => {
+    const params = new URLSearchParams();
+    if (newLocation !== 'All') params.set('location', newLocation);
+    if (newCategory !== 'All') params.set('category', newCategory);
+    if (newSearch) params.set('search', newSearch);
+    if (newDate) {
+      // Format date as YYYY-MM-DD for cleaner URLs
+      const formattedDate = newDate.toISOString().split('T')[0];
+      params.set('date', formattedDate);
+    }
+    window.history.replaceState(null, '', `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`);
+  };
+
+  const handleLocationChange = (newLocation) => {
+    setLocation(newLocation);
+    updateURL(newLocation, category, search, date);
+  };
+
+  const handleCategoryChange = (newCategory) => {
+    setCategory(newCategory);
+    updateURL(location, newCategory, search, date);
+  };
+
+  const handleSearchChange = (newSearch) => {
+    setSearch(newSearch);
+    updateURL(location, category, newSearch, date);
+  };
+
+  const handleDateChange = (newDate) => {
+    setDate(newDate);
+    updateURL(location, category, search, newDate);
+  };
 
   if (loading) {
     return (
@@ -78,14 +191,14 @@ export default function EventsList() {
   return (
     <Box sx={{ width: '100vw', maxWidth: 1200, mx: 'auto', my: 4, px: { xs: 1, md: 3 }, pt: '100px' }}>
       <Typography variant="h4" fontWeight="bold" color="#9F1B32" mb={3}>
-        All Events
+        {location !== 'All' ? `Events in ${location}` : 'All Events'}
       </Typography>
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} mb={3}>
         <TextField
           variant="outlined"
           placeholder="Search events..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => handleSearchChange(e.target.value)}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -100,7 +213,7 @@ export default function EventsList() {
           <Select
             value={category}
             label="Category"
-            onChange={e => setCategory(e.target.value)}
+            onChange={e => handleCategoryChange(e.target.value)}
           >
             {categories.map(cat => (
               <MenuItem key={cat} value={cat}>{cat}</MenuItem>
@@ -112,7 +225,7 @@ export default function EventsList() {
           <Select
             value={location}
             label="Location"
-            onChange={e => setLocation(e.target.value)}
+            onChange={e => handleLocationChange(e.target.value)}
           >
             {locations.map(loc => (
               <MenuItem key={loc} value={loc}>{loc}</MenuItem>
@@ -134,16 +247,25 @@ export default function EventsList() {
       </Stack>
       <Grid container spacing={3}>
         {filteredEvents.length === 0 ? (
-          <Grid xs={12}>
+          <Grid item xs={12}>
             <Card sx={{ p: 4, textAlign: 'center' }}>
               <CardContent>
                 <Typography variant="h6">No events found.</Typography>
+                {location !== 'All' && (
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleLocationChange('All')}
+                    sx={{ mt: 2 }}
+                  >
+                    View All Events
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </Grid>
         ) : (
           filteredEvents.map(event => (
-            <Grid xs={12} key={event.eventId}>
+            <Grid item xs={12} key={event.eventId}>
               <Card sx={{width: { xs: '100%', sm: '80vw' }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, borderRadius: 4, boxShadow: '0 2px 8px rgba(22,101,52,0.08)', height: { sm: 180, xs: 'auto' } }}>
                 <Box
                   component="img"
@@ -154,9 +276,9 @@ export default function EventsList() {
                 <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 2 }}>
                   <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
                     <Chip label={event.category.toUpperCase()} color="success" size="small" sx={{ bgcolor: '#e6f4ea', color: '#166534', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
-                    <Chip label={new Date(event.fromDateTime).toLocaleDateString()} color="primary" size="small" sx={{ bgcolor: '#e0e7ff', color: '#034AA6', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
-                    <Chip label={`Ticket from $${event.pricing?.[0]?.price || 'N/A'}`} size="small" sx={{ bgcolor: '#fbe9eb', color: '#9F1B32', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
-                    <Chip label={event.venue} size="small" sx={{ bgcolor: '#f3e8ff', color: '#6b21a8', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={formatDate(event.fromDateTime)} color="primary" size="small" sx={{ bgcolor: '#e0e7ff', color: '#034AA6', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={`Ticket from $${getLowestPrice(event.pricing)}`} size="small" sx={{ bgcolor: '#fbe9eb', color: '#9F1B32', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={event.region} size="small" sx={{ bgcolor: '#f3e8ff', color: '#6b21a8', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
                   </Stack>
                   <Typography variant="h6" fontWeight="bold" sx={{ whiteSpace: 'normal', wordBreak: 'break-word', mb: 1 }}>
                     {event.title}

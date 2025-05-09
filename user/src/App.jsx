@@ -13,7 +13,8 @@ import EnterPlace from "./components/Auth/EnterPlace";
 import AccountSettings from "./components/AccountSetting/AccountSettings";
 import EventDetail from "./components/Homepage/EventDetail";
 import EventsList from "./components/Homepage/EventsList";
-
+import CategoriesList from "./components/Homepage/CategoriesList";
+import LocationsList from "./components/Homepage/LocationsList";
 // Layout component to wrap pages with common elements
 function Layout({ children }) {
 	return (
@@ -43,86 +44,84 @@ function Home() {
 	useEffect(() => {
 		const fetchEvents = async () => {
 			try {
-				const apiEvents = await fetch('https://www.api.ticketexpert.me/api/events');
-				
-				if (!apiEvents.ok) {
-					throw new Error(`HTTP error! status: ${apiEvents.status}`);
+				const response = await fetch('https://api.ticketexpert.me/api/events');
+				if (!response.ok) {
+					throw new Error('Failed to fetch events');
 				}
-				
-				const data = await apiEvents.json();
+				const data = await response.json();
+
+				// Format events for EventCard component
 				const formatted = data.map(event => ({
 					name: event.title,
-					category: new Date(event.fromDateTime).toLocaleString('en-AU', {
-						day: 'numeric',
-						month: 'long', 
-						year: 'numeric',
-						hour: 'numeric',
-						minute: 'numeric',
-						hour12: true
-					}),
-					type: event.type
+					category: event.category,
+					type: 'events',
+					image: event.image,
+					description: event.description,
+					fromDateTime: event.fromDateTime,
+					toDateTime: event.toDateTime,
+					venue: event.venue,
+					region: event.region,
+					pricing: event.pricing,
+					tags: event.tags
 				}));
 
-				const cityToState = {
-					'Sydney': 'New South Wales',
-					'Melbourne': 'Victoria',
-					'Brisbane': 'Queensland',
-					'Perth': 'Western Australia',
-					'Adelaide': 'South Australia',
-					'Hobart': 'Tasmania',
-					'Darwin': 'Northern Territory',
-					'Canberra': 'Australian Capital Territory',
-					'Gold Coast': 'Queensland',
-					'Newcastle': 'New South Wales',
-					'Wollongong': 'New South Wales',
-					'Geelong': 'Victoria',
-					'Townsville': 'Queensland',
-					'Cairns': 'Queensland',
-					'Toowoomba': 'Queensland',
-					'Ballarat': 'Victoria',
-					'Bendigo': 'Victoria',
-					'Albury': 'New South Wales',
-					'Maitland': 'New South Wales',
-					'Mackay': 'Queensland',
-					'Sunshine Coast': 'Queensland',
-					'Newman': 'Western Australia',
-					'Port Macquarie': 'New South Wales',
-					'Tamworth': 'New South Wales',
-					'Wagga Wagga': 'New South Wales',
-				};
+				// Get unique locations with event counts
+				const locationMap = new Map();
+				data.forEach(event => {
+					if (event.region) {
+						const count = locationMap.get(event.region) || 0;
+						locationMap.set(event.region, count + 1);
+					}
+				});
 
-				const uniqueLocations = Array.from(new Set(data.map(event => event.location)))
-					.map(location => ({
-						name: location,
-						location: cityToState[location],
+				// Format locations for EventCard component
+				const locations = Array.from(locationMap.entries())
+					.map(([region, count]) => ({
+						name: region,
+						category: `${count} Events`,
+						type: 'artists',
+						isLabel: true,
+						label: region,
+						image: data.find(e => e.region === region)?.image || ''
 					}))
+					.sort((a, b) => parseInt(b.category) - parseInt(a.category))
 					.slice(0, 7);
 
 				setFormattedEvents(formatted);
-				setTopLocations(uniqueLocations);
+				setTopLocations(locations);
 			} catch (error) {
 				console.error("Error fetching events:", error);
-				alert(`Failed to load events: ${error.message}`);
 			} finally {
 				setLoading(false);
 			}
 		};
 
 		fetchEvents();
-	}, []); // Empty dependency array
+	}, []);
 
 	return (
 		<>
 			<EventSearch />
 			{!loading && (
 				<>
-					<TrendingEvents title="Trending Events" subtitle="Don't miss out on these popular events happening soon!" type="events" data={formattedEvents} />
-					<TrendingEvents title="Popular Places" subtitle="Check out these popular places to visit!" type="artists" data={topLocations} />
+					<TrendingEvents 
+						title="Trending Events" 
+						subtitle="Don't miss out on these popular events happening soon!" 
+						type="events" 
+						data={formattedEvents} 
+					/>
+					<TrendingEvents 
+						title="Popular Places" 
+						subtitle="Check out these popular places to visit!" 
+						type="artists" 
+						data={topLocations} 
+					/>
 				</>
 			)}
 		</>
 	);
 }
+
 function Events() {
 	return <Text>Events Page</Text>;
 }
@@ -230,6 +229,16 @@ export default function MyApp() {
 				<Route path="/event/:id" element={
 					<Layout>
 						<EventDetail />
+					</Layout>
+				} />
+				<Route path="/categories" element={
+					<Layout>
+						<CategoriesList />
+					</Layout>
+				} />
+				<Route path="/locations" element={
+					<Layout>
+						<LocationsList />
 					</Layout>
 				} />
 			</Routes>
