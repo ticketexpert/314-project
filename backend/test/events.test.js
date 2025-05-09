@@ -34,9 +34,9 @@ describe('Events API', () => {
           region: 'Sydney',
           venue: 'Sydney Convention Centre',
           pricing: [
-            { type: 'Early Bird', price: 299.99 },
-            { type: 'Regular', price: 399.99 },
-            { type: 'VIP', price: 599.99 }
+            { type: 'Early Bird', price: 299.99, numTicketsAvailable: 100 },
+            { type: 'Regular', price: 399.99, numTicketsAvailable: 200 },
+            { type: 'VIP', price: 599.99, numTicketsAvailable: 50 }
           ],
           refundPolicy: 'Full refund available up to 30 days before the event',
           organiser: 'Sydney Tech Events',
@@ -54,8 +54,8 @@ describe('Events API', () => {
           region: 'Melbourne',
           venue: 'Melbourne Park',
           pricing: [
-            { type: 'Single Day', price: 150 },
-            { type: 'Weekend Pass', price: 350 }
+            { type: 'Single Day', price: 150, numTicketsAvailable: 500 },
+            { type: 'Weekend Pass', price: 350, numTicketsAvailable: 300 }
           ],
           refundPolicy: 'No refunds available for festival tickets',
           organiser: 'Melbourne Music Events',
@@ -73,8 +73,8 @@ describe('Events API', () => {
           region: 'Brisbane',
           venue: 'Brisbane Business Centre',
           pricing: [
-            { type: 'Standard', price: 75 },
-            { type: 'Premium', price: 150 }
+            { type: 'Standard', price: 75, numTicketsAvailable: 100 },
+            { type: 'Premium', price: 150, numTicketsAvailable: 50 }
           ],
           refundPolicy: '50% refund available up to 7 days before the event',
           organiser: 'Business Growth Australia',
@@ -92,9 +92,9 @@ describe('Events API', () => {
           region: 'Perth',
           venue: 'Perth Art Gallery',
           pricing: [
-            { type: 'Adult', price: 25 },
-            { type: 'Student', price: 15 },
-            { type: 'Family', price: 60 }
+            { type: 'Adult', price: 25, numTicketsAvailable: 200 },
+            { type: 'Student', price: 15, numTicketsAvailable: 150 },
+            { type: 'Family', price: 60, numTicketsAvailable: 100 }
           ],
           refundPolicy: 'Full refund available up to 24 hours before the event',
           organiser: 'Perth Arts Council',
@@ -112,9 +112,9 @@ describe('Events API', () => {
           region: 'Adelaide',
           venue: 'Adelaide Showgrounds',
           pricing: [
-            { type: 'Tasting Pass', price: 120 },
-            { type: 'Masterclass Pass', price: 250 },
-            { type: 'VIP Experience', price: 500 }
+            { type: 'Tasting Pass', price: 120, numTicketsAvailable: 300 },
+            { type: 'Masterclass Pass', price: 250, numTicketsAvailable: 100 },
+            { type: 'VIP Experience', price: 500, numTicketsAvailable: 50 }
           ],
           refundPolicy: 'Full refund available up to 14 days before the event',
           organiser: 'South Australian Food & Wine Association',
@@ -132,8 +132,8 @@ describe('Events API', () => {
           region: 'Sydney',
           venue: 'Sydney Startup Hub',
           pricing: [
-            { type: 'General Admission', price: 50 },
-            { type: 'Investor Pass', price: 200 }
+            { type: 'General Admission', price: 50, numTicketsAvailable: 200 },
+            { type: 'Investor Pass', price: 200, numTicketsAvailable: 50 }
           ],
           refundPolicy: 'No refunds available for pitch night tickets',
           organiser: 'Sydney Startup Network',
@@ -151,8 +151,8 @@ describe('Events API', () => {
           region: 'Gold Coast',
           venue: 'Gold Coast Sports Centre',
           pricing: [
-            { type: 'Single Day', price: 85 },
-            { type: 'Full Program', price: 200 }
+            { type: 'Single Day', price: 85, numTicketsAvailable: 100 },
+            { type: 'Full Program', price: 200, numTicketsAvailable: 50 }
           ],
           refundPolicy: 'Full refund available up to 48 hours before the event',
           organiser: 'Gold Coast Fitness Academy',
@@ -170,9 +170,9 @@ describe('Events API', () => {
           region: 'Melbourne',
           venue: 'Melbourne Arts Centre',
           pricing: [
-            { type: 'Basic', price: 199 },
-            { type: 'Advanced', price: 299 },
-            { type: 'Equipment Included', price: 399 }
+            { type: 'Basic', price: 199, numTicketsAvailable: 50 },
+            { type: 'Advanced', price: 299, numTicketsAvailable: 30 },
+            { type: 'Equipment Included', price: 399, numTicketsAvailable: 20 }
           ],
           refundPolicy: 'Full refund available up to 7 days before the event',
           organiser: 'Melbourne Photography Institute',
@@ -190,8 +190,8 @@ describe('Events API', () => {
           region: 'Brisbane',
           venue: 'Brisbane Comedy Club',
           pricing: [
-            { type: 'General Admission', price: 45 },
-            { type: 'VIP Table', price: 150 }
+            { type: 'General Admission', price: 45, numTicketsAvailable: 150 },
+            { type: 'VIP Table', price: 150, numTicketsAvailable: 20 }
           ],
           refundPolicy: 'Full refund available up to 24 hours before the show',
           organiser: 'Brisbane Comedy Collective',
