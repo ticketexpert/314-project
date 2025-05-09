@@ -40,6 +40,7 @@ function Home() {
 	const [events, setEvents] = useState([]);
 	const [formattedEvents, setFormattedEvents] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [topLocations, setTopLocations] = useState([]);
 
 	useEffect(() => {
 		const fetchEvents = async () => {
@@ -62,8 +63,45 @@ function Home() {
 					}),
 					type: event.type
 				}));
+
+				const cityToState = {
+					'Sydney': 'New South Wales',
+					'Melbourne': 'Victoria',
+					'Brisbane': 'Queensland',
+					'Perth': 'Western Australia',
+					'Adelaide': 'South Australia',
+					'Hobart': 'Tasmania',
+					'Darwin': 'Northern Territory',
+					'Canberra': 'Australian Capital Territory',
+					'Gold Coast': 'Queensland',
+					'Newcastle': 'New South Wales',
+					'Wollongong': 'New South Wales',
+					'Geelong': 'Victoria',
+					'Townsville': 'Queensland',
+					'Cairns': 'Queensland',
+					'Toowoomba': 'Queensland',
+					'Ballarat': 'Victoria',
+					'Bendigo': 'Victoria',
+					'Albury': 'New South Wales',
+					'Maitland': 'New South Wales',
+					'Mackay': 'Queensland',
+					'Sunshine Coast': 'Queensland',
+					'Newman': 'Western Australia',
+					'Port Macquarie': 'New South Wales',
+					'Tamworth': 'New South Wales',
+					'Wagga Wagga': 'New South Wales',
+				};
+
+				const uniqueLocations = Array.from(new Set(data.map(event => event.location)))
+					.map(location => ({
+						name: location,
+						location: cityToState[location],
+					}))
+					.slice(0, 7);
+
 				setEvents(data);
 				setFormattedEvents(formatted);
+				setTopLocations(uniqueLocations);
 			} catch (error) {
 				console.error("Error fetching events:", error);
 				alert(`Failed to load events: ${error.message}`);
@@ -75,30 +113,18 @@ function Home() {
 		fetchEvents();
 	}, []); // Empty dependency array
 
-	const topArtists = [
-		{ name: 'ZZ Top', category: 'Music' },
-		{ name: 'George Thorogood & The Destroyers', category: 'Music' },
-		{ name: 'The Living End', category: 'Music' },
-		{ name: 'The Ten Tenors', category: 'Classical' },
-		{ name: 'Bernard Fanning', category: 'Folk Rock' },
-		{ name: 'Paul Dempsey', category: 'Indie Rock' },
-		{ name: 'Alpha Wolf', category: 'Metal' },
-	];
-
 	return (
 		<>
 			<EventSearch />
 			{!loading && (
 				<>
-					<TrendingEvents title="Trending Events" type="events" data={formattedEvents} />
-					<TrendingEvents title="Top Artists/ Organiser" type="artists" data={topArtists} />
+					<TrendingEvents title="Trending Events" subtitle="Don't miss out on these popular events happening soon!" type="events" data={formattedEvents} />
+					<TrendingEvents title="Popular Places" subtitle="Check out these popular places to visit!" type="artists" data={topLocations} />
 				</>
 			)}
 		</>
 	);
 }
-
-// Placeholder components for other pages
 function Events() {
 	return <Text>Events Page</Text>;
 }
