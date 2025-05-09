@@ -19,5 +19,5 @@ app.use('/api/users', userRoutes);
 app.use('/status', statusRoutes);
 
 sequelize.sync({ alter: true }).then(() => {
-  app.listen(3000, '0.0.0.0', () => console.log('Server running on http://0.0.0.0:3000'));
+  app.listen(3020, '0.0.0.0', () => console.log('Server running on http://0.0.0.0:3020'));
 });
