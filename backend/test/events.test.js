@@ -29,7 +29,9 @@ describe('Events API', () => {
           tags: ['technology', 'networking', 'professional'],
           image: 'https://example.com/tech-conf.jpg',
           description: 'Annual technology conference featuring industry leaders',
-          dateRange: '2025-05-01 to 2025-05-03',
+          fromDateTime: '2025-05-01T09:00:00Z',
+          toDateTime: '2025-05-03T17:00:00Z',
+          region: 'Sydney',
           venue: 'Sydney Convention Centre',
           pricing: [
             { type: 'Early Bird', price: 299.99 },
@@ -47,7 +49,9 @@ describe('Events API', () => {
           tags: ['music', 'outdoor', 'entertainment'],
           image: 'https://example.com/music-fest.jpg',
           description: 'Three day outdoor music festival',
-          dateRange: '2025-01-15 to 2025-01-17',
+          fromDateTime: '2025-01-15T12:00:00Z',
+          toDateTime: '2025-01-17T23:00:00Z',
+          region: 'Melbourne',
           venue: 'Melbourne Park',
           pricing: [
             { type: 'Single Day', price: 150 },
@@ -64,7 +68,9 @@ describe('Events API', () => {
           tags: ['business', 'professional', 'networking'],
           image: 'https://example.com/workshop.jpg',
           description: 'Professional development and networking event',
-          dateRange: '2025-03-20',
+          fromDateTime: '2025-03-20T09:00:00Z',
+          toDateTime: '2025-03-20T17:00:00Z',
+          region: 'Brisbane',
           venue: 'Brisbane Business Centre',
           pricing: [
             { type: 'Standard', price: 75 },
@@ -81,7 +87,9 @@ describe('Events API', () => {
           tags: ['art', 'culture', 'visual-arts'],
           image: 'https://example.com/art-exhibition.jpg',
           description: 'Contemporary art showcase featuring local artists',
-          dateRange: '2025-09-10 to 2025-09-30',
+          fromDateTime: '2025-09-10T10:00:00Z',
+          toDateTime: '2025-09-30T18:00:00Z',
+          region: 'Perth',
           venue: 'Perth Art Gallery',
           pricing: [
             { type: 'Adult', price: 25 },
@@ -99,7 +107,9 @@ describe('Events API', () => {
           tags: ['food', 'wine', 'culinary', 'tasting'],
           image: 'https://example.com/food-wine-fest.jpg',
           description: 'Celebration of local cuisine and wines',
-          dateRange: '2025-07-15 to 2025-07-17',
+          fromDateTime: '2025-07-15T11:00:00Z',
+          toDateTime: '2025-07-17T22:00:00Z',
+          region: 'Adelaide',
           venue: 'Adelaide Showgrounds',
           pricing: [
             { type: 'Tasting Pass', price: 120 },
@@ -117,7 +127,9 @@ describe('Events API', () => {
           tags: ['startup', 'entrepreneurship', 'pitching', 'networking'],
           image: 'https://example.com/startup-pitch.jpg',
           description: 'Entrepreneurs pitch their innovative ideas',
-          dateRange: '2025-06-20',
+          fromDateTime: '2025-06-20T18:00:00Z',
+          toDateTime: '2025-06-20T22:00:00Z',
+          region: 'Sydney',
           venue: 'Sydney Startup Hub',
           pricing: [
             { type: 'General Admission', price: 50 },
@@ -134,7 +146,9 @@ describe('Events API', () => {
           tags: ['fitness', 'health', 'training', 'wellness'],
           image: 'https://example.com/fitness-bootcamp.jpg',
           description: 'Intensive fitness training program',
-          dateRange: '2025-08-05 to 2025-08-07',
+          fromDateTime: '2025-08-05T06:00:00Z',
+          toDateTime: '2025-08-07T18:00:00Z',
+          region: 'Gold Coast',
           venue: 'Gold Coast Sports Centre',
           pricing: [
             { type: 'Single Day', price: 85 },
@@ -151,7 +165,9 @@ describe('Events API', () => {
           tags: ['photography', 'art', 'skills', 'professional'],
           image: 'https://example.com/photo-masterclass.jpg',
           description: 'Learn advanced photography techniques',
-          dateRange: '2025-10-12 to 2025-10-13',
+          fromDateTime: '2025-10-12T09:00:00Z',
+          toDateTime: '2025-10-13T17:00:00Z',
+          region: 'Melbourne',
           venue: 'Melbourne Arts Centre',
           pricing: [
             { type: 'Basic', price: 199 },
@@ -169,7 +185,9 @@ describe('Events API', () => {
           tags: ['comedy', 'entertainment', 'nightlife'],
           image: 'https://example.com/comedy-night.jpg',
           description: 'Stand-up comedy featuring top comedians',
-          dateRange: '2025-11-25',
+          fromDateTime: '2025-11-25T19:00:00Z',
+          toDateTime: '2025-11-25T23:00:00Z',
+          region: 'Brisbane',
           venue: 'Brisbane Comedy Club',
           pricing: [
             { type: 'General Admission', price: 45 },
@@ -190,7 +208,9 @@ describe('Events API', () => {
         expect(res.body).to.have.property('category', event.category);
         expect(res.body).to.have.property('tags').that.is.an('array');
         expect(res.body).to.have.property('image', event.image);
-        expect(res.body).to.have.property('dateRange', event.dateRange);
+        expect(res.body).to.have.property('fromDateTime');
+        expect(res.body).to.have.property('toDateTime');
+        expect(res.body).to.have.property('region', event.region);
         expect(res.body).to.have.property('venue', event.venue);
         expect(res.body).to.have.property('pricing').that.is.an('array');
         expect(res.body).to.have.property('refundPolicy', event.refundPolicy);

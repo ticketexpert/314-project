@@ -27,7 +27,15 @@ const Event = sequelize.define('Event', {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-  dateRange: {
+  fromDateTime: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  toDateTime: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  region: {
     type: DataTypes.STRING,
     allowNull: false,
   },

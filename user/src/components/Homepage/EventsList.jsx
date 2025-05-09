@@ -51,11 +51,11 @@ export default function EventsList() {
     return getUniqueCategories(events);
   }, [events]);
   const locations = useMemo(() => getUniqueLocations(events), [events]);
-
+``
   const filteredEvents = useMemo(() => {
     let filtered = events.filter(event =>
       (category === 'All' || event.category === category) &&
-      (location === 'All' || event.venue === location) &&
+      (location === 'All' || event.region === location) &&
       (event.title.toLowerCase().includes(search.toLowerCase()) ||
         event.description.toLowerCase().includes(search.toLowerCase()))
     );
