@@ -11,34 +11,57 @@ const Event = sequelize.define('Event', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  type: {
+  category: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  date: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    get() {
-      const rawValue = this.getDataValue('date');
-      return rawValue ? rawValue.toISOString() : null;
-    },
-    set(value) {
-      this.setDataValue('date', new Date(value));
-    }
+  tags: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: [],
   },
-  location: {
+  image: {
     type: DataTypes.STRING,
-    allowNull: false,
-  },
-  price: {
-    type: DataTypes.FLOAT,
     allowNull: false,
   },
   description: {
     type: DataTypes.TEXT,
+    allowNull: false,
   },
-  createdBy: {
+  dateRange: {
     type: DataTypes.STRING,
+    allowNull: false,
+  },
+  venue: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  pricing: {
+    type: DataTypes.ARRAY(DataTypes.JSON),
+    defaultValue: [],
+  },
+  refundPolicy: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  organiser: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  orgDescription: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  orgContact: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  orgFollow: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: [],
+  },
+  eventShareLinks: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: [],
   }
 });
 

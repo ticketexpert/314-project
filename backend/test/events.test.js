@@ -25,75 +25,160 @@ describe('Events API', () => {
       const events = [
         {
           title: 'Tech Conference 2025',
-          type: 'conference',
-          date: '2025-05-01',
+          category: 'conference',
+          tags: ['technology', 'networking', 'professional'],
+          image: 'https://example.com/tech-conf.jpg',
           description: 'Annual technology conference featuring industry leaders',
-          price: 299.99,
-          location: 'Sydney'
+          dateRange: '2025-05-01 to 2025-05-03',
+          venue: 'Sydney Convention Centre',
+          pricing: [
+            { type: 'Early Bird', price: 299.99 },
+            { type: 'Regular', price: 399.99 },
+            { type: 'VIP', price: 599.99 }
+          ],
+          refundPolicy: 'Full refund available up to 30 days before the event',
+          organiser: 'Sydney Tech Events',
+          orgDescription: 'Leading technology event organizer in Sydney',
+          orgContact: 'info@sydneytechevents.com'
         },
         {
           title: 'Summer Music Festival',
-          type: 'festival', 
-          date: '2025-01-15',
+          category: 'festival',
+          tags: ['music', 'outdoor', 'entertainment'],
+          image: 'https://example.com/music-fest.jpg',
           description: 'Three day outdoor music festival',
-          price: 150,
-          location: 'Melbourne'
+          dateRange: '2025-01-15 to 2025-01-17',
+          venue: 'Melbourne Park',
+          pricing: [
+            { type: 'Single Day', price: 150 },
+            { type: 'Weekend Pass', price: 350 }
+          ],
+          refundPolicy: 'No refunds available for festival tickets',
+          organiser: 'Melbourne Music Events',
+          orgDescription: 'Leading organizer of music festivals in Australia',
+          orgContact: 'contact@melbournemusic.com'
         },
         {
           title: 'Business Workshop',
-          type: 'workshop',
-          date: '2025-03-20',
+          category: 'workshop',
+          tags: ['business', 'professional', 'networking'],
+          image: 'https://example.com/workshop.jpg',
           description: 'Professional development and networking event',
-          price: 75,
-          location: 'Brisbane'
+          dateRange: '2025-03-20',
+          venue: 'Brisbane Business Centre',
+          pricing: [
+            { type: 'Standard', price: 75 },
+            { type: 'Premium', price: 150 }
+          ],
+          refundPolicy: '50% refund available up to 7 days before the event',
+          organiser: 'Business Growth Australia',
+          orgDescription: 'Professional development and business networking organization',
+          orgContact: 'info@businessgrowth.com.au'
         },
         {
           title: 'Art Exhibition',
-          type: 'exhibition',
-          date: '2025-09-10',
+          category: 'exhibition',
+          tags: ['art', 'culture', 'visual-arts'],
+          image: 'https://example.com/art-exhibition.jpg',
           description: 'Contemporary art showcase featuring local artists',
-          price: 25,
-          location: 'Perth'
+          dateRange: '2025-09-10 to 2025-09-30',
+          venue: 'Perth Art Gallery',
+          pricing: [
+            { type: 'Adult', price: 25 },
+            { type: 'Student', price: 15 },
+            { type: 'Family', price: 60 }
+          ],
+          refundPolicy: 'Full refund available up to 24 hours before the event',
+          organiser: 'Perth Arts Council',
+          orgDescription: 'Promoting local artists and cultural events in Perth',
+          orgContact: 'exhibitions@pertharts.org'
         },
         {
           title: 'Food & Wine Festival',
-          type: 'festival',
-          date: '2025-07-15',
+          category: 'festival',
+          tags: ['food', 'wine', 'culinary', 'tasting'],
+          image: 'https://example.com/food-wine-fest.jpg',
           description: 'Celebration of local cuisine and wines',
-          price: 120,
-          location: 'Adelaide'
+          dateRange: '2025-07-15 to 2025-07-17',
+          venue: 'Adelaide Showgrounds',
+          pricing: [
+            { type: 'Tasting Pass', price: 120 },
+            { type: 'Masterclass Pass', price: 250 },
+            { type: 'VIP Experience', price: 500 }
+          ],
+          refundPolicy: 'Full refund available up to 14 days before the event',
+          organiser: 'South Australian Food & Wine Association',
+          orgDescription: 'Celebrating South Australia\'s finest food and wine producers',
+          orgContact: 'events@safoodwine.org'
         },
         {
           title: 'Startup Pitch Night',
-          type: 'conference',
-          date: '2025-06-20',
+          category: 'conference',
+          tags: ['startup', 'entrepreneurship', 'pitching', 'networking'],
+          image: 'https://example.com/startup-pitch.jpg',
           description: 'Entrepreneurs pitch their innovative ideas',
-          price: 50,
-          location: 'Sydney'
+          dateRange: '2025-06-20',
+          venue: 'Sydney Startup Hub',
+          pricing: [
+            { type: 'General Admission', price: 50 },
+            { type: 'Investor Pass', price: 200 }
+          ],
+          refundPolicy: 'No refunds available for pitch night tickets',
+          organiser: 'Sydney Startup Network',
+          orgDescription: 'Connecting entrepreneurs with investors and mentors',
+          orgContact: 'pitch@sydneystartup.net'
         },
         {
           title: 'Fitness Bootcamp',
-          type: 'workshop',
-          date: '2025-08-05',
+          category: 'workshop',
+          tags: ['fitness', 'health', 'training', 'wellness'],
+          image: 'https://example.com/fitness-bootcamp.jpg',
           description: 'Intensive fitness training program',
-          price: 85,
-          location: 'Gold Coast'
+          dateRange: '2025-08-05 to 2025-08-07',
+          venue: 'Gold Coast Sports Centre',
+          pricing: [
+            { type: 'Single Day', price: 85 },
+            { type: 'Full Program', price: 200 }
+          ],
+          refundPolicy: 'Full refund available up to 48 hours before the event',
+          organiser: 'Gold Coast Fitness Academy',
+          orgDescription: 'Professional fitness training and wellness programs',
+          orgContact: 'bootcamp@gcfitness.com'
         },
         {
           title: 'Photography Masterclass',
-          type: 'workshop',
-          date: '2025-10-12',
+          category: 'workshop',
+          tags: ['photography', 'art', 'skills', 'professional'],
+          image: 'https://example.com/photo-masterclass.jpg',
           description: 'Learn advanced photography techniques',
-          price: 199,
-          location: 'Melbourne'
+          dateRange: '2025-10-12 to 2025-10-13',
+          venue: 'Melbourne Arts Centre',
+          pricing: [
+            { type: 'Basic', price: 199 },
+            { type: 'Advanced', price: 299 },
+            { type: 'Equipment Included', price: 399 }
+          ],
+          refundPolicy: 'Full refund available up to 7 days before the event',
+          organiser: 'Melbourne Photography Institute',
+          orgDescription: 'Professional photography education and training',
+          orgContact: 'masterclass@melbournephoto.edu'
         },
         {
           title: 'Comedy Night',
-          type: 'show',
-          date: '2025-11-25',
+          category: 'show',
+          tags: ['comedy', 'entertainment', 'nightlife'],
+          image: 'https://example.com/comedy-night.jpg',
           description: 'Stand-up comedy featuring top comedians',
-          price: 45,
-          location: 'Brisbane'
+          dateRange: '2025-11-25',
+          venue: 'Brisbane Comedy Club',
+          pricing: [
+            { type: 'General Admission', price: 45 },
+            { type: 'VIP Table', price: 150 }
+          ],
+          refundPolicy: 'Full refund available up to 24 hours before the show',
+          organiser: 'Brisbane Comedy Collective',
+          orgDescription: 'Showcasing the best local and international comedy talent',
+          orgContact: 'shows@brisbanecomedy.com'
         }
       ];
 
@@ -102,11 +187,16 @@ describe('Events API', () => {
         const res = await chai.request(app).post('/api/events').send(event);
         expect(res).to.have.status(201);
         expect(res.body).to.have.property('title', event.title);
-        expect(res.body).to.have.property('type', event.type);
-        expect(res.body).to.have.property('date').that.is.a('string');
-        expect(res.body).to.have.property('location', event.location);
-        expect(res.body).to.have.property('price', event.price);
-        expect(res.body).to.have.property('description', event.description);
+        expect(res.body).to.have.property('category', event.category);
+        expect(res.body).to.have.property('tags').that.is.an('array');
+        expect(res.body).to.have.property('image', event.image);
+        expect(res.body).to.have.property('dateRange', event.dateRange);
+        expect(res.body).to.have.property('venue', event.venue);
+        expect(res.body).to.have.property('pricing').that.is.an('array');
+        expect(res.body).to.have.property('refundPolicy', event.refundPolicy);
+        expect(res.body).to.have.property('organiser', event.organiser);
+        expect(res.body).to.have.property('orgDescription', event.orgDescription);
+        expect(res.body).to.have.property('orgContact', event.orgContact);
       }
     });
   });
@@ -130,7 +220,8 @@ describe('Events API', () => {
           name: `Customer${i}`,
           email: `customer${i}@example.com`,
           password: 'password123',
-          role: 'Customer'
+          role: 'Customer',
+          events: []
         });
       }
 
@@ -140,6 +231,7 @@ describe('Events API', () => {
         expect(res).to.have.status(201);
         expect(res.body).to.have.property('name', user.name);
         expect(res.body).to.have.property('role', user.role);
+        expect(res.body).to.have.property('events').that.is.an('array');
       }
 
       // Get all events
