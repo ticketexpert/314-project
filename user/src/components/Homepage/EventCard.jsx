@@ -40,7 +40,7 @@ export default function EventCard({ name, category, type = 'events', isLabel, la
       {type === 'events' ? (
         <>
           <Typography variant="body2" fontWeight={400}>
-            {category}
+            {category.toUpperCase()}
           </Typography>
           <Typography variant="h6" fontWeight="bold" sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
             {name}

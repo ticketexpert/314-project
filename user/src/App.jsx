@@ -13,8 +13,13 @@ import EnterPlace from "./components/Auth/EnterPlace";
 import AccountSettings from "./components/AccountSetting/AccountSettings";
 import EventDetail from "./components/Homepage/EventDetail";
 import EventsList from "./components/Homepage/EventsList";
+<<<<<<< Updated upstream
 import CategoriesList from "./components/Homepage/CategoriesList";
 import LocationsList from "./components/Homepage/LocationsList";
+=======
+import LocationsList from "./components/Homepage/LocationsList";
+import CategoriesList from "./components/Homepage/CategoriesList";
+>>>>>>> Stashed changes
 // Layout component to wrap pages with common elements
 function Layout({ children }) {
 	return (
@@ -45,26 +50,42 @@ function Home() {
 		const fetchEvents = async () => {
 			try {
 				const response = await fetch('https://api.ticketexpert.me/api/events');
+<<<<<<< Updated upstream
 				if (!response.ok) {
 					throw new Error('Failed to fetch events');
 				}
 				const data = await response.json();
 
 				// Format events for EventCard component
+=======
+				
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+				
+				const data = await response.json();
+				
+				// Format events for display
+>>>>>>> Stashed changes
 				const formatted = data.map(event => ({
 					name: event.title,
 					category: event.category,
 					type: 'events',
 					image: event.image,
 					description: event.description,
+<<<<<<< Updated upstream
 					fromDateTime: event.fromDateTime,
 					toDateTime: event.toDateTime,
+=======
+					dateRange: `${new Date(event.fromDateTime).toLocaleDateString()} - ${new Date(event.toDateTime).toLocaleDateString()}`,
+>>>>>>> Stashed changes
 					venue: event.venue,
 					region: event.region,
 					pricing: event.pricing,
 					tags: event.tags
 				}));
 
+<<<<<<< Updated upstream
 				// Get unique locations with event counts
 				const locationMap = new Map();
 				data.forEach(event => {
@@ -85,6 +106,24 @@ function Home() {
 						image: data.find(e => e.region === region)?.image || ''
 					}))
 					.sort((a, b) => parseInt(b.category) - parseInt(a.category))
+=======
+				// Get unique regions and their counts
+				const regionCounts = data.reduce((acc, event) => {
+					acc[event.region] = (acc[event.region] || 0) + 1;
+					return acc;
+				}, {});
+
+				// Convert to array and sort by count
+				const uniqueLocations = Object.entries(regionCounts)
+					.map(([name, count]) => ({
+						name,
+						category: `${count} Events`,
+						type: 'artists',
+						isLabel: true,
+						label: getStateFromCity(name)
+					}))
+					.sort((a, b) => b.count - a.count)
+>>>>>>> Stashed changes
 					.slice(0, 7);
 
 				setFormattedEvents(formatted);
@@ -94,6 +133,52 @@ function Home() {
 			} finally {
 				setLoading(false);
 			}
+		};
+
+		// Helper function to get state from city
+		const getStateFromCity = (city) => {
+			// Normalize city name to handle case sensitivity and extra spaces
+			const normalizedCity = city.trim().toLowerCase();
+			
+			const cityToState = {
+				'sydney': 'New South Wales',
+				'melbourne': 'Victoria',
+				'brisbane': 'Queensland',
+				'perth': 'Western Australia',
+				'adelaide': 'South Australia',
+				'hobart': 'Tasmania',
+				'darwin': 'Northern Territory',
+				'canberra': 'Australian Capital Territory',
+				'gold coast': 'Queensland',
+				'newcastle': 'New South Wales',
+				'wollongong': 'New South Wales',
+				'geelong': 'Victoria',
+				'townsville': 'Queensland',
+				'cairns': 'Queensland',
+				'toowoomba': 'Queensland',
+				'ballarat': 'Victoria',
+				'bendigo': 'Victoria',
+				'albury': 'New South Wales',
+				'maitland': 'New South Wales',
+				'mackay': 'Queensland',
+				'sunshine coast': 'Queensland',
+				'newman': 'Western Australia',
+				'port macquarie': 'New South Wales',
+				'tamworth': 'New South Wales',
+				'wagga wagga': 'New South Wales',
+			};
+
+			// Try to find an exact match first
+			if (cityToState[normalizedCity]) {
+				return cityToState[normalizedCity];
+			}
+
+			// If no exact match, try to find a partial match
+			const matchingCity = Object.keys(cityToState).find(key => 
+				normalizedCity.includes(key) || key.includes(normalizedCity)
+			);
+
+			return matchingCity ? cityToState[matchingCity] : 'Unknown';
 		};
 
 		fetchEvents();
@@ -122,9 +207,12 @@ function Home() {
 	);
 }
 
+<<<<<<< Updated upstream
 function Events() {
 	return <Text>Events Page</Text>;
 }
+=======
+>>>>>>> Stashed changes
 
 function Artists() {
 	return <Text>Artists Page</Text>;
@@ -231,16 +319,28 @@ export default function MyApp() {
 						<EventDetail />
 					</Layout>
 				} />
+<<<<<<< Updated upstream
 				<Route path="/categories" element={
 					<Layout>
 						<CategoriesList />
 					</Layout>
 				} />
 				<Route path="/locations" element={
+=======
+				<Route path="locations" element={
+>>>>>>> Stashed changes
 					<Layout>
 						<LocationsList />
 					</Layout>
 				} />
+<<<<<<< Updated upstream
+=======
+				<Route path="categories" element={
+					<Layout>
+						<CategoriesList />
+					</Layout>
+				} />
+>>>>>>> Stashed changes
 			</Routes>
 		</Router>
 	);
