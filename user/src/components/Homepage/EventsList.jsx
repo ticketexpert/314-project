@@ -5,12 +5,12 @@ import { Link as RouterLink } from 'react-router-dom';
 
 const getUniqueCategories = (events) => [
   'All',
-  ...Array.from(new Set(events.map(e => e.type)))
+  ...Array.from(new Set(events.map(e => e.category)))
 ];
 
 const getUniqueLocations = (events) => [
   'All',
-  ...Array.from(new Set(events.map(e => e.location)))
+  ...Array.from(new Set(events.map(e => e.venue)))
 ];
 
 const sortOptions = [
@@ -31,6 +31,10 @@ export default function EventsList() {
       try {
         const response = await fetch('https://www.api.ticketexpert.me/api/events');
         const data = await response.json();
+        console.log('API Response:', data);
+        if (data.length > 0) {
+          console.log('First event structure:', data[0]);
+        }
         setEvents(data);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -42,20 +46,23 @@ export default function EventsList() {
     fetchEvents();
   }, []);
 
-  const categories = useMemo(() => getUniqueCategories(events), [events]);
+  const categories = useMemo(() => {
+    console.log('Current events:', events);
+    return getUniqueCategories(events);
+  }, [events]);
   const locations = useMemo(() => getUniqueLocations(events), [events]);
 
   const filteredEvents = useMemo(() => {
     let filtered = events.filter(event =>
-      (category === 'All' || event.type === category) &&
-      (location === 'All' || event.location === location) &&
+      (category === 'All' || event.category === category) &&
+      (location === 'All' || event.venue === location) &&
       (event.title.toLowerCase().includes(search.toLowerCase()) ||
         event.description.toLowerCase().includes(search.toLowerCase()))
     );
     if (sort === 'title') {
       filtered = filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sort === 'date') {
-      filtered = filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+      filtered = filtered.sort((a, b) => new Date(a.dateRange.split(' to ')[0]) - new Date(b.dateRange.split(' to ')[0]));
     }
     return filtered;
   }, [search, category, location, sort, events]);
@@ -140,16 +147,16 @@ export default function EventsList() {
               <Card sx={{width: { xs: '100%', sm: '80vw' }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, borderRadius: 4, boxShadow: '0 2px 8px rgba(22,101,52,0.08)', height: { sm: 180, xs: 'auto' } }}>
                 <Box
                   component="img"
-                  src={`https://source.unsplash.com/random/400x300?${event.type}`}
+                  src={event.image}
                   alt={event.title}
                   sx={{ width: { xs: '100%', sm: 200 }, height: { xs: 180, sm: '100%' }, objectFit: 'cover', borderTopLeftRadius: 4, borderBottomLeftRadius: { sm: 4, xs: 0 }, borderTopRightRadius: { xs: 4, sm: 0 } }}
                 />
                 <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 2 }}>
                   <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
-                    <Chip label={event.type.toUpperCase()} color="success" size="small" sx={{ bgcolor: '#e6f4ea', color: '#166534', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
-                    <Chip label={new Date(event.date).toLocaleDateString()} color="primary" size="small" sx={{ bgcolor: '#e0e7ff', color: '#034AA6', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
-                    <Chip label={`Ticket from $${event.price}`} size="small" sx={{ bgcolor: '#fbe9eb', color: '#9F1B32', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
-                    <Chip label={event.location} size="small" sx={{ bgcolor: '#f3e8ff', color: '#6b21a8', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={event.category.toUpperCase()} color="success" size="small" sx={{ bgcolor: '#e6f4ea', color: '#166534', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={new Date(event.dateRange.split(' to ')[0]).toLocaleDateString()} color="primary" size="small" sx={{ bgcolor: '#e0e7ff', color: '#034AA6', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={`Ticket from $${event.pricing[0]?.price || 'N/A'}`} size="small" sx={{ bgcolor: '#fbe9eb', color: '#9F1B32', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={event.venue} size="small" sx={{ bgcolor: '#f3e8ff', color: '#6b21a8', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
                   </Stack>
                   <Typography variant="h6" fontWeight="bold" sx={{ whiteSpace: 'normal', wordBreak: 'break-word', mb: 1 }}>
                     {event.title}
