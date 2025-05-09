@@ -16,6 +16,10 @@ import EventsList from "./components/Homepage/EventsList";
 import LocationsList from "./components/Homepage/LocationsList";
 import CategoriesList from "./components/Homepage/CategoriesList";
 import TicketBooking from "./components/Tickets/TicketBooking";
+import Cart from "./components/Cart/Cart";
+import Checkout from "./components/Checkout/Checkout";
+import { CartProvider } from './context/CartContext';
+
 // Layout component to wrap pages with common elements
 function Layout({ children }) {
 	return (
@@ -217,79 +221,91 @@ export default function MyApp() {
 	}, [backendStatus]); // Only show alert when backend status changes
 
 	return (
-		<Router>
-			<Routes>
-				<Route path="/" element={
-					<Layout>
-						<Home />
-					</Layout>
-				} />
-				<Route path="/events" element={
-					<Layout>
-						<EventsList />
-					</Layout>
-				} />
-				<Route path="/artists" element={
-					<Layout>
-						<Artists />
-					</Layout>
-				} />
-				<Route path="/profile" element={
-					<Layout>
-						<Profile />
-					</Layout>
-				} />
-				<Route path="/login" element={
-					<AuthLayout>
-						<Login />
-					</AuthLayout>
-				} />
-				<Route path="/signup" element={
-					<AuthLayout>
-						<Signup />
-					</AuthLayout>
-				} />
-				<Route path="*" element={
-					<Layout>
-						<NotFound />
-					</Layout>
-				} />
-				<Route path="/signup/favorite" element={
-					<AuthLayout>
-						<FavoritePage />
-					</AuthLayout>
-				} />
-				<Route path="/signup/place" element={
-					<AuthLayout>
-						<EnterPlace />
-					</AuthLayout>
-				} />
-				<Route path="/account" element={
-					<AuthLayout>
-						<AccountSettings/>
-					</AuthLayout>
-				} />
-				<Route path="/event/:id" element={
-					<Layout>
-						<EventDetail />
-					</Layout>
-				} />
-				<Route path="locations" element={
-					<Layout>
-						<LocationsList />
-					</Layout>
-				} />
-				<Route path="categories" element={
-					<Layout>
-						<CategoriesList />
-					</Layout>
-				} />
-				<Route path="/event/:id/tickets" element={
-					<Layout>
-						<TicketBooking />
-					</Layout>
-				} />
-			</Routes>
-		</Router>
+		<CartProvider>
+			<Router>
+				<Routes>
+					<Route path="/" element={
+						<Layout>
+							<Home />
+						</Layout>
+					} />
+					<Route path="/events" element={
+						<Layout>
+							<EventsList />
+						</Layout>
+					} />
+					<Route path="/artists" element={
+						<Layout>
+							<Artists />
+						</Layout>
+					} />
+					<Route path="/profile" element={
+						<Layout>
+							<Profile />
+						</Layout>
+					} />
+					<Route path="/login" element={
+						<AuthLayout>
+							<Login />
+						</AuthLayout>
+					} />
+					<Route path="/signup" element={
+						<AuthLayout>
+							<Signup />
+						</AuthLayout>
+					} />
+					<Route path="*" element={
+						<Layout>
+							<NotFound />
+						</Layout>
+					} />
+					<Route path="/signup/favorite" element={
+						<AuthLayout>
+							<FavoritePage />
+						</AuthLayout>
+					} />
+					<Route path="/signup/place" element={
+						<AuthLayout>
+							<EnterPlace />
+						</AuthLayout>
+					} />
+					<Route path="/account" element={
+						<AuthLayout>
+							<AccountSettings/>
+						</AuthLayout>
+					} />
+					<Route path="/event/:id" element={
+						<Layout>
+							<EventDetail />
+						</Layout>
+					} />
+					<Route path="locations" element={
+						<Layout>
+							<LocationsList />
+						</Layout>
+					} />
+					<Route path="categories" element={
+						<Layout>
+							<CategoriesList />
+						</Layout>
+					} />
+					<Route path="/event/:id/tickets" element={
+						<Layout>
+							<TicketBooking />
+						</Layout>
+					} />
+					<Route path="/cart" element={
+						<Layout>
+							<Cart />
+						</Layout>
+					} />
+					<Route path="/checkout" element={
+						<Layout>
+							<Checkout />
+						</Layout>
+					} />
+				</Routes>
+			</Router>
+		</CartProvider>
 	);
 }

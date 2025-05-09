@@ -1,0 +1,1252 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Box, Container, Typography, Paper, Stack, TextField,
+  Checkbox, FormControlLabel, Button, Divider, Grid, Chip, Link,
+  Stepper, Step, StepLabel, CircularProgress, Alert, Tooltip, IconButton,
+  Radio, RadioGroup, FormControl, FormLabel, InputAdornment,
+  Skeleton, Snackbar
+} from '@mui/material';
+import { useCart } from '../../context/CartContext';
+import { useNavigate } from 'react-router-dom';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import LockIcon from '@mui/icons-material/Lock';
+import SecurityIcon from '@mui/icons-material/Security';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import { validateCardNumber, getCardType, formatCardNumber } from '../../services/paymentService';
+import { getPaymentMethods, savePaymentMethod } from '../../services/paymentService';
+import visaLogo from '../../assets/visa.png';
+import mastercardLogo from '../../assets/Mastercard.png';
+import amexLogo from '../../assets/Amex.png';
+
+const colorScheme = {
+  red: {
+    primary: '#9F1B32',
+    light: '#fbe9eb',
+    hover: '#7f1628'
+  },
+  blue: {
+    primary: '#034AA6',
+    light: '#e6f0ff',
+    hover: '#023b88'
+  },
+  green: {
+    primary: '#166534',
+    light: '#e6f4ea',
+    hover: '#14532d'
+  },
+  grey: {
+    border: '#E0E0E0',
+    divider: '#E0E0E0',
+    background: '#f7f8fa',
+    text: '#333'
+  }
+};
+
+const steps = ['Contact Information', 'Ticket Details', 'Review & Payment'];
+
+// Add payment methods data
+const paymentMethods = [
+  {
+    id: 'credit',
+    name: 'Credit Card',
+    icon: '💳',
+    description: 'Pay with Visa, Mastercard, or American Express'
+  },
+  {
+    id: 'paypal',
+    name: 'PayPal',
+    icon: '🔒',
+    description: 'Pay securely with your PayPal account'
+  }
+];
+
+function flattenTickets(cartItems) {
+  // Returns an array of { event, ticketType, ticket, eventImage, eventTitle, eventDate, eventVenue }
+  const result = [];
+  cartItems.forEach(item => {
+    Object.entries(item.tickets).forEach(([type, ticket]) => {
+      for (let i = 0; i < ticket.quantity; i++) {
+        result.push({
+          eventId: item.eventId,
+          eventImage: item.eventImage,
+          eventTitle: item.eventTitle,
+          eventDate: item.eventDate,
+          eventVenue: item.eventVenue,
+          eventCategory: item.eventCategory,
+          ticketType: type,
+          ticketPrice: ticket.price,
+        });
+      }
+    });
+  });
+  return result;
+}
+
+const Checkout = () => {
+  const { cartItems, getCartTotal } = useCart();
+  const navigate = useNavigate();
+  const tickets = flattenTickets(cartItems);
+  const event = cartItems[0];
+
+  // State management
+  const [activeStep, setActiveStep] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [contact, setContact] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    keepUpdated: false
+  });
+  const [ticketHolders, setTicketHolders] = useState(
+    tickets.map(() => ({
+      firstName: '',
+      lastName: '',
+      email: '',
+      acceptTerms: false
+    }))
+  );
+  const [promo, setPromo] = useState('');
+  const [formErrors, setFormErrors] = useState({});
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('credit');
+  const [cardDetails, setCardDetails] = useState({
+    number: '',
+    name: '',
+    expiry: '',
+    cvc: ''
+  });
+  const [savedCards, setSavedCards] = useState([]);
+  const [useSavedCard, setUseSavedCard] = useState(false);
+  const [selectedSavedCard, setSelectedSavedCard] = useState(null);
+  const [cardValidation, setCardValidation] = useState({
+    number: { isValid: true, message: '' },
+    expiry: { isValid: true, message: '' },
+    cvc: { isValid: true, message: '' },
+    name: { isValid: true, message: '' }
+  });
+  const [isLoadingCards, setIsLoadingCards] = useState(true);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [promoApplied, setPromoApplied] = useState(false);
+
+  // Load saved payment methods with loading state
+  useEffect(() => {
+    const loadSavedCards = async () => {
+      setIsLoadingCards(true);
+      try {
+        const cards = await getPaymentMethods();
+        setSavedCards(cards);
+      } catch (error) {
+        console.error('Error loading saved cards:', error);
+        setSnackbar({
+          open: true,
+          message: 'Failed to load saved cards. Please try again.',
+          severity: 'error'
+        });
+      } finally {
+        setIsLoadingCards(false);
+      }
+    };
+    loadSavedCards();
+  }, []);
+
+  // Get card brand logo
+  const getCardBrandLogo = (cardType) => {
+    switch (cardType) {
+      case 'visa': return visaLogo;
+      case 'mastercard': return mastercardLogo;
+      case 'amex': return amexLogo;
+      default: return null;
+    }
+  };
+
+  // Enhanced card validation
+  const validateCardDetails = () => {
+    const errors = {
+      number: { isValid: true, message: '' },
+      expiry: { isValid: true, message: '' },
+      cvc: { isValid: true, message: '' },
+      name: { isValid: true, message: '' }
+    };
+
+    // Card number validation
+    if (!cardDetails.number) {
+      errors.number = { isValid: false, message: 'Card number is required' };
+    } else if (!validateCardNumber(cardDetails.number)) {
+      errors.number = { isValid: false, message: 'Invalid card number' };
+    }
+
+    // Expiry date validation
+    if (!cardDetails.expiry) {
+      errors.expiry = { isValid: false, message: 'Expiry date is required' };
+    } else {
+      const [month, year] = cardDetails.expiry.split('/');
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear() % 100;
+      const currentMonth = currentDate.getMonth() + 1;
+      
+      if (month < 1 || month > 12) {
+        errors.expiry = { isValid: false, message: 'Invalid month' };
+      } else if (year < currentYear || (year === currentYear && month < currentMonth)) {
+        errors.expiry = { isValid: false, message: 'Card has expired' };
+      }
+    }
+
+    // CVC validation
+    if (!cardDetails.cvc) {
+      errors.cvc = { isValid: false, message: 'CVC is required' };
+    } else if (cardDetails.cvc.length < 3 || cardDetails.cvc.length > 4) {
+      errors.cvc = { isValid: false, message: 'Invalid CVC' };
+    }
+
+    // Name validation
+    if (!cardDetails.name) {
+      errors.name = { isValid: false, message: 'Name is required' };
+    }
+
+    setCardValidation(errors);
+    return Object.values(errors).every(error => error.isValid);
+  };
+
+  // Enhanced card details change handler
+  const handleCardDetailsChange = (e) => {
+    const { name, value } = e.target;
+    let formattedValue = value;
+
+    // Format card number with spaces
+    if (name === 'number') {
+      formattedValue = value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
+    }
+    // Format expiry date
+    else if (name === 'expiry') {
+      formattedValue = value
+        .replace(/\D/g, '')
+        .replace(/(\d{2})(\d{0,2})/, '$1/$2')
+        .substring(0, 5);
+    }
+    // Format CVC
+    else if (name === 'cvc') {
+      formattedValue = value.replace(/\D/g, '').substring(0, 4);
+    }
+
+    setCardDetails(prev => ({
+      ...prev,
+      [name]: formattedValue
+    }));
+
+    // Clear validation error when user starts typing
+    if (cardValidation[name]) {
+      setCardValidation(prev => ({
+        ...prev,
+        [name]: { isValid: true, message: '' }
+      }));
+    }
+  };
+
+  // Validation functions
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const validateStep = (step) => {
+    const errors = {};
+    
+    if (step === 0) {
+      if (!contact.firstName) errors.contactFirstName = 'First name is required';
+      if (!contact.lastName) errors.contactLastName = 'Last name is required';
+      if (!contact.email) {
+        errors.contactEmail = 'Email is required';
+      } else if (!validateEmail(contact.email)) {
+        errors.contactEmail = 'Invalid email format';
+      }
+    }
+    
+    if (step === 1) {
+      ticketHolders.forEach((holder, idx) => {
+        if (!holder.firstName) errors[`ticket${idx}FirstName`] = 'First name is required';
+        if (!holder.lastName) errors[`ticket${idx}LastName`] = 'Last name is required';
+        if (!holder.email) {
+          errors[`ticket${idx}Email`] = 'Email is required';
+        } else if (!validateEmail(holder.email)) {
+          errors[`ticket${idx}Email`] = 'Invalid email format';
+        }
+        if (!holder.acceptTerms) errors[`ticket${idx}Terms`] = 'Terms must be accepted';
+      });
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handlers
+  const handleContactChange = e => {
+    const { name, value, checked, type } = e.target;
+    setContact(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+    // Clear error when field is modified
+    if (formErrors[`contact${name.charAt(0).toUpperCase() + name.slice(1)}`]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [`contact${name.charAt(0).toUpperCase() + name.slice(1)}`]: undefined
+      }));
+    }
+    // Prefill ticket holders if empty
+    if (["firstName", "lastName", "email"].includes(name)) {
+      setTicketHolders(ths => ths.map(th =>
+        th[name] === '' ? { ...th, [name]: value } : th
+      ));
+    }
+  };
+
+  const handleTicketHolderChange = (idx, e) => {
+    const { name, value, checked, type } = e.target;
+    setTicketHolders(ths => ths.map((th, i) =>
+      i === idx ? { ...th, [name]: type === 'checkbox' ? checked : value } : th
+    ));
+    // Clear error when field is modified
+    if (formErrors[`ticket${idx}${name.charAt(0).toUpperCase() + name.slice(1)}`]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [`ticket${idx}${name.charAt(0).toUpperCase() + name.slice(1)}`]: undefined
+      }));
+    }
+  };
+
+  // Add payment method handlers
+  const handlePaymentMethodChange = (method) => {
+    setSelectedPaymentMethod(method);
+  };
+
+  // Handle promo code application
+  const handlePromoApply = () => {
+    if (!promo) {
+      setSnackbar({
+        open: true,
+        message: 'Please enter a promotion code',
+        severity: 'warning'
+      });
+      return;
+    }
+    // TODO: Implement actual promo code validation
+    setPromoApplied(true);
+    setSnackbar({
+      open: true,
+      message: 'Promotion code applied successfully!',
+      severity: 'success'
+    });
+  };
+
+  // Enhanced submit handler with better feedback
+  const handleSubmit = async e => {
+    e.preventDefault();
+    if (!validateStep(activeStep)) return;
+
+    setIsProcessingPayment(true);
+    setError('');
+
+    try {
+      if (selectedPaymentMethod === 'credit') {
+        if (!useSavedCard && !validateCardDetails()) {
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        // Save new card if not using saved card
+        if (!useSavedCard) {
+          const cardData = {
+            ...cardDetails,
+            cardType: getCardType(cardDetails.number)
+          };
+          await savePaymentMethod(cardData);
+        }
+
+        // Process payment with selected card
+        // TODO: Implement actual payment processing
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+
+      // Handle PayPal payment
+      if (selectedPaymentMethod === 'paypal') {
+        // TODO: Implement PayPal integration
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+
+      // Navigate to success page
+      navigate('/checkout/success');
+    } catch (err) {
+      setError('An error occurred while processing your payment. Please try again.');
+      setSnackbar({
+        open: true,
+        message: 'Payment failed. Please try again.',
+        severity: 'error'
+      });
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
+
+  const handleNext = () => {
+    if (validateStep(activeStep)) {
+      setActiveStep((prevStep) => prevStep + 1);
+    }
+  };
+
+  if (!event) {
+    return (
+      <Box sx={{ bgcolor: colorScheme.grey.background, minHeight: '100vh', py: 4 }}>
+        <Container maxWidth="md">
+          <Paper elevation={2} sx={{ p: 6, borderRadius: 4, textAlign: 'center', bgcolor: '#fff' }}>
+            <Typography variant="h4" color={colorScheme.red.primary} gutterBottom fontWeight="bold">
+              Your Cart is Empty
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => navigate('/events')}
+              sx={{
+                bgcolor: colorScheme.red.primary,
+                borderRadius: 99,
+                fontWeight: 600,
+                px: 4,
+                py: 1.5,
+                fontSize: '1.1rem',
+                boxShadow: '0 4px 12px rgba(159,27,50,0.15)',
+                '&:hover': {
+                  bgcolor: colorScheme.red.hover,
+                  boxShadow: '0 6px 16px rgba(159,27,50,0.2)'
+                }
+              }}
+            >
+              Browse Events
+            </Button>
+          </Paper>
+        </Container>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ bgcolor: 'white', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="lg">
+        {/* Progress Stepper with improved mobile view */}
+        <Box sx={{ 
+          mb: 4, 
+          display: { xs: 'none', md: 'block' },
+          position: 'sticky',
+          top: 0,
+          bgcolor: 'white',
+          zIndex: 1,
+          pt: 2,
+          pb: 1
+        }}>
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Box>
+
+        {/* Mobile Progress Indicator */}
+        <Box sx={{ 
+          display: { xs: 'flex', md: 'none' }, 
+          mb: 3,
+          alignItems: 'center',
+          gap: 1
+        }}>
+          <Typography variant="body2" color="text.secondary">
+            Step {activeStep + 1} of {steps.length}:
+          </Typography>
+          <Typography variant="body2" fontWeight={600}>
+            {steps[activeStep]}
+          </Typography>
+        </Box>
+
+        <Grid container spacing={4}>
+          {/* Left: Event info, contact, ticket holders */}
+          <Grid item xs={12} md={7} lg={8}>
+            <Box sx={{ px: { xs: 0, md: 2 }, pb: 4 }}>
+              {/* Back link with improved hover state */}
+              <Button
+                startIcon={<ArrowBackIcon />}
+                onClick={() => navigate(-1)}
+                sx={{ 
+                  color: colorScheme.red.primary, 
+                  fontWeight: 600, 
+                  mb: 2, 
+                  fontSize: 16,
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    bgcolor: colorScheme.red.light,
+                    transform: 'translateX(-4px)'
+                  }
+                }}
+              >
+                Back
+              </Button>
+
+              {error && (
+                <Alert 
+                  severity="error" 
+                  sx={{ 
+                    mb: 3,
+                    animation: 'fadeIn 0.3s ease-in-out'
+                  }}
+                >
+                  {error}
+                </Alert>
+              )}
+
+              {/* Event info card */}
+              <Paper elevation={2} sx={{ p: 3, borderRadius: 4, mb: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Stack direction="row" spacing={1} alignItems="center" mb={1} flexWrap="wrap">
+                  <Chip label={event.eventCategory || 'Event'} size="small" sx={{ bgcolor: colorScheme.green.light, color: colorScheme.green.primary, fontWeight: 600 }} />
+                  <Chip label={new Date(event.eventDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })} size="small" sx={{ bgcolor: colorScheme.blue.light, color: colorScheme.blue.primary, fontWeight: 600 }} />
+                  <Chip label={event.eventVenue} size="small" sx={{ bgcolor: colorScheme.red.light, color: colorScheme.red.primary, fontWeight: 600 }} />
+                </Stack>
+                <Typography variant="h5" fontWeight={700} color={colorScheme.red.primary} sx={{ mb: 0.5 }}>
+                  {event.eventTitle}
+                </Typography>
+              </Paper>
+
+              {/* Contact info */}
+              {activeStep === 0 && (
+                <Paper elevation={2} sx={{ p: 3, borderRadius: 4, mb: 3 }}>
+                  <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                    Contact information
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="First Name"
+                        name="firstName"
+                        value={contact.firstName}
+                        onChange={handleContactChange}
+                        required
+                        variant="outlined"
+                        error={!!formErrors.contactFirstName}
+                        helperText={formErrors.contactFirstName}
+                        sx={{ bgcolor: '#fff', borderRadius: 2 }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Last Name"
+                        name="lastName"
+                        value={contact.lastName}
+                        onChange={handleContactChange}
+                        required
+                        variant="outlined"
+                        error={!!formErrors.contactLastName}
+                        helperText={formErrors.contactLastName}
+                        sx={{ bgcolor: '#fff', borderRadius: 2 }}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Email address"
+                        name="email"
+                        value={contact.email}
+                        onChange={handleContactChange}
+                        required
+                        variant="outlined"
+                        error={!!formErrors.contactEmail}
+                        helperText={formErrors.contactEmail}
+                        sx={{ bgcolor: '#fff', borderRadius: 2 }}
+                      />
+                    </Grid>
+                  </Grid>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="keepUpdated"
+                        checked={contact.keepUpdated}
+                        onChange={handleContactChange}
+                        sx={{
+                          color: colorScheme.red.primary,
+                          '&.Mui-checked': {
+                            color: colorScheme.red.primary,
+                          },
+                          mr: 1
+                        }}
+                      />
+                    }
+                    label={<Typography sx={{ color: colorScheme.grey.text, fontSize: 15 }}>Keep me updated on more events and news from this event organiser.</Typography>}
+                    sx={{ mt: 1, mb: 2, alignItems: 'flex-start' }}
+                  />
+                </Paper>
+              )}
+
+              {/* Ticket holders */}
+              {activeStep === 1 && (
+                <Stack spacing={3}>
+                  {tickets.map((ticket, idx) => (
+                    <Paper key={idx} elevation={2} sx={{ p: 3, borderRadius: 4 }}>
+                      <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                        Ticket {idx + 1} <span style={{ fontWeight: 400 }}>{ticket.ticketType} Ticket</span>
+                      </Typography>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth
+                            label="First Name"
+                            name="firstName"
+                            value={ticketHolders[idx].firstName}
+                            onChange={e => handleTicketHolderChange(idx, e)}
+                            required
+                            variant="outlined"
+                            error={!!formErrors[`ticket${idx}FirstName`]}
+                            helperText={formErrors[`ticket${idx}FirstName`]}
+                            sx={{ bgcolor: '#fff', borderRadius: 2 }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth
+                            label="Last Name"
+                            name="lastName"
+                            value={ticketHolders[idx].lastName}
+                            onChange={e => handleTicketHolderChange(idx, e)}
+                            required
+                            variant="outlined"
+                            error={!!formErrors[`ticket${idx}LastName`]}
+                            helperText={formErrors[`ticket${idx}LastName`]}
+                            sx={{ bgcolor: '#fff', borderRadius: 2 }}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            label="Email address"
+                            name="email"
+                            value={ticketHolders[idx].email}
+                            onChange={e => handleTicketHolderChange(idx, e)}
+                            required
+                            variant="outlined"
+                            error={!!formErrors[`ticket${idx}Email`]}
+                            helperText={formErrors[`ticket${idx}Email`]}
+                            sx={{ bgcolor: '#fff', borderRadius: 2 }}
+                          />
+                        </Grid>
+                      </Grid>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            name="acceptTerms"
+                            checked={ticketHolders[idx].acceptTerms}
+                            onChange={e => handleTicketHolderChange(idx, e)}
+                            sx={{
+                              color: colorScheme.red.primary,
+                              '&.Mui-checked': {
+                                color: colorScheme.red.primary,
+                              },
+                              mr: 1
+                            }}
+                          />
+                        }
+                        label={
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Typography sx={{ color: colorScheme.grey.text, fontSize: 15 }}>
+                              I accept the TicketExpert Terms of Service and Privacy Policy.
+                            </Typography>
+                            <Tooltip title="By accepting these terms, you agree to our service conditions and data handling policies.">
+                              <IconButton size="small" sx={{ ml: 1 }}>
+                                <InfoOutlinedIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        }
+                        sx={{ mt: 1, alignItems: 'flex-start' }}
+                      />
+                      {formErrors[`ticket${idx}Terms`] && (
+                        <Typography color="error" variant="caption" sx={{ display: 'block', mt: 1 }}>
+                          {formErrors[`ticket${idx}Terms`]}
+                        </Typography>
+                      )}
+                    </Paper>
+                  ))}
+                </Stack>
+              )}
+
+              {/* Review & Payment */}
+              {activeStep === 2 && (
+                <Stack spacing={3}>
+                  <Paper elevation={2} sx={{ p: 3, borderRadius: 4 }}>
+                    <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                      Order Review
+                    </Typography>
+                    <Stack spacing={2}>
+                      <Box>
+                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                          Contact Information
+                        </Typography>
+                        <Typography variant="body1">
+                          {contact.firstName} {contact.lastName}
+                        </Typography>
+                        <br/>
+                        <Typography variant="body1" color="text.secondary">
+                          {contact.email}
+                        </Typography>
+                      </Box>
+
+                      <Box>
+                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                          Ticket Holders
+                        </Typography>
+                        {ticketHolders.map((holder, idx) => (
+                          <Box key={idx} sx={{ mb: 1 }}>
+                            <Typography variant="body1">
+                              {holder.firstName} {holder.lastName}
+                            </Typography>
+                            <br/>
+                            <Typography variant="body2" color="text.secondary">
+                              {holder.email}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+
+                      <Box>
+                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                          Event Details
+                        </Typography>
+                        <Typography variant="body1">
+                          {event.eventTitle}
+                        </Typography>
+                        <br/>
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(event.eventDate).toLocaleDateString(undefined, { 
+                            weekday: 'long',
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </Typography><br/>
+                        <Typography variant="body2" color="text.secondary">
+                          {event.eventVenue}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Paper>
+
+                  {/* Payment Method Selection */}
+                  <Paper elevation={2} sx={{ p: 3, borderRadius: 4 }}>
+                    <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                      Payment Method
+                    </Typography>
+                    <Stack spacing={2}>
+                      {paymentMethods.map((method) => (
+                        <Paper
+                          key={method.id}
+                          elevation={selectedPaymentMethod === method.id ? 2 : 0}
+                          sx={{
+                            p: 2,
+                            border: 2,
+                            borderColor: selectedPaymentMethod === method.id ? colorScheme.red.primary : colorScheme.grey.border,
+                            borderRadius: 2,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            '&:hover': {
+                              borderColor: colorScheme.red.primary,
+                              bgcolor: colorScheme.red.light,
+                              transform: 'translateY(-2px)'
+                            }
+                          }}
+                          onClick={() => handlePaymentMethodChange(method.id)}
+                        >
+                          <Stack direction="row" spacing={2} alignItems="center">
+                            {method.id === 'credit' ? <CreditCardIcon /> : <LockIcon />}
+                            <Box>
+                              <Typography variant="subtitle1" fontWeight={600}>
+                                {method.name}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {method.description}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Paper>
+                      ))}
+
+                      {/* Credit Card Form with loading state */}
+                      {selectedPaymentMethod === 'credit' && (
+                        <Box sx={{ mt: 2 }}>
+                          {isLoadingCards ? (
+                            <Stack spacing={2}>
+                              <Skeleton variant="rectangular" height={40} />
+                              <Skeleton variant="rectangular" height={40} />
+                              <Skeleton variant="rectangular" height={40} />
+                            </Stack>
+                          ) : (
+                            <>
+                              {savedCards.length > 0 && (
+                                <FormControl component="fieldset" sx={{ mb: 3 }}>
+                                  <FormLabel component="legend">Use saved card</FormLabel>
+                                  <RadioGroup
+                                    value={useSavedCard}
+                                    onChange={(e) => setUseSavedCard(e.target.value === 'true')}
+                                  >
+                                    <FormControlLabel
+                                      value={true}
+                                      control={<Radio />}
+                                      label="Use saved card"
+                                    />
+                                    <FormControlLabel
+                                      value={false}
+                                      control={<Radio />}
+                                      label="Use new card"
+                                    />
+                                  </RadioGroup>
+                                </FormControl>
+                              )}
+
+                              {useSavedCard ? (
+                                <Stack spacing={2}>
+                                  {savedCards.map((card) => (
+                                    <Paper
+                                      key={card.id}
+                                      elevation={selectedSavedCard === card.id ? 2 : 0}
+                                      sx={{
+                                        p: 2,
+                                        border: 2,
+                                        borderColor: selectedSavedCard === card.id ? colorScheme.red.primary : colorScheme.grey.border,
+                                        borderRadius: 2,
+                                        cursor: 'pointer',
+                                        '&:hover': {
+                                          borderColor: colorScheme.red.primary,
+                                          bgcolor: colorScheme.red.light
+                                        }
+                                      }}
+                                      onClick={() => setSelectedSavedCard(card.id)}
+                                    >
+                                      <Stack direction="row" spacing={2} alignItems="center">
+                                        <img
+                                          src={getCardBrandLogo(card.cardType)}
+                                          alt={card.cardType}
+                                          style={{ height: 24 }}
+                                        />
+                                        <Box>
+                                          <Typography variant="subtitle1" fontWeight={600}>
+                                            {card.cardType.charAt(0).toUpperCase() + card.cardType.slice(1)}
+                                          </Typography>
+                                          <Typography variant="body2" color="text.secondary">
+                                            •••• {card.last4}
+                                          </Typography>
+                                        </Box>
+                                      </Stack>
+                                    </Paper>
+                                  ))}
+                                </Stack>
+                              ) : (
+                                <Stack spacing={3}>
+                                  {/* Card Number Row */}
+                                  <TextField
+                                    fullWidth
+                                    label="Card Number"
+                                    name="number"
+                                    value={cardDetails.number}
+                                    onChange={handleCardDetailsChange}
+                                    placeholder="1234 5678 9012 3456"
+                                    error={!cardValidation.number.isValid}
+                                    helperText={cardValidation.number.message}
+                                    InputProps={{
+                                      endAdornment: (
+                                        <InputAdornment position="end">
+                                          {cardDetails.number && (
+                                            <img
+                                              src={getCardBrandLogo(getCardType(cardDetails.number))}
+                                              alt="card type"
+                                              style={{ height: 24 }}
+                                            />
+                                          )}
+                                        </InputAdornment>
+                                      )
+                                    }}
+                                    sx={{
+                                      bgcolor: '#fff',
+                                      borderRadius: 2,
+                                      '& .MuiOutlinedInput-root': {
+                                        '& fieldset': {
+                                          borderColor: colorScheme.grey.border,
+                                        },
+                                        '&:hover fieldset': {
+                                          borderColor: colorScheme.red.primary,
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                          borderColor: colorScheme.red.primary,
+                                        },
+                                      },
+                                    }}
+                                  />
+
+                                  {/* Name on Card Row */}
+                                  <TextField
+                                    fullWidth
+                                    label="Name on Card"
+                                    name="name"
+                                    value={cardDetails.name}
+                                    onChange={handleCardDetailsChange}
+                                    placeholder="Adam Smith"
+                                    error={!cardValidation.name.isValid}
+                                    helperText={cardValidation.name.message}
+                                    sx={{
+                                      bgcolor: '#fff',
+                                      borderRadius: 2,
+                                      '& .MuiOutlinedInput-root': {
+                                        '& fieldset': {
+                                          borderColor: colorScheme.grey.border,
+                                        },
+                                        '&:hover fieldset': {
+                                          borderColor: colorScheme.red.primary,
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                          borderColor: colorScheme.red.primary,
+                                        },
+                                      },
+                                    }}
+                                  />
+
+                                  {/* Expiry and CVC Row */}
+                                  <Grid container spacing={2}>
+                                    <Grid item xs={8}>
+                                      <TextField
+                                        fullWidth
+                                        label="Expiry Date"
+                                        name="expiry"
+                                        value={cardDetails.expiry}
+                                        onChange={handleCardDetailsChange}
+                                        placeholder="MM/YY"
+                                        error={!cardValidation.expiry.isValid}
+                                        helperText={cardValidation.expiry.message}
+                                        sx={{
+                                          bgcolor: '#fff',
+                                          borderRadius: 2,
+                                          '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                              borderColor: colorScheme.grey.border,
+                                            },
+                                            '&:hover fieldset': {
+                                              borderColor: colorScheme.red.primary,
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                              borderColor: colorScheme.red.primary,
+                                            },
+                                          },
+                                        }}
+                                      />
+                                    </Grid>
+                                    <Grid item xs={4}>
+                                      <TextField
+                                        fullWidth
+                                        label="CVC"
+                                        name="cvc"
+                                        value={cardDetails.cvc}
+                                        onChange={handleCardDetailsChange}
+                                        placeholder="123"
+                                        error={!cardValidation.cvc.isValid}
+                                        helperText={cardValidation.cvc.message}
+                                        sx={{
+                                          bgcolor: '#fff',
+                                          borderRadius: 2,
+                                          '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                              borderColor: colorScheme.grey.border,
+                                            },
+                                            '&:hover fieldset': {
+                                              borderColor: colorScheme.red.primary,
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                              borderColor: colorScheme.red.primary,
+                                            },
+                                          },
+                                        }}
+                                      />
+                                    </Grid>
+                                  </Grid>
+                                </Stack>
+                              )}
+                              <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  We accept:
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                  <img src={visaLogo} alt="Visa" style={{ height: 20 }} />
+                                  <img src={mastercardLogo} alt="Mastercard" style={{ height: 20 }} />
+                                  <img src={amexLogo} alt="Amex" style={{ height: 20 }} />
+                                </Box>
+                              </Box>
+                            </>
+                          )}
+                        </Box>
+                      )}
+
+                      {/* Enhanced PayPal Button */}
+                      {selectedPaymentMethod === 'paypal' && (
+                        <Box sx={{ 
+                          mt: 2, 
+                          display: 'flex', 
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 2
+                        }}>
+                          <Typography variant="body2" color="text.secondary" align="center">
+                            You will be redirected to PayPal to complete your payment securely
+                          </Typography>
+                          <Button
+                            variant="contained"
+                            sx={{
+                              bgcolor: '#0070BA',
+                              py: 1.5,
+                              px: 4,
+                              borderRadius: 2,
+                              minWidth: 200,
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                bgcolor: '#005EA6',
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 12px rgba(0,112,186,0.2)'
+                              }
+                            }}
+                          >
+                            Continue with PayPal
+                          </Button>
+                          <Typography variant="caption" color="text.secondary" align="center">
+                            By continuing, you agree to PayPal's Terms of Service
+                          </Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Paper>
+                </Stack>
+              )}
+
+              {/* Navigation buttons */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+                <Button
+                  onClick={handleBack}
+                  disabled={activeStep === 0}
+                  sx={{
+                    color: colorScheme.red.primary,
+                    '&:hover': {
+                      bgcolor: colorScheme.red.light
+                    }
+                  }}
+                >
+                  Back
+                </Button>
+                {activeStep === steps.length - 1 ? (
+                  <Button
+                    variant="contained"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    sx={{
+                      bgcolor: colorScheme.red.primary,
+                      borderRadius: 99,
+                      fontWeight: 600,
+                      px: 4,
+                      py: 1.5,
+                      fontSize: '1.1rem',
+                      boxShadow: '0 4px 12px rgba(159,27,50,0.15)',
+                      '&:hover': {
+                        bgcolor: colorScheme.red.hover,
+                        boxShadow: '0 6px 16px rgba(159,27,50,0.2)'
+                      },
+                      '&.Mui-disabled': {
+                        bgcolor: colorScheme.grey.border,
+                        color: colorScheme.grey.text
+                      }
+                    }}
+                  >
+                    {loading ? <CircularProgress size={24} color="inherit" /> : 'Process to payment'}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    onClick={handleNext}
+                    sx={{
+                      bgcolor: colorScheme.red.primary,
+                      borderRadius: 99,
+                      fontWeight: 600,
+                      px: 4,
+                      py: 1.5,
+                      fontSize: '1.1rem',
+                      boxShadow: '0 4px 12px rgba(159,27,50,0.15)',
+                      '&:hover': {
+                        bgcolor: colorScheme.red.hover,
+                        boxShadow: '0 6px 16px rgba(159,27,50,0.2)'
+                      }
+                    }}
+                  >
+                    Next
+                  </Button>
+                )}
+              </Box>
+            </Box>
+          </Grid>
+
+          {/* Right: Enhanced Order Summary */}
+          <Grid item xs={12} md={5} lg={4}>
+            <Box sx={{ p: { xs: 0, md: 0 }, pt: { xs: 4, md: 0 } }}>
+              <Paper elevation={3} sx={{ 
+                p: 3, 
+                borderRadius: 4, 
+                bgcolor: '#fff', 
+                color: colorScheme.red.primary, 
+                boxShadow: '0 2px 8px rgba(22,101,52,0.08)',
+                maxWidth: 320,
+                mx: 'auto',
+                position: 'sticky',
+                top: 100
+              }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                  <Box
+                    component="img"
+                    src={event.eventImage}
+                    alt={event.eventTitle}
+                    sx={{ 
+                      width: '100%', 
+                      height: 100, 
+                      objectFit: 'cover', 
+                      borderRadius: 2, 
+                      mb: 2,
+                      transition: 'transform 0.2s',
+                      '&:hover': {
+                        transform: 'scale(1.02)'
+                      }
+                    }}
+                  />
+                </Box>
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 2, color: colorScheme.red.primary }}>
+                  Order Summary
+                </Typography>
+                <Stack spacing={1} sx={{ mb: 2 }}>
+                  {tickets.map((ticket, idx) => (
+                    <Box key={idx} sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        bgcolor: colorScheme.grey.background,
+                        borderRadius: 1,
+                        px: 1
+                      }
+                    }}>
+                      <Typography variant="body2" sx={{ color: colorScheme.red.primary }}>
+                        1 x {ticket.ticketType} Ticket
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: colorScheme.red.primary, fontWeight: 600 }}>
+                        ${ticket.ticketPrice.toFixed(2)}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+                <Divider sx={{ my: 2, borderColor: colorScheme.grey.divider }} />
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 2 
+                }}>
+                  <Typography variant="subtitle1" fontWeight={700} sx={{ color: colorScheme.red.primary }}>Total</Typography>
+                  <Typography variant="subtitle1" fontWeight={700} sx={{ color: colorScheme.red.primary }}>${getCartTotal().toFixed(2)}</Typography>
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Have a promotion code?"
+                    value={promo}
+                    onChange={e => setPromo(e.target.value)}
+                    variant="outlined"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LocalOfferIcon sx={{ color: colorScheme.grey.text, fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: promo && (
+                        <InputAdornment position="end">
+                          <Button
+                            size="small"
+                            onClick={handlePromoApply}
+                            disabled={promoApplied}
+                            sx={{ 
+                              color: promoApplied ? 'success.main' : colorScheme.red.primary,
+                              '&:hover': {
+                                bgcolor: colorScheme.red.light
+                              }
+                            }}
+                          >
+                            {promoApplied ? 'Applied' : 'Apply'}
+                          </Button>
+                        </InputAdornment>
+                      )
+                    }}
+                    sx={{ 
+                      bgcolor: colorScheme.grey.background, 
+                      borderRadius: 2,
+                      '& .MuiOutlinedInput-root': {
+                        fontSize: '0.9rem'
+                      }
+                    }}
+                  />
+                </Box>
+                <Box sx={{ 
+                  mt: 2, 
+                  p: 1.5, 
+                  bgcolor: colorScheme.grey.background, 
+                  borderRadius: 2,
+                  fontSize: '0.8rem'
+                }}>
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+                    <SecurityIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                    <Typography variant="caption" color="text.secondary">
+                      Your payment is secured with SSL encryption
+                    </Typography>
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary">
+                    By completing your purchase, you agree to our Terms of Service and Privacy Policy.
+                  </Typography>
+                </Box>
+              </Paper>
+            </Box>
+          </Grid>
+        </Grid>
+      </Container>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
+};
+
+export default Checkout;

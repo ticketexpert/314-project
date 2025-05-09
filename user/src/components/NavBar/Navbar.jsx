@@ -5,11 +5,15 @@ import AuthBtn from './AuthBtn';
 import "./Navbar.css";
 import Tick from '../../assets/Tick.svg';
 import { Link } from 'react-router-dom';
+import { Badge, IconButton } from '@mui/material';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useCart } from '../../context/CartContext';
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navRef = useRef(null);
+  const { getCartCount } = useCart();
 
   useEffect(() => {
     // Check localStorage on component mount
@@ -43,7 +47,14 @@ const Navbar = () => {
         <div>
             <NavigationMenuDemo />
         </div>
-        <div>
+        <div className="nav-right">
+            <Link to="/cart" className="cart-link">
+                <Badge badgeContent={getCartCount()} color="error" sx={{ '& .MuiBadge-badge': { fontSize: 10, height: 20, minWidth: 20 } }}>
+                    <IconButton sx={{ color: '#9F1B32' }}>
+                        <ShoppingCartIcon />
+                    </IconButton>
+                </Badge>
+            </Link>
             {isLoggedIn ? (
                 <AvatarDemo onLogout={handleLogout} />
             ) : (

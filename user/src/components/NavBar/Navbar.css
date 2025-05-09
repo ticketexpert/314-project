@@ -31,6 +31,23 @@
     height: 28px;
 }
 
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cart-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+
+.cart-link:hover {
+    transform: scale(1.05);
+}
+
 @media (max-width: 600px) {
     .rootNavBar {
         flex-direction: column;
@@ -47,5 +64,9 @@
     }
     .rootNavBar.scrolled {
         padding: 4px 2vw;
+    }
+    .nav-right {
+        justify-content: center;
+        gap: 12px;
     }
 }

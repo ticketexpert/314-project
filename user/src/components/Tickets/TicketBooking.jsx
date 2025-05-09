@@ -12,6 +12,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 import Snackbar from '@mui/material/Snackbar';
+import { useCart } from '../../context/CartContext';
 
 const colorScheme = {
   blue: {
@@ -38,6 +39,7 @@ export default function TicketBooking() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     async function fetchEvent() {
@@ -66,6 +68,22 @@ export default function TicketBooking() {
   const subtotal = event && event.pricing
     ? event.pricing.reduce((sum, ticket) => sum + (selected[ticket.type] || 0) * ticket.price, 0)
     : 0;
+
+  const handleAddToCart = () => {
+    const ticketsToAdd = {};
+    Object.entries(selected).forEach(([type, quantity]) => {
+      if (quantity > 0) {
+        const ticket = event.pricing.find(t => t.type === type);
+        ticketsToAdd[type] = {
+          quantity,
+          price: ticket.price
+        };
+      }
+    });
+    
+    addToCart(event, ticketsToAdd);
+    setSnackbarOpen(true);
+  };
 
   if (loading) return <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}><Typography variant="h6">Loading...</Typography></Container>;
   if (error) return <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}><Typography color="error">{error}</Typography></Container>;
@@ -249,7 +267,7 @@ export default function TicketBooking() {
                 }
               }}
               disabled={!Object.values(selected).some(qty => qty > 0)}
-              onClick={() => setSnackbarOpen(true)}
+              onClick={handleAddToCart}
             >
               Add to cart
             </Button>
