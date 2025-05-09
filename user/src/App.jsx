@@ -2,7 +2,6 @@ import { Flex, Text, Button } from "@radix-ui/themes";
 import "@fontsource/instrument-sans";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
-import NavigationMenuDemo from "./components/NavBar/NavigationMenuDemo";
 import Navbar from "./components/NavBar/Navbar";
 import EventSearch from "./components/Homepage/EventSearch";
 import TrendingEvents from "./components/Homepage/TrendingEvents";
@@ -37,7 +36,6 @@ function AuthLayout({ children }) {
 
 // Home page component
 function Home() {
-	const [events, setEvents] = useState([]);
 	const [formattedEvents, setFormattedEvents] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [topLocations, setTopLocations] = useState([]);

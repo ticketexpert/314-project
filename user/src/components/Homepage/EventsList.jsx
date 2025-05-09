@@ -8,6 +8,11 @@ const getUniqueCategories = (events) => [
   ...Array.from(new Set(events.map(e => e.type)))
 ];
 
+const getUniqueLocations = (events) => [
+  'All',
+  ...Array.from(new Set(events.map(e => e.location)))
+];
+
 const sortOptions = [
   { value: 'title', label: 'Title (A-Z)' },
   { value: 'date', label: 'Date' },
@@ -16,6 +21,7 @@ const sortOptions = [
 export default function EventsList() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
+  const [location, setLocation] = useState('All');
   const [sort, setSort] = useState('title');
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,10 +43,12 @@ export default function EventsList() {
   }, []);
 
   const categories = useMemo(() => getUniqueCategories(events), [events]);
+  const locations = useMemo(() => getUniqueLocations(events), [events]);
 
   const filteredEvents = useMemo(() => {
     let filtered = events.filter(event =>
       (category === 'All' || event.type === category) &&
+      (location === 'All' || event.location === location) &&
       (event.title.toLowerCase().includes(search.toLowerCase()) ||
         event.description.toLowerCase().includes(search.toLowerCase()))
     );
@@ -50,7 +58,7 @@ export default function EventsList() {
       filtered = filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
     }
     return filtered;
-  }, [search, category, sort, events]);
+  }, [search, category, location, sort, events]);
 
   if (loading) {
     return (
@@ -93,6 +101,18 @@ export default function EventsList() {
           </Select>
         </FormControl>
         <FormControl sx={{ minWidth: 160 }}>
+          <InputLabel>Location</InputLabel>
+          <Select
+            value={location}
+            label="Location"
+            onChange={e => setLocation(e.target.value)}
+          >
+            {locations.map(loc => (
+              <MenuItem key={loc} value={loc}>{loc}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ minWidth: 160 }}>
           <InputLabel>Sort By</InputLabel>
           <Select
             value={sort}
@@ -129,6 +149,7 @@ export default function EventsList() {
                     <Chip label={event.type.toUpperCase()} color="success" size="small" sx={{ bgcolor: '#e6f4ea', color: '#166534', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
                     <Chip label={new Date(event.date).toLocaleDateString()} color="primary" size="small" sx={{ bgcolor: '#e0e7ff', color: '#034AA6', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
                     <Chip label={`Ticket from $${event.price}`} size="small" sx={{ bgcolor: '#fbe9eb', color: '#9F1B32', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={event.location} size="small" sx={{ bgcolor: '#f3e8ff', color: '#6b21a8', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
                   </Stack>
                   <Typography variant="h6" fontWeight="bold" sx={{ whiteSpace: 'normal', wordBreak: 'break-word', mb: 1 }}>
                     {event.title}
