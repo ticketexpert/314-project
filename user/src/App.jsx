@@ -15,6 +15,7 @@ import EventDetail from "./components/Homepage/EventDetail";
 import EventsList from "./components/Homepage/EventsList";
 import LocationsList from "./components/Homepage/LocationsList";
 import CategoriesList from "./components/Homepage/CategoriesList";
+import TicketBooking from "./components/Tickets/TicketBooking";
 // Layout component to wrap pages with common elements
 function Layout({ children }) {
 	return (
@@ -63,7 +64,8 @@ function Home() {
 					venue: event.venue,
 					region: event.region,
 					pricing: event.pricing,
-					tags: event.tags
+					tags: event.tags,
+					eventId: event.eventId
 				}));
 
 				// Get unique regions and their counts
@@ -79,13 +81,14 @@ function Home() {
 						category: `${count} Events`,
 						type: 'artists',
 						isLabel: true,
-						label: getStateFromCity(name)
+						label: getStateFromCity(name),
+						region: name
 					}))
 					.sort((a, b) => b.count - a.count)
 					.slice(0, 7);
 
 				setFormattedEvents(formatted);
-				setTopLocations(locations);
+				setTopLocations(uniqueLocations);
 			} catch (error) {
 				console.error("Error fetching events:", error);
 			} finally {
@@ -279,6 +282,11 @@ export default function MyApp() {
 				<Route path="categories" element={
 					<Layout>
 						<CategoriesList />
+					</Layout>
+				} />
+				<Route path="/event/:id/tickets" element={
+					<Layout>
+						<TicketBooking />
 					</Layout>
 				} />
 			</Routes>

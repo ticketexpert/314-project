@@ -3,7 +3,7 @@ import { Box, Typography, TextField, InputAdornment, MenuItem, Select, FormContr
 import SearchIcon from '@mui/icons-material/Search';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import EventIcon from '@mui/icons-material/Event';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams, useNavigate } from 'react-router-dom';
 
 const getUniqueStates = (locations) => [
   'All',
@@ -16,11 +16,51 @@ const sortOptions = [
 ];
 
 export default function LocationsList() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [state, setState] = useState('All');
   const [sort, setSort] = useState('name');
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const regionParam = searchParams.get('region');
+    if (regionParam) {
+      setSearch(regionParam);
+    }
+  }, [searchParams]);
+
+  // Update URL when filters change
+  const updateURL = (newSearch, newState) => {
+    const params = new URLSearchParams();
+    if (newSearch) params.set('region', newSearch);
+    if (newState && newState !== 'All') params.set('state', newState);
+    if (sort !== 'name') params.set('sort', sort);
+    navigate(`?${params.toString()}`);
+  };
+
+  // Handle search change
+  const handleSearchChange = (e) => {
+    const newSearch = e.target.value;
+    setSearch(newSearch);
+    updateURL(newSearch, state);
+  };
+
+  // Handle state change
+  const handleStateChange = (e) => {
+    const newState = e.target.value;
+    setState(newState);
+    updateURL(search, newState);
+  };
+
+  // Handle sort change
+  const handleSortChange = (e) => {
+    const newSort = e.target.value;
+    setSort(newSort);
+    updateURL(search, state);
+  };
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -39,7 +79,7 @@ export default function LocationsList() {
               state: getStateFromCity(event.region),
               eventCount: 0,
               events: [],
-              image: event.image // Use the first event's image as location image
+              image: event.image
             };
           }
           acc[event.region].eventCount++;
@@ -135,7 +175,7 @@ export default function LocationsList() {
           variant="outlined"
           placeholder="Search locations..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={handleSearchChange}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -150,7 +190,7 @@ export default function LocationsList() {
           <Select
             value={state}
             label="State"
-            onChange={e => setState(e.target.value)}
+            onChange={handleStateChange}
           >
             {states.map(state => (
               <MenuItem key={state} value={state}>{state}</MenuItem>
@@ -162,7 +202,7 @@ export default function LocationsList() {
           <Select
             value={sort}
             label="Sort By"
-            onChange={e => setSort(e.target.value)}
+            onChange={handleSortChange}
           >
             {sortOptions.map(opt => (
               <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
@@ -217,7 +257,7 @@ export default function LocationsList() {
                       variant="contained"
                       size="small"
                       component={RouterLink}
-                      to={`/events?location=${location.name}`}
+                      to={`/events?location=${encodeURIComponent(location.name)}`}
                       sx={{ borderRadius: 99, fontWeight: 600, background: '#034AA6', color: 'white', '&:hover': { background: '#033b88' } }}
                     >
                       View Events

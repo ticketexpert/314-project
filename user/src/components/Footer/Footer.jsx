@@ -1,12 +1,68 @@
-import React, { useState } from 'react';
-import { Box, Typography, Grid, Select, MenuItem } from '@mui/material';
-import { footerLinks, currencies } from './footerData';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Grid, Select, MenuItem, Link as MuiLink } from '@mui/material';
+import { currencies } from './footerData';
 import { Link } from 'react-router-dom';
 import { Stack } from '@mui/material';
-import { Flex } from '@radix-ui/themes';
 
 export default function Footer() {
   const [currency, setCurrency] = useState('AUD');
+  const [categories, setCategories] = useState([]);
+  const [popularEvents, setPopularEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://api.ticketexpert.me/api/events');
+        if (!response.ok) {
+          throw new Error('Failed to fetch events');
+        }
+        const data = await response.json();
+        
+        // Extract unique categories
+        const uniqueCategories = [...new Set(data.map(event => event.category))];
+        setCategories(uniqueCategories);
+
+        // Get popular events (most recent 4 events)
+        const sortedEvents = [...data].sort((a, b) => 
+          new Date(b.fromDateTime) - new Date(a.fromDateTime)
+        ).slice(0, 4);
+        setPopularEvents(sortedEvents);
+      } catch (error) {
+        console.error('Error fetching footer data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const footerSections = [
+    {
+      title: 'Categories',
+      items: categories.map(category => ({
+        label: category,
+        href: `/events?category=${encodeURIComponent(category)}`
+      }))
+    },
+    {
+      title: 'Popular Events',
+      items: popularEvents.map(event => ({
+        label: event.title,
+        href: `/event/${event.eventId}`
+      }))
+    },
+    {
+      title: 'Company',
+      items: [
+        { label: 'About Us', href: '/about' },
+        { label: 'Contact', href: '/contact' },
+        { label: 'Careers', href: '/careers' },
+        { label: 'Blog', href: '/blog' }
+      ]
+    }
+  ];
 
   return (
     <Box
@@ -48,26 +104,37 @@ export default function Footer() {
         </Grid>
 
         {/* Right side: Links */}
-        <Grid item xs={5} md={3}>
+        <Grid item xs={12} md={8}>
           <Grid container spacing={4}>
-            {footerLinks.map((section, index) => (
-              <Grid item xs={6} md={4} key={index}>
-                <Typography fontWeight="bold" gutterBottom>
+            {footerSections.map((section, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Typography 
+                  variant="h6" 
+                  fontWeight="bold" 
+                  gutterBottom
+                  sx={{ color: '#9F1B32' }}
+                >
                   {section.title}
                 </Typography>
-                <Stack spacing={1} mt={1}>
-                {section.items.map((item, idx) => (
-                    <Typography
-                    key={idx}
-                    sx={{ color: 'black', fontSize: 14 }}
-                    component="a"
-                    href={item.href}
-                    underline="none"
-                    style={{ textDecoration: 'none' }}
+                <Stack spacing={1.5} mt={1}>
+                  {section.items.map((item, idx) => (
+                    <MuiLink
+                      key={idx}
+                      component={Link}
+                      to={item.href}
+                      sx={{
+                        color: 'text.secondary',
+                        fontSize: '0.875rem',
+                        textDecoration: 'none',
+                        '&:hover': {
+                          color: '#9F1B32',
+                          textDecoration: 'underline'
+                        }
+                      }}
                     >
-                    {item.label}
-                    </Typography>
-                ))}
+                      {item.label}
+                    </MuiLink>
+                  ))}
                 </Stack>
               </Grid>
             ))}
@@ -87,8 +154,8 @@ export default function Footer() {
           pt: 2,
         }}
       >
-        <Typography fontSize={14}>
-          © 2025 TicketExpert. All rights reserved.
+        <Typography fontSize={14} color="text.secondary">
+          © {new Date().getFullYear()} TicketExpert. All rights reserved.
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -115,9 +182,42 @@ export default function Footer() {
             ))}
           </Select>
 
-          <Typography fontSize={14} sx={{ cursor: 'pointer' }}>Our Term</Typography>
-          <Typography fontSize={14} sx={{ cursor: 'pointer' }}>Our Policy</Typography>
-          <Typography fontSize={14} sx={{ cursor: 'pointer' }}>Privacy</Typography>
+          <MuiLink
+            component={Link}
+            to="/terms"
+            sx={{
+              fontSize: 14,
+              color: 'text.secondary',
+              textDecoration: 'none',
+              '&:hover': { color: '#9F1B32' }
+            }}
+          >
+            Terms
+          </MuiLink>
+          <MuiLink
+            component={Link}
+            to="/policy"
+            sx={{
+              fontSize: 14,
+              color: 'text.secondary',
+              textDecoration: 'none',
+              '&:hover': { color: '#9F1B32' }
+            }}
+          >
+            Policy
+          </MuiLink>
+          <MuiLink
+            component={Link}
+            to="/privacy"
+            sx={{
+              fontSize: 14,
+              color: 'text.secondary',
+              textDecoration: 'none',
+              '&:hover': { color: '#9F1B32' }
+            }}
+          >
+            Privacy
+          </MuiLink>
         </Box>
       </Box>
     </Box>
