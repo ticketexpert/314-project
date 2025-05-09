@@ -16,6 +16,7 @@ import PlaceIcon from '@mui/icons-material/Place';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 
+
 const events = [
   {
     id: 1,

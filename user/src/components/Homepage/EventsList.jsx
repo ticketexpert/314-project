@@ -1,12 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Box, Typography, TextField, InputAdornment, MenuItem, Select, FormControl, InputLabel, Stack, Grid, Card, CardContent, Button, Chip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import eventSamples from '../../data/eventSample';
 import { Link as RouterLink } from 'react-router-dom';
 
 const getUniqueCategories = (events) => [
   'All',
-  ...Array.from(new Set(events.map(e => e.category)))
+  ...Array.from(new Set(events.map(e => e.type)))
 ];
 
 const sortOptions = [
@@ -18,22 +17,48 @@ export default function EventsList() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [sort, setSort] = useState('title');
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const categories = useMemo(() => getUniqueCategories(eventSamples), []);
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('https://www.api.ticketexpert.me/api/events');
+        const data = await response.json();
+        setEvents(data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  const categories = useMemo(() => getUniqueCategories(events), [events]);
 
   const filteredEvents = useMemo(() => {
-    let filtered = eventSamples.filter(event =>
-      (category === 'All' || event.category === category) &&
+    let filtered = events.filter(event =>
+      (category === 'All' || event.type === category) &&
       (event.title.toLowerCase().includes(search.toLowerCase()) ||
         event.description.toLowerCase().includes(search.toLowerCase()))
     );
     if (sort === 'title') {
       filtered = filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sort === 'date') {
-      filtered = filtered.sort((a, b) => new Date(a.dateRange.split(' ')[0]) - new Date(b.dateRange.split(' ')[0]));
+      filtered = filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
     }
     return filtered;
-  }, [search, category, sort]);
+  }, [search, category, sort, events]);
+
+  if (loading) {
+    return (
+      <Box sx={{ width: '100vw', maxWidth: 1200, mx: 'auto', my: 4, px: { xs: 1, md: 3 }, pt: '100px', textAlign: 'center' }}>
+        <Typography variant="h6">Loading events...</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ width: '100vw', maxWidth: 1200, mx: 'auto', my: 4, px: { xs: 1, md: 3 }, pt: '100px' }}>
@@ -91,21 +116,19 @@ export default function EventsList() {
           </Grid>
         ) : (
           filteredEvents.map(event => (
-            <Grid item xs={12} key={event.id}>
+            <Grid item xs={12} key={event.eventId}>
               <Card sx={{width: { xs: '100%', sm: '80vw' }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, borderRadius: 4, boxShadow: '0 2px 8px rgba(22,101,52,0.08)', height: { sm: 180, xs: 'auto' } }}>
                 <Box
                   component="img"
-                  src={event.image}
+                  src={`https://source.unsplash.com/random/400x300?${event.type}`}
                   alt={event.title}
                   sx={{ width: { xs: '100%', sm: 200 }, height: { xs: 180, sm: '100%' }, objectFit: 'cover', borderTopLeftRadius: 4, borderBottomLeftRadius: { sm: 4, xs: 0 }, borderTopRightRadius: { xs: 4, sm: 0 } }}
                 />
                 <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 2 }}>
                   <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
-                    <Chip label={event.category} color="success" size="small" sx={{ bgcolor: '#e6f4ea', color: '#166534', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
-                    <Chip label={event.dateRange} color="primary" size="small" sx={{ bgcolor: '#e0e7ff', color: '#034AA6', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
-                    {event.tags && event.tags.slice(0, 3).map((tag, idx) => (
-                      <Chip key={idx} label={tag} size="small" sx={{ bgcolor: '#fbe9eb', color: '#9F1B32', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
-                    ))}
+                    <Chip label={event.type.toUpperCase()} color="success" size="small" sx={{ bgcolor: '#e6f4ea', color: '#166534', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={new Date(event.date).toLocaleDateString()} color="primary" size="small" sx={{ bgcolor: '#e0e7ff', color: '#034AA6', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={`Ticket from $${event.price}`} size="small" sx={{ bgcolor: '#fbe9eb', color: '#9F1B32', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
                   </Stack>
                   <Typography variant="h6" fontWeight="bold" sx={{ whiteSpace: 'normal', wordBreak: 'break-word', mb: 1 }}>
                     {event.title}
@@ -118,7 +141,7 @@ export default function EventsList() {
                       variant="contained"
                       size="small"
                       component={RouterLink}
-                      to={`/event/${event.id}`}
+                      to={`/event/${event.eventId}`}
                       sx={{ borderRadius: 99, fontWeight: 600, background: '#034AA6', color: 'white', '&:hover': { background: '#033b88' } }}
                     >
                       View Details

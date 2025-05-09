@@ -192,7 +192,7 @@ p {
 	flex-direction: column;
 	width: 100%;
 	height: 100%;
-	background: linear-gradient(180deg, var(--Support-Colour, #02735E) 0%, var(--2nd-Secondary-Colour, #034AA6) 39.57%, var(--1st-Secondary-Colour, #0339A6) 100%);
+	background: linear-gradient(180deg, var(--Support-Colour, #ff6161) 0%, var(--2nd-Secondary-Colour, #034AA6) 39.57%, var(--1st-Secondary-Colour, #0339A6) 100%);
 	border-radius: 6px;
 	padding: 25px;
 	text-decoration: none;
