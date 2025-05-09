@@ -52,7 +52,14 @@ function Home() {
 				const data = await apiEvents.json();
 				const formatted = data.map(event => ({
 					name: event.title,
-					category: event.dateRange,
+					category: new Date(event.fromDateTime).toLocaleString('en-AU', {
+						day: 'numeric',
+						month: 'long', 
+						year: 'numeric',
+						hour: 'numeric',
+						minute: 'numeric',
+						hour12: true
+					}),
 					type: event.type
 				}));
 

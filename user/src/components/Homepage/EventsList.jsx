@@ -51,7 +51,7 @@ export default function EventsList() {
     return getUniqueCategories(events);
   }, [events]);
   const locations = useMemo(() => getUniqueLocations(events), [events]);
-``
+
   const filteredEvents = useMemo(() => {
     let filtered = events.filter(event =>
       (category === 'All' || event.category === category) &&
@@ -62,7 +62,7 @@ export default function EventsList() {
     if (sort === 'title') {
       filtered = filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sort === 'date') {
-      filtered = filtered.sort((a, b) => new Date(a.dateRange.split(' to ')[0]) - new Date(b.dateRange.split(' to ')[0]));
+      filtered = filtered.sort((a, b) => new Date(a.fromDateTime) - new Date(b.fromDateTime));
     }
     return filtered;
   }, [search, category, location, sort, events]);
@@ -134,7 +134,7 @@ export default function EventsList() {
       </Stack>
       <Grid container spacing={3}>
         {filteredEvents.length === 0 ? (
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Card sx={{ p: 4, textAlign: 'center' }}>
               <CardContent>
                 <Typography variant="h6">No events found.</Typography>
@@ -143,7 +143,7 @@ export default function EventsList() {
           </Grid>
         ) : (
           filteredEvents.map(event => (
-            <Grid item xs={12} key={event.eventId}>
+            <Grid xs={12} key={event.eventId}>
               <Card sx={{width: { xs: '100%', sm: '80vw' }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, borderRadius: 4, boxShadow: '0 2px 8px rgba(22,101,52,0.08)', height: { sm: 180, xs: 'auto' } }}>
                 <Box
                   component="img"
@@ -154,8 +154,8 @@ export default function EventsList() {
                 <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 2 }}>
                   <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
                     <Chip label={event.category.toUpperCase()} color="success" size="small" sx={{ bgcolor: '#e6f4ea', color: '#166534', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
-                    <Chip label={new Date(event.dateRange.split(' to ')[0]).toLocaleDateString()} color="primary" size="small" sx={{ bgcolor: '#e0e7ff', color: '#034AA6', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
-                    <Chip label={`Ticket from $${event.pricing[0]?.price || 'N/A'}`} size="small" sx={{ bgcolor: '#fbe9eb', color: '#9F1B32', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={new Date(event.fromDateTime).toLocaleDateString()} color="primary" size="small" sx={{ bgcolor: '#e0e7ff', color: '#034AA6', fontWeight: 600, minWidth: 110, maxWidth: 140 }} />
+                    <Chip label={`Ticket from $${event.pricing?.[0]?.price || 'N/A'}`} size="small" sx={{ bgcolor: '#fbe9eb', color: '#9F1B32', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
                     <Chip label={event.venue} size="small" sx={{ bgcolor: '#f3e8ff', color: '#6b21a8', fontWeight: 500, minWidth: 110, maxWidth: 140 }} />
                   </Stack>
                   <Typography variant="h6" fontWeight="bold" sx={{ whiteSpace: 'normal', wordBreak: 'break-word', mb: 1 }}>
