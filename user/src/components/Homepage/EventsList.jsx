@@ -33,15 +33,11 @@ export default function EventsList() {
     const locationParam = searchParams.get('location');
     const categoryParam = searchParams.get('category');
     const searchParam = searchParams.get('search');
-<<<<<<< Updated upstream
     const dateParam = searchParams.get('date');
-=======
->>>>>>> Stashed changes
 
     if (locationParam) setLocation(locationParam);
     if (categoryParam) setCategory(categoryParam);
     if (searchParam) setSearch(searchParam);
-<<<<<<< Updated upstream
     if (dateParam) {
       try {
         const parsedDate = new Date(dateParam);
@@ -52,8 +48,6 @@ export default function EventsList() {
         console.error('Error parsing date:', error);
       }
     }
-=======
->>>>>>> Stashed changes
   }, [searchParams]);
 
   useEffect(() => {
@@ -84,7 +78,6 @@ export default function EventsList() {
       const categoryMatch = category === 'All' || event.category === category;
       const locationMatch = location === 'All' || event.region === location;
 
-<<<<<<< Updated upstream
       // Date filtering
       const dateMatch = !date || (() => {
         const eventDate = new Date(event.fromDateTime);
@@ -92,28 +85,6 @@ export default function EventsList() {
         return eventDate.toDateString() === searchDate.toDateString();
       })();
 
-      // Improved search matching with prefix priority
-      const searchTerms = search.toLowerCase().split(' ').filter(term => term.length > 0);
-      const searchMatch = searchTerms.length === 0 || searchTerms.every(term => {
-        // Check title
-        const titleWords = event.title.toLowerCase().split(' ');
-        const titleMatch = titleWords.some(word => word.startsWith(term) || term.startsWith(word));
-        
-        // Check description
-        const descriptionWords = event.description.toLowerCase().split(' ');
-        const descriptionMatch = descriptionWords.some(word => word.startsWith(term) || term.startsWith(word));
-        
-        // Check category
-        const categoryMatch = event.category.toLowerCase().startsWith(term) || term.startsWith(event.category.toLowerCase());
-        
-        // Check tags
-        const tagsMatch = event.tags?.some(tag => tag.toLowerCase().startsWith(term) || term.startsWith(tag.toLowerCase()));
-
-        return titleMatch || descriptionMatch || categoryMatch || tagsMatch;
-      });
-
-      return categoryMatch && locationMatch && dateMatch && searchMatch;
-=======
       const searchTerms = search.toLowerCase().split(' ').filter(term => term.length > 0);
       const searchMatch = searchTerms.length === 0 || searchTerms.every(term => {
         const titleWords = event.title.toLowerCase().split(' ');
@@ -150,8 +121,7 @@ export default function EventsList() {
         return hasPrefixOrSimilarMatch;
       });
 
-      return categoryMatch && locationMatch && searchMatch;
->>>>>>> Stashed changes
+      return categoryMatch && locationMatch && dateMatch && searchMatch;
     });
 
     if (sort === 'title') {
@@ -224,52 +194,6 @@ export default function EventsList() {
   const handleDateChange = (newDate) => {
     setDate(newDate);
     updateURL(location, category, search, newDate);
-  };
-
-  const formatDate = (dateString) => {
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        return 'Invalid Date';
-      }
-      return date.toLocaleDateString('en-AU', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-      });
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return 'Invalid Date';
-    }
-  };
-
-  const getLowestPrice = (pricing) => {
-    if (!pricing || pricing.length === 0) return 'N/A';
-    return Math.min(...pricing.map(p => p.price));
-  };
-
-  // Update URL when filters change
-  const updateURL = (newLocation, newCategory, newSearch) => {
-    const params = new URLSearchParams();
-    if (newLocation !== 'All') params.set('location', newLocation);
-    if (newCategory !== 'All') params.set('category', newCategory);
-    if (newSearch) params.set('search', newSearch);
-    window.history.replaceState(null, '', `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`);
-  };
-
-  const handleLocationChange = (newLocation) => {
-    setLocation(newLocation);
-    updateURL(newLocation, category, search);
-  };
-
-  const handleCategoryChange = (newCategory) => {
-    setCategory(newCategory);
-    updateURL(location, newCategory, search);
-  };
-
-  const handleSearchChange = (newSearch) => {
-    setSearch(newSearch);
-    updateURL(location, category, newSearch);
   };
 
   if (loading) {

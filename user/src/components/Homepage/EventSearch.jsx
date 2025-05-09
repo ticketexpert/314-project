@@ -17,22 +17,6 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import PlaceIcon from '@mui/icons-material/Place';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
-<<<<<<< Updated upstream
-import { Link as RouterLink } from 'react-router-dom';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
-
-export default function EventSearch() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [events, setEvents] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchParams, setSearchParams] = useState({
-    location: '',
-    date: null,
-    query: ''
-  });
-=======
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 export default function EventSearch() {
@@ -47,7 +31,6 @@ export default function EventSearch() {
   });
   const [locations, setLocations] = useState([]);
   const [categories, setCategories] = useState([]);
->>>>>>> Stashed changes
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -58,17 +41,6 @@ export default function EventSearch() {
         }
         const data = await response.json();
         
-<<<<<<< Updated upstream
-        // Extract unique locations
-        const uniqueLocations = Array.from(new Set(data.map(event => event.region)))
-          .filter(Boolean)
-          .sort();
-
-        setEvents(data);
-        setLocations(uniqueLocations);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-=======
         // Ensure we have valid data
         if (Array.isArray(data)) {
           setEvents(data);
@@ -86,7 +58,6 @@ export default function EventSearch() {
       } catch (error) {
         console.error("Error fetching events:", error);
         setEvents([]);
->>>>>>> Stashed changes
       } finally {
         setLoading(false);
       }
@@ -110,14 +81,6 @@ export default function EventSearch() {
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (searchParams.location) params.set('location', searchParams.location);
-<<<<<<< Updated upstream
-    if (searchParams.date) params.set('date', searchParams.date.toISOString());
-    if (searchParams.query) params.set('search', searchParams.query);
-    
-    window.location.href = `/events?${params.toString()}`;
-  };
-
-=======
     if (searchParams.date) params.set('date', searchParams.date);
     if (searchParams.query) params.set('search', searchParams.query);
     
@@ -154,7 +117,6 @@ export default function EventSearch() {
     );
   }
 
->>>>>>> Stashed changes
   return (
     <Box
       sx={{
@@ -204,11 +166,7 @@ export default function EventSearch() {
           <Typography fontSize="15px" color="#e0e7ef" mb={1}>
             Enter your location, date, or event details to get started.
           </Typography>
-<<<<<<< Updated upstream
-
-=======
           
->>>>>>> Stashed changes
           {/* Location Autocomplete */}
           <Autocomplete
             freeSolo
@@ -236,11 +194,7 @@ export default function EventSearch() {
                 <PlaceIcon sx={{ color: '#166534', mr: 1 }} />
                 <TextField
                   {...params}
-<<<<<<< Updated upstream
-                  placeholder="Enter your place here"
-=======
                   placeholder="Enter location"
->>>>>>> Stashed changes
                   variant="standard"
                   InputProps={{
                     ...params.InputProps,
@@ -277,13 +231,8 @@ export default function EventSearch() {
             <CalendarTodayIcon sx={{ color: '#166534', mr: 1 }} />
             <InputBase
               type="date"
-<<<<<<< Updated upstream
-              value={searchParams.date ? new Date(searchParams.date).toISOString().split('T')[0] : ''}
-              onChange={(e) => setSearchParams(prev => ({ ...prev, date: e.target.value ? new Date(e.target.value) : null }))}
-=======
               value={searchParams.date}
               onChange={(e) => setSearchParams(prev => ({ ...prev, date: e.target.value }))}
->>>>>>> Stashed changes
               sx={{
                 flex: 1,
                 color: '#0033a0',
@@ -302,11 +251,7 @@ export default function EventSearch() {
             />
           </Box>
 
-<<<<<<< Updated upstream
-          {/* Event Search */}
-=======
           {/* Event Search Input */}
->>>>>>> Stashed changes
           <Box
             sx={{
               display: 'flex',
@@ -326,11 +271,7 @@ export default function EventSearch() {
           >
             <PersonSearchIcon sx={{ color: '#166534', mr: 1 }} />
             <InputBase
-<<<<<<< Updated upstream
-              placeholder="Find an artist, event name or venue"
-=======
               placeholder="Find an event or category"
->>>>>>> Stashed changes
               value={searchParams.query}
               onChange={(e) => setSearchParams(prev => ({ ...prev, query: e.target.value }))}
               sx={{
@@ -378,45 +319,6 @@ export default function EventSearch() {
               background: '#fff',
             }}
           >
-<<<<<<< Updated upstream
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                <Typography variant="h6" color="text.secondary">Loading events...</Typography>
-              </Box>
-            ) : events.length > 0 ? (
-              events.map((event, index) => (
-                <Card
-                  key={event.eventId}
-                  sx={{
-                    position: 'absolute',
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: 6,
-                    overflow: 'hidden',
-                    opacity: index === activeIndex ? 1 : 0,
-                    transition: 'opacity 0.5s ease-in-out',
-                    zIndex: index === activeIndex ? 1 : 0,
-                    boxShadow: index === activeIndex ? '0 8px 32px rgba(22,101,52,0.18)' : 'none',
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src={event.image}
-                    alt={event.title}
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
-                  />
-                </Card>
-              ))
-            ) : (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                <Typography variant="h6" color="text.secondary">No events found</Typography>
-              </Box>
-            )}
-=======
             {events.map((event, index) => (
               <Card
                 key={event.eventId}
@@ -444,7 +346,6 @@ export default function EventSearch() {
                 />
               </Card>
             ))}
->>>>>>> Stashed changes
 
             {/* Navigation Buttons */}
             {events.length > 1 && (
@@ -528,46 +429,16 @@ export default function EventSearch() {
               }}
             >
               <Typography variant="h5" fontWeight="bold" color="#0339A6" mb={1}>
-                {events[activeIndex].title}
+                {events[activeIndex]?.title}
               </Typography>
               <Typography variant="subtitle1" color="#166534" mb={1}>
-                {events[activeIndex].venue}, {events[activeIndex].region} &nbsp;|&nbsp; {new Date(events[activeIndex].fromDateTime).toLocaleDateString('en-AU', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric'
-                })}
+                {events[activeIndex]?.venue}, {events[activeIndex]?.region} &nbsp;|&nbsp; {formatDate(events[activeIndex]?.fromDateTime)}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                {events[activeIndex].description}
+                {events[activeIndex]?.description}
               </Typography>
             </Box>
-<<<<<<< Updated upstream
           )}
-=======
-          </Box>
-          {/* Event Details Below Carousel */}
-          <Box
-            sx={{
-              width: '100%',
-              mt: 3,
-              p: { xs: 2, md: 3 },
-              background: '#fff',
-              borderRadius: 4,
-              boxShadow: '0 2px 12px rgba(22,101,52,0.08)',
-              textAlign: 'left',
-            }}
-          >
-            <Typography variant="h5" fontWeight="bold" color="#0339A6" mb={1}>
-              {events[activeIndex]?.title}
-            </Typography>
-            <Typography variant="subtitle1" color="#166534" mb={1}>
-              {events[activeIndex]?.venue}, {events[activeIndex]?.region} &nbsp;|&nbsp; {formatDate(events[activeIndex]?.fromDateTime)}
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              {events[activeIndex]?.description}
-            </Typography>
-          </Box>
->>>>>>> Stashed changes
         </Box>
       </Box>
     </Box>
