@@ -97,7 +97,6 @@ function Home() {
 					}))
 					.slice(0, 7);
 
-				setEvents(data);
 				setFormattedEvents(formatted);
 				setTopLocations(uniqueLocations);
 			} catch (error) {
