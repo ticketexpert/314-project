@@ -20,9 +20,9 @@ const ScanUI = () => {
 
   const compareResult = (result) => {
     if (result[0].rawValue === '1201') {
-      console.alert('Ticket is valid: ', result[0].rawValue);
+      alert('Ticket is valid: ' + result[0].rawValue);
     } else {
-      console.alert('Ticket is invalid: ', result[0].rawValue);
+      alert('Ticket is invalid: ' + result[0].rawValue);
     }
   };
 
