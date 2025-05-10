@@ -39,7 +39,7 @@ export default function TicketBooking() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const { addToCart } = useCart();
+  const { cartItems, addToCart } = useCart();
 
   useEffect(() => {
     async function fetchEvent() {
@@ -70,6 +70,15 @@ export default function TicketBooking() {
     : 0;
 
   const handleAddToCart = () => {
+    console.log('Event object:', event);
+
+    // Find a unique event ID
+    const eventId = event._id || event.id || event.eventId || event.uuid;
+    if (!eventId) {
+      alert('Event is missing a unique ID. Cannot add to cart.');
+      return;
+    }
+
     // Create tickets object with only the selected quantities
     const ticketsToAdd = {};
     Object.entries(selected).forEach(([type, quantity]) => {
@@ -86,11 +95,13 @@ export default function TicketBooking() {
       }
     });
 
-    // Only add to cart if there are valid selections
     if (Object.keys(ticketsToAdd).length > 0) {
-      // Send event info and tickets
+      // Check if event already exists in cart
+      const exists = cartItems.some(item => item.eventId === eventId);
+
+      // Always pass a unique event ID
       const eventData = {
-        id: event.id,
+        id: eventId,
         title: event.title,
         fromDateTime: event.fromDateTime,
         venue: event.venue,
@@ -98,12 +109,10 @@ export default function TicketBooking() {
         category: event.category,
         region: event.region
       };
-      
-      console.log('Adding to cart:', { eventData, ticketsToAdd }); // Debug log
-      addToCart(eventData, ticketsToAdd);
+
+      addToCart(eventData, ticketsToAdd); // Your context logic will merge or add as needed
+
       setSnackbarOpen(true);
-      
-      // Clear selections after adding to cart
       setSelected({});
     }
   };

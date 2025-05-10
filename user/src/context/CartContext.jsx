@@ -32,61 +32,48 @@ export const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   const addToCart = (event, tickets) => {
-    console.log('Current cart items:', cartItems); // Debug log
-    console.log('Adding new event:', event); // Debug log
-    console.log('Adding new tickets:', tickets); // Debug log
-
     setCartItems(prevItems => {
-      // Create a new array to avoid mutating the previous state
-      const newItems = [...prevItems];
-      
       // Check if the event already exists in the cart
-      const existingEventIndex = newItems.findIndex(item => item.eventId === event.id);
-      
-      if (existingEventIndex === -1) {
+      const existingEvent = prevItems.find(item => item.eventId === event.id);
+
+      if (!existingEvent) {
         // Event not in cart, add new event with tickets
-        const newEvent = {
-          eventId: event.id,
-          eventTitle: event.title,
-          eventDate: event.fromDateTime,
-          eventVenue: event.venue,
-          eventImage: event.image,
-          eventCategory: event.category,
-          eventRegion: event.region,
-          tickets: { ...tickets }  // Create a new object to avoid reference issues
-        };
-        console.log('Adding new event to cart:', newEvent); // Debug log
-        return [...newItems, newEvent]; // Return new array with added event
-      } else {
-        // Event exists, update tickets
-        const updatedItems = newItems.map((item, index) => {
-          if (index === existingEventIndex) {
-            const updatedTickets = { ...item.tickets };
-            
-            // Update each ticket type
-            Object.entries(tickets).forEach(([type, newTicket]) => {
-              if (updatedTickets[type]) {
-                // If ticket type exists, update quantity
-                updatedTickets[type] = {
-                  ...updatedTickets[type],
-                  quantity: updatedTickets[type].quantity + newTicket.quantity
-                };
-              } else {
-                // If ticket type doesn't exist, add it
-                updatedTickets[type] = { ...newTicket };
-              }
-            });
-            
-            return {
-              ...item,
-              tickets: updatedTickets
-            };
+        return [
+          ...prevItems,
+          {
+            eventId: event.id,
+            eventTitle: event.title,
+            eventDate: event.fromDateTime,
+            eventVenue: event.venue,
+            eventImage: event.image,
+            eventCategory: event.category,
+            eventRegion: event.region,
+            tickets: { ...tickets }
           }
-          return item;
+        ];
+      } else {
+        // Event exists, update tickets for this event only
+        return prevItems.map(item => {
+          if (item.eventId !== event.id) return item;
+
+          // Merge tickets: add new or update existing ticket types
+          const updatedTickets = { ...item.tickets };
+          Object.entries(tickets).forEach(([type, newTicket]) => {
+            if (updatedTickets[type]) {
+              updatedTickets[type] = {
+                ...updatedTickets[type],
+                quantity: updatedTickets[type].quantity + newTicket.quantity
+              };
+            } else {
+              updatedTickets[type] = { ...newTicket };
+            }
+          });
+
+          return {
+            ...item,
+            tickets: updatedTickets
+          };
         });
-        
-        console.log('Updated cart items:', updatedItems); // Debug log
-        return updatedItems;
       }
     });
   };

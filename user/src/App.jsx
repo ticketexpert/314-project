@@ -1,5 +1,4 @@
 import { Flex, Text, Button } from "@radix-ui/themes";
-import "@fontsource/instrument-sans";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Navbar from "./components/NavBar/Navbar";
@@ -18,6 +17,7 @@ import CategoriesList from "./components/Homepage/CategoriesList";
 import TicketBooking from "./components/Tickets/TicketBooking";
 import Cart from "./components/Cart/Cart";
 import Checkout from "./components/Checkout/Checkout";
+import CheckoutSuccess from './components/Checkout/CheckoutSuccess';
 import { CartProvider } from './context/CartContext';
 
 // Layout component to wrap pages with common elements
@@ -349,6 +349,11 @@ export default function MyApp() {
 					<Route path="/checkout" element={
 						<Layout>
 							<Checkout />
+						</Layout>
+					} />
+					<Route path="/checkout/success" element={
+						<Layout>
+							<CheckoutSuccess />
 						</Layout>
 					} />
 				</Routes>

@@ -44,7 +44,7 @@ export default function SignUp() {
     setSuccess("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
@@ -59,13 +59,44 @@ export default function SignUp() {
       setError("Password is too weak. Please use a stronger password.");
       return;
     }
-    setSuccess("Account created successfully!");
-    localStorage.setItem('isLoggedIn', 'true');
-    setTimeout(() => navigate("/signup/favorite"), 1000);
+    try {
+      const res = await fetch("https://www.api.ticketexpert.me/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          password: formData.password,
+          role: "Customer",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        // Your backend returns 401 for duplicate user
+        if (res.status === 401 && data.error === "User already exists") {
+          setError("User already exists. Please use a different email.");
+        } else {
+          setError(data.error || "Signup failed.");
+        }
+        return;
+      }
+      setSuccess("Account created successfully!");
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userId', data.userId || data.id); // Save userId for later use
+      setTimeout(() => navigate("/signup/favorite"), 1000);
+    } catch (err) {
+      setError("Network error. Please try again.");
+    }
   };
 
   const passwordStrength = getPasswordStrength(formData.password);
   const { label: strengthLabel, color: strengthColor } = getStrengthLabel(passwordStrength);
+
+  const handleError = (errorMessage) => {
+    setError(errorMessage);
+  };
 
   return (
     <Box

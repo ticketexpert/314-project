@@ -49,6 +49,7 @@ const Cart = () => {
             <Typography variant="body1" color="text.secondary" paragraph sx={{ mb: 4 }}>
               Looks like you haven't added any tickets to your cart yet.
             </Typography>
+            <br/><br/>
             <Button
               variant="contained"
               size="large"
@@ -150,6 +151,7 @@ const Cart = () => {
                             <Typography variant="body1" fontWeight={500}>
                               {type} × {ticket.quantity}
                             </Typography>
+                            <br/>
                             <Typography variant="body2" color="text.secondary">
                               ${ticket.price.toFixed(2)} each
                             </Typography>
