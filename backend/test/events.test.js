@@ -286,4 +286,39 @@ describe('Events API', () => {
       expect(registrations.length).to.equal(50);
     });
   });
+
+  describe('Ticket Management', () => {
+    it('should create tickets for multiple registrations', async function() {
+      this.timeout(30000); // Increase timeout for multiple ticket creation
+      
+      // Get all events and users
+      const eventsRes = await chai.request(app).get('/api/events');
+      const usersRes = await chai.request(app).get('/api/users');
+      const events = eventsRes.body;
+      const users = usersRes.body;
+
+      // Create tickets for each registration
+      for (let i = 0; i < 50; i++) {
+        const randomEvent = events[Math.floor(Math.random() * events.length)];
+        const userId = i + 1; 
+
+        const ticketData = {
+          eventId: randomEvent.eventId,
+          userId: userId,
+          locationDetails: { section: 'A', row: '1', seat: '1' },
+          ticketStatus: 'active',
+          ticketType: 'standard'
+        };
+
+        const res = await chai.request(app)
+          .post('/api/tickets')
+          .send(ticketData);
+
+        expect(res).to.have.status(201);
+        expect(res.body).to.have.property('ticketId');
+        expect(res.body.eventId).to.equal(ticketData.eventId);
+        expect(res.body.userId).to.equal(ticketData.userId);
+      }
+    });
+  });
 });
