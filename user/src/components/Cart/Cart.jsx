@@ -34,6 +34,9 @@ const Cart = () => {
   const { cartItems, removeFromCart, getCartTotal, clearCart } = useCart();
   const navigate = useNavigate();
 
+  // Debug log to check cart items
+  console.log('Cart Items:', cartItems);
+
   if (cartItems.length === 0) {
     return (
       <Box sx={{ bgcolor: '#ffffff', minHeight: '100vh', py: 4 }}>
@@ -46,8 +49,6 @@ const Cart = () => {
             <Typography variant="body1" color="text.secondary" paragraph sx={{ mb: 4 }}>
               Looks like you haven't added any tickets to your cart yet.
             </Typography>
-            <br/>
-            <br/>
             <Button
               variant="contained"
               size="large"
@@ -87,80 +88,106 @@ const Cart = () => {
         </Breadcrumbs>
 
         <Typography variant="h4" color={colorScheme.blue.primary} gutterBottom fontWeight="bold">
-          Your Cart
+          Your Cart ({cartItems.length} {cartItems.length === 1 ? 'Event' : 'Events'})
         </Typography>
         
         <Stack spacing={3}>
-          {cartItems.map((item) => (
-            <Paper key={item.eventId} elevation={0} sx={{ borderRadius: 4, overflow: 'hidden' }}>
-              <Box sx={{ display: 'flex', gap: 3, p: 3 }}>
-                <Box
-                  component="img"
-                  src={item.eventImage}
-                  alt={item.eventTitle}
-                  sx={{
-                    width: 160,
-                    height: 160,
-                    objectFit: 'cover',
-                    borderRadius: 2
-                  }}
-                />
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="h5" fontWeight="bold" color={colorScheme.blue.primary} gutterBottom>
-                    {item.eventTitle}
-                  </Typography>
-                  
-                  <Stack direction="row" spacing={3} mb={2}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <EventIcon sx={{ color: colorScheme.blue.primary }} />
-                      <Typography variant="body2" color="text.secondary">
-                        {new Date(item.eventDate).toLocaleDateString()}
-                      </Typography>
+          {cartItems.map((item) => {
+            // Calculate subtotal for this event
+            const eventSubtotal = Object.values(item.tickets).reduce((total, ticket) => {
+              return total + (ticket.price * ticket.quantity);
+            }, 0);
+
+            return (
+              <Paper key={item.eventId} elevation={0} sx={{ borderRadius: 4, overflow: 'hidden' }}>
+                <Box sx={{ display: 'flex', gap: 3, p: 3 }}>
+                  <Box
+                    component="img"
+                    src={item.eventImage}
+                    alt={item.eventTitle}
+                    sx={{
+                      width: 160,
+                      height: 160,
+                      objectFit: 'cover',
+                      borderRadius: 2
+                    }}
+                  />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h5" fontWeight="bold" color={colorScheme.blue.primary} gutterBottom>
+                      {item.eventTitle}
+                    </Typography>
+                    
+                    <Stack direction="row" spacing={3} mb={2}>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <EventIcon sx={{ color: colorScheme.blue.primary }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(item.eventDate).toLocaleDateString(undefined, {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <LocationOnIcon sx={{ color: colorScheme.blue.primary }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {item.eventVenue}
+                        </Typography>
+                      </Stack>
                     </Stack>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <LocationOnIcon sx={{ color: colorScheme.blue.primary }} />
-                      <Typography variant="body2" color="text.secondary">
-                        {item.eventVenue}
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                  
-                  <Paper elevation={0} sx={{ p: 2, bgcolor: colorScheme.yellow.light, borderRadius: 2 }}>
-                    {Object.entries(item.tickets).map(([type, ticket]) => (
-                      <Box key={type} sx={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        mb: 1,
-                        '&:last-child': { mb: 0 }
-                      }}>
-                        <Typography variant="body1" fontWeight={500}>
-                          {type} × {ticket.quantity}
+                    
+                    <Paper elevation={0} sx={{ p: 2, bgcolor: colorScheme.yellow.light, borderRadius: 2 }}>
+                      {Object.entries(item.tickets).map(([type, ticket]) => (
+                        <Box key={`${item.eventId}-${type}`} sx={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          mb: 2,
+                          '&:last-child': { mb: 0 }
+                        }}>
+                          <Box>
+                            <Typography variant="body1" fontWeight={500}>
+                              {type} × {ticket.quantity}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              ${ticket.price.toFixed(2)} each
+                            </Typography>
+                          </Box>
+                          <Typography variant="h6" color={colorScheme.yellow.primary} fontWeight="bold">
+                            ${(ticket.price * ticket.quantity).toFixed(2)}
+                          </Typography>
+                        </Box>
+                      ))}
+                      <Divider sx={{ my: 2, borderColor: colorScheme.yellow.primary, opacity: 0.2 }} />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body1" fontWeight={600}>
+                          Event Subtotal
                         </Typography>
                         <Typography variant="h6" color={colorScheme.yellow.primary} fontWeight="bold">
-                          ${(ticket.price * ticket.quantity).toFixed(2)}
+                          ${eventSubtotal.toFixed(2)}
                         </Typography>
                       </Box>
-                    ))}
-                  </Paper>
+                    </Paper>
+                  </Box>
+                  <IconButton
+                    onClick={() => removeFromCart(item.eventId)}
+                    sx={{ 
+                      color: colorScheme.red.primary,
+                      borderRadius: 1,
+                      p: 1,
+                      '&:hover': { 
+                        bgcolor: colorScheme.red.light,
+                        color: colorScheme.red.hover
+                      }
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
                 </Box>
-                <IconButton
-                  onClick={() => removeFromCart(item.eventId)}
-                  sx={{ 
-                    color: colorScheme.red.primary,
-                    borderRadius: 1,
-                    p: 1,
-                    '&:hover': { 
-                      bgcolor: colorScheme.red.light,
-                      color: colorScheme.red.hover
-                    }
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Box>
-            </Paper>
-          ))}
+              </Paper>
+            );
+          })}
         </Stack>
 
         <Paper elevation={0} sx={{ mt: 4, p: 4, borderRadius: 4, bgcolor: colorScheme.green.light }}>

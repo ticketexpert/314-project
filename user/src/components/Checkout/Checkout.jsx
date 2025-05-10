@@ -65,11 +65,12 @@ const paymentMethods = [
 function flattenTickets(cartItems) {
   // Returns an array of { event, ticketType, ticket, eventImage, eventTitle, eventDate, eventVenue }
   const result = [];
-  cartItems.forEach(item => {
+  cartItems.forEach((item, eventIndex) => {
     Object.entries(item.tickets).forEach(([type, ticket]) => {
       for (let i = 0; i < ticket.quantity; i++) {
         result.push({
           eventId: item.eventId,
+          eventIndex: eventIndex, // Add eventIndex to maintain order
           eventImage: item.eventImage,
           eventTitle: item.eventTitle,
           eventDate: item.eventDate,
@@ -82,6 +83,28 @@ function flattenTickets(cartItems) {
     });
   });
   return result;
+}
+
+// Update groupTicketsByEvent to maintain event order
+function groupTicketsByEvent(tickets) {
+  const groupedTickets = {};
+  tickets.forEach(ticket => {
+    const key = `${ticket.eventIndex}-${ticket.eventId}`; // Use combined key to maintain order
+    if (!groupedTickets[key]) {
+      groupedTickets[key] = {
+        eventId: ticket.eventId,
+        eventIndex: ticket.eventIndex,
+        eventTitle: ticket.eventTitle,
+        eventImage: ticket.eventImage,
+        eventDate: ticket.eventDate,
+        eventVenue: ticket.eventVenue,
+        eventCategory: ticket.eventCategory,
+        tickets: []
+      };
+    }
+    groupedTickets[key].tickets.push(ticket);
+  });
+  return groupedTickets;
 }
 
 const Checkout = () => {
@@ -100,14 +123,19 @@ const Checkout = () => {
     email: '',
     keepUpdated: false
   });
-  const [ticketHolders, setTicketHolders] = useState(
-    tickets.map(() => ({
-      firstName: '',
-      lastName: '',
-      email: '',
-      acceptTerms: false
-    }))
-  );
+  const [ticketHolders, setTicketHolders] = useState(() => {
+    const holders = {};
+    tickets.forEach((ticket, idx) => {
+      const key = `${ticket.eventIndex}-${ticket.eventId}-${idx}`;
+      holders[key] = {
+        firstName: '',
+        lastName: '',
+        email: '',
+        acceptTerms: false
+      };
+    });
+    return holders;
+  });
   const [promo, setPromo] = useState('');
   const [formErrors, setFormErrors] = useState({});
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('credit');
@@ -264,15 +292,19 @@ const Checkout = () => {
     }
     
     if (step === 1) {
-      ticketHolders.forEach((holder, idx) => {
-        if (!holder.firstName) errors[`ticket${idx}FirstName`] = 'First name is required';
-        if (!holder.lastName) errors[`ticket${idx}LastName`] = 'Last name is required';
-        if (!holder.email) {
-          errors[`ticket${idx}Email`] = 'Email is required';
-        } else if (!validateEmail(holder.email)) {
-          errors[`ticket${idx}Email`] = 'Invalid email format';
-        }
-        if (!holder.acceptTerms) errors[`ticket${idx}Terms`] = 'Terms must be accepted';
+      Object.entries(groupTicketsByEvent(tickets)).forEach(([eventKey, eventData]) => {
+        eventData.tickets.forEach((ticket, idx) => {
+          const holderKey = `${eventKey}-${idx}`;
+          const holder = ticketHolders[holderKey];
+          if (!holder.firstName) errors[`ticket${holderKey}FirstName`] = 'First name is required';
+          if (!holder.lastName) errors[`ticket${holderKey}LastName`] = 'Last name is required';
+          if (!holder.email) {
+            errors[`ticket${holderKey}Email`] = 'Email is required';
+          } else if (!validateEmail(holder.email)) {
+            errors[`ticket${holderKey}Email`] = 'Invalid email format';
+          }
+          if (!holder.acceptTerms) errors[`ticket${holderKey}Terms`] = 'Terms must be accepted';
+        });
       });
     }
 
@@ -302,16 +334,20 @@ const Checkout = () => {
     }
   };
 
-  const handleTicketHolderChange = (idx, e) => {
+  const handleTicketHolderChange = (eventKey, ticketIdx, e) => {
     const { name, value, checked, type } = e.target;
-    setTicketHolders(ths => ths.map((th, i) =>
-      i === idx ? { ...th, [name]: type === 'checkbox' ? checked : value } : th
-    ));
+    setTicketHolders(prev => ({
+      ...prev,
+      [`${eventKey}-${ticketIdx}`]: {
+        ...prev[`${eventKey}-${ticketIdx}`],
+        [name]: type === 'checkbox' ? checked : value
+      }
+    }));
     // Clear error when field is modified
-    if (formErrors[`ticket${idx}${name.charAt(0).toUpperCase() + name.slice(1)}`]) {
+    if (formErrors[`ticket${eventKey}-${ticketIdx}${name.charAt(0).toUpperCase() + name.slice(1)}`]) {
       setFormErrors(prev => ({
         ...prev,
-        [`ticket${idx}${name.charAt(0).toUpperCase() + name.slice(1)}`]: undefined
+        [`ticket${eventKey}-${ticketIdx}${name.charAt(0).toUpperCase() + name.slice(1)}`]: undefined
       }));
     }
   };
@@ -592,89 +628,123 @@ const Checkout = () => {
               {/* Ticket holders */}
               {activeStep === 1 && (
                 <Stack spacing={3}>
-                  {tickets.map((ticket, idx) => (
-                    <Paper key={idx} elevation={2} sx={{ p: 3, borderRadius: 4 }}>
-                      <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-                        Ticket {idx + 1} <span style={{ fontWeight: 400 }}>{ticket.ticketType} Ticket</span>
-                      </Typography>
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            fullWidth
-                            label="First Name"
-                            name="firstName"
-                            value={ticketHolders[idx].firstName}
-                            onChange={e => handleTicketHolderChange(idx, e)}
-                            required
-                            variant="outlined"
-                            error={!!formErrors[`ticket${idx}FirstName`]}
-                            helperText={formErrors[`ticket${idx}FirstName`]}
-                            sx={{ bgcolor: '#fff', borderRadius: 2 }}
+                  {Object.entries(groupTicketsByEvent(tickets)).map(([eventKey, eventData]) => (
+                    <Paper key={eventKey} elevation={2} sx={{ p: 3, borderRadius: 4 }}>
+                      <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <Box
+                          component="img"
+                          src={eventData.eventImage}
+                          alt={eventData.eventTitle}
+                          sx={{
+                            width: 80,
+                            height: 80,
+                            objectFit: 'cover',
+                            borderRadius: 2
+                          }}
+                        />
+                        <Box>
+                          <Typography variant="h6" fontWeight={700}>
+                            {eventData.eventTitle}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {new Date(eventData.eventDate).toLocaleDateString(undefined, { 
+                              weekday: 'long',
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric'
+                            })}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {eventData.eventVenue}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Divider sx={{ mb: 3 }} />
+                      {eventData.tickets.map((ticket, idx) => (
+                        <Box key={idx} sx={{ mb: 3 }}>
+                          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
+                            Ticket {idx + 1} <span style={{ fontWeight: 400 }}>{ticket.ticketType} Ticket</span>
+                          </Typography>
+                          <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                              <TextField
+                                fullWidth
+                                label="First Name"
+                                name="firstName"
+                                value={ticketHolders[`${eventKey}-${idx}`]?.firstName || ''}
+                                onChange={e => handleTicketHolderChange(eventKey, idx, e)}
+                                required
+                                variant="outlined"
+                                error={!!formErrors[`ticket${eventKey}-${idx}FirstName`]}
+                                helperText={formErrors[`ticket${eventKey}-${idx}FirstName`]}
+                                sx={{ bgcolor: '#fff', borderRadius: 2 }}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <TextField
+                                fullWidth
+                                label="Last Name"
+                                name="lastName"
+                                value={ticketHolders[`${eventKey}-${idx}`]?.lastName || ''}
+                                onChange={e => handleTicketHolderChange(eventKey, idx, e)}
+                                required
+                                variant="outlined"
+                                error={!!formErrors[`ticket${eventKey}-${idx}LastName`]}
+                                helperText={formErrors[`ticket${eventKey}-${idx}LastName`]}
+                                sx={{ bgcolor: '#fff', borderRadius: 2 }}
+                              />
+                            </Grid>
+                            <Grid item xs={12}>
+                              <TextField
+                                fullWidth
+                                label="Email address"
+                                name="email"
+                                value={ticketHolders[`${eventKey}-${idx}`]?.email || ''}
+                                onChange={e => handleTicketHolderChange(eventKey, idx, e)}
+                                required
+                                variant="outlined"
+                                error={!!formErrors[`ticket${eventKey}-${idx}Email`]}
+                                helperText={formErrors[`ticket${eventKey}-${idx}Email`]}
+                                sx={{ bgcolor: '#fff', borderRadius: 2 }}
+                              />
+                            </Grid>
+                          </Grid>
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                name="acceptTerms"
+                                checked={ticketHolders[`${eventKey}-${idx}`]?.acceptTerms || false}
+                                onChange={e => handleTicketHolderChange(eventKey, idx, e)}
+                                sx={{
+                                  color: colorScheme.red.primary,
+                                  '&.Mui-checked': {
+                                    color: colorScheme.red.primary,
+                                  },
+                                  mr: 1
+                                }}
+                              />
+                            }
+                            label={
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Typography sx={{ color: colorScheme.grey.text, fontSize: 15 }}>
+                                  I accept the TicketExpert Terms of Service and Privacy Policy.
+                                </Typography>
+                                <Tooltip title="By accepting these terms, you agree to our service conditions and data handling policies.">
+                                  <IconButton size="small" sx={{ ml: 1 }}>
+                                    <InfoOutlinedIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            }
+                            sx={{ mt: 1, alignItems: 'flex-start' }}
                           />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            fullWidth
-                            label="Last Name"
-                            name="lastName"
-                            value={ticketHolders[idx].lastName}
-                            onChange={e => handleTicketHolderChange(idx, e)}
-                            required
-                            variant="outlined"
-                            error={!!formErrors[`ticket${idx}LastName`]}
-                            helperText={formErrors[`ticket${idx}LastName`]}
-                            sx={{ bgcolor: '#fff', borderRadius: 2 }}
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            label="Email address"
-                            name="email"
-                            value={ticketHolders[idx].email}
-                            onChange={e => handleTicketHolderChange(idx, e)}
-                            required
-                            variant="outlined"
-                            error={!!formErrors[`ticket${idx}Email`]}
-                            helperText={formErrors[`ticket${idx}Email`]}
-                            sx={{ bgcolor: '#fff', borderRadius: 2 }}
-                          />
-                        </Grid>
-                      </Grid>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            name="acceptTerms"
-                            checked={ticketHolders[idx].acceptTerms}
-                            onChange={e => handleTicketHolderChange(idx, e)}
-                            sx={{
-                              color: colorScheme.red.primary,
-                              '&.Mui-checked': {
-                                color: colorScheme.red.primary,
-                              },
-                              mr: 1
-                            }}
-                          />
-                        }
-                        label={
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Typography sx={{ color: colorScheme.grey.text, fontSize: 15 }}>
-                              I accept the TicketExpert Terms of Service and Privacy Policy.
+                          {formErrors[`ticket${eventKey}-${idx}Terms`] && (
+                            <Typography color="error" variant="caption" sx={{ display: 'block', mt: 1 }}>
+                              {formErrors[`ticket${eventKey}-${idx}Terms`]}
                             </Typography>
-                            <Tooltip title="By accepting these terms, you agree to our service conditions and data handling policies.">
-                              <IconButton size="small" sx={{ ml: 1 }}>
-                                <InfoOutlinedIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        }
-                        sx={{ mt: 1, alignItems: 'flex-start' }}
-                      />
-                      {formErrors[`ticket${idx}Terms`] && (
-                        <Typography color="error" variant="caption" sx={{ display: 'block', mt: 1 }}>
-                          {formErrors[`ticket${idx}Terms`]}
-                        </Typography>
-                      )}
+                          )}
+                        </Box>
+                      ))}
                     </Paper>
                   ))}
                 </Stack>
@@ -705,14 +775,14 @@ const Checkout = () => {
                         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                           Ticket Holders
                         </Typography>
-                        {ticketHolders.map((holder, idx) => (
-                          <Box key={idx} sx={{ mb: 1 }}>
+                        {Object.entries(groupTicketsByEvent(tickets)).map(([eventKey, eventData]) => (
+                          <Box key={eventKey} sx={{ mb: 1 }}>
                             <Typography variant="body1">
-                              {holder.firstName} {holder.lastName}
-                            </Typography>
-                            <br/>
-                            <Typography variant="body2" color="text.secondary">
-                              {holder.email}
+                              {eventData.tickets.map((ticket, idx) => (
+                                <Typography key={`${eventKey}-${idx}`} variant="body2" color="text.secondary">
+                                  {ticket.firstName} {ticket.lastName}
+                                </Typography>
+                              ))}
                             </Typography>
                           </Box>
                         ))}
@@ -722,23 +792,11 @@ const Checkout = () => {
                         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                           Event Details
                         </Typography>
-                        <Typography variant="body1">
-                          {event.eventTitle}
-                        </Typography>
-                        <br/>
-                        <Typography variant="body2" color="text.secondary">
-                          {new Date(event.eventDate).toLocaleDateString(undefined, { 
-                            weekday: 'long',
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </Typography><br/>
-                        <Typography variant="body2" color="text.secondary">
-                          {event.eventVenue}
-                        </Typography>
+                        {Object.entries(groupTicketsByEvent(tickets)).map(([eventKey, eventData]) => (
+                          <Typography key={eventKey} variant="body1">
+                            {eventData.eventTitle}
+                          </Typography>
+                        ))}
                       </Box>
                     </Stack>
                   </Paper>
@@ -1112,50 +1170,63 @@ const Checkout = () => {
                 position: 'sticky',
                 top: 100
               }}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                  <Box
-                    component="img"
-                    src={event.eventImage}
-                    alt={event.eventTitle}
-                    sx={{ 
-                      width: '100%', 
-                      height: 100, 
-                      objectFit: 'cover', 
-                      borderRadius: 2, 
-                      mb: 2,
-                      transition: 'transform 0.2s',
-                      '&:hover': {
-                        transform: 'scale(1.02)'
-                      }
-                    }}
-                  />
-                </Box>
                 <Typography variant="h6" fontWeight={700} sx={{ mb: 2, color: colorScheme.red.primary }}>
                   Order Summary
                 </Typography>
-                <Stack spacing={1} sx={{ mb: 2 }}>
-                  {tickets.map((ticket, idx) => (
-                    <Box key={idx} sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      fontSize: '0.9rem',
-                      transition: 'all 0.2s',
-                      '&:hover': {
-                        bgcolor: colorScheme.grey.background,
-                        borderRadius: 1,
-                        px: 1
-                      }
-                    }}>
-                      <Typography variant="body2" sx={{ color: colorScheme.red.primary }}>
-                        1 x {ticket.ticketType} Ticket
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: colorScheme.red.primary, fontWeight: 600 }}>
-                        ${ticket.ticketPrice.toFixed(2)}
-                      </Typography>
+                {Object.entries(groupTicketsByEvent(tickets)).map(([eventKey, eventData]) => (
+                  <Box key={eventKey} sx={{ mb: 3 }}>
+                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                      <Box
+                        component="img"
+                        src={eventData.eventImage}
+                        alt={eventData.eventTitle}
+                        sx={{
+                          width: 60,
+                          height: 60,
+                          objectFit: 'cover',
+                          borderRadius: 1
+                        }}
+                      />
+                      <Box>
+                        <Typography variant="subtitle2" fontWeight={600} sx={{ color: colorScheme.red.primary }}>
+                          {eventData.eventTitle}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {new Date(eventData.eventDate).toLocaleDateString(undefined, { 
+                            month: 'short', 
+                            day: 'numeric'
+                          })}
+                        </Typography>
+                      </Box>
                     </Box>
-                  ))}
-                </Stack>
+                    <Stack spacing={1}>
+                      {eventData.tickets.map((ticket, idx) => (
+                        <Box key={idx} sx={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          fontSize: '0.9rem',
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            bgcolor: colorScheme.grey.background,
+                            borderRadius: 1,
+                            px: 1
+                          }
+                        }}>
+                          <Typography variant="body2" sx={{ color: colorScheme.red.primary }}>
+                            1 x {ticket.ticketType} Ticket
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: colorScheme.red.primary, fontWeight: 600 }}>
+                            ${ticket.ticketPrice.toFixed(2)}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                    {Object.keys(groupTicketsByEvent(tickets)).length > 1 && idx < Object.keys(groupTicketsByEvent(tickets)).length - 1 && (
+                      <Divider sx={{ my: 2, borderColor: colorScheme.grey.divider }} />
+                    )}
+                  </Box>
+                ))}
                 <Divider sx={{ my: 2, borderColor: colorScheme.grey.divider }} />
                 <Box sx={{ 
                   display: 'flex', 

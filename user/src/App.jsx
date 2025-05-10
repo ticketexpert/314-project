@@ -86,7 +86,8 @@ function Home() {
 						type: 'artists',
 						isLabel: true,
 						label: getStateFromCity(name),
-						region: name
+						region: name,
+						image: getCityImage(name)
 					}))
 					.sort((a, b) => b.count - a.count)
 					.slice(0, 7);
@@ -144,6 +145,52 @@ function Home() {
 			);
 
 			return matchingCity ? cityToState[matchingCity] : 'Unknown';
+		};
+
+		// Helper function to get city image
+		const getCityImage = (city) => {
+			const cityImages = {
+				'sydney': 'https://plus.unsplash.com/premium_photo-1697730198238-48ee2f2fe1b7?q=80&w=3132&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+				'melbourne': 'https://images.unsplash.com/photo-1595434971780-79d5c20c5090?q=80&w=3132&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+				'brisbane': 'https://plus.unsplash.com/premium_photo-1694475701659-444e11e512d9?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+				'perth': 'https://plus.unsplash.com/premium_photo-1697729743874-1d9d21ee467d?q=80&w=3125&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+				'adelaide': 'https://images.unsplash.com/photo-1595850344461-dcbec3a62f67?q=80&w=2439&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+				'hobart': 'https://unsplash.com/photos/an-aerial-view-of-a-city-at-night-RH2X12LMKic',
+				'darwin': 'https://unsplash.com/photos/darwin-australia-skyline-1',
+				'canberra': 'https://unsplash.com/photos/city-skyline-under-blue-sky-during-daytime-V_pvQ96focY',
+				'gold coast': 'https://plus.unsplash.com/premium_photo-1694475704268-03c3965ac43e?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+				'newcastle': 'https://unsplash.com/photos/city-skyline-during-night-time-Rj148uGc3TA',
+				'wollongong': 'https://unsplash.com/photos/a-body-of-water-with-a-waterfall-and-a-city-in-the-background-fm3bBo-KS7Q',
+				'geelong': 'https://unsplash.com/photos/yXVyvkeanQI',
+				'townsville': 'https://unsplash.com/photos/an-aerial-view-of-a-city-with-a-river-running-through-it-9l-dHOrhN-k',
+				'cairns': 'https://unsplash.com/photos/grey-seashore-rock-with-view-of-city-skyline-during-night-time-CxMeYdo1hAg',
+				'toowoomba': 'https://unsplash.com/photos/a-red-bridge-over-a-small-pond-in-a-park-rQRMISCM77E',
+				'ballarat': 'https://unsplash.com/photos/ballarat-australia-skyline-1',
+				'bendigo': 'https://unsplash.com/photos/bendigo-australia-skyline-1',
+				'albury': 'https://unsplash.com/photos/albury-australia-skyline-1',
+				'maitland': 'https://unsplash.com/photos/maitland-australia-skyline-1',
+				'mackay': 'https://unsplash.com/photos/mackay-australia-skyline-1',
+				'sunshine coast': 'https://unsplash.com/photos/sunshine-coast-australia-skyline-1',
+				'newman': 'https://unsplash.com/photos/newman-australia-skyline-1',
+				'port macquarie': 'https://unsplash.com/photos/port-macquarie-australia-skyline-1',
+				'tamworth': 'https://unsplash.com/photos/tamworth-australia-skyline-1',
+				'wagga wagga': 'https://unsplash.com/photos/wagga-wagga-australia-skyline-1',
+			  }			  
+
+			// Normalize city name to handle case sensitivity and extra spaces
+			const normalizedCity = city.trim().toLowerCase();
+			
+			// Try to find an exact match first
+			if (cityImages[normalizedCity]) {
+				return cityImages[normalizedCity];
+			}
+
+			// If no exact match, try to find a partial match
+			const matchingCity = Object.keys(cityImages).find(key => 
+				normalizedCity.includes(key) || key.includes(normalizedCity)
+			);
+
+			return matchingCity ? cityImages[matchingCity] : 'https://images.unsplash.com/photo-1593784991095-a205069470b6?q=80&w=1000'; // Default image
 		};
 
 		fetchEvents();

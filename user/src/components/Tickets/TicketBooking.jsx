@@ -70,19 +70,42 @@ export default function TicketBooking() {
     : 0;
 
   const handleAddToCart = () => {
+    // Create tickets object with only the selected quantities
     const ticketsToAdd = {};
     Object.entries(selected).forEach(([type, quantity]) => {
       if (quantity > 0) {
-        const ticket = event.pricing.find(t => t.type === type);
-        ticketsToAdd[type] = {
-          quantity,
-          price: ticket.price
-        };
+        // Find the corresponding ticket in event.pricing
+        const ticketInfo = event.pricing.find(t => t.type === type);
+        if (ticketInfo) {
+          ticketsToAdd[type] = {
+            type: type,
+            quantity: quantity,
+            price: ticketInfo.price
+          };
+        }
       }
     });
-    
-    addToCart(event, ticketsToAdd);
-    setSnackbarOpen(true);
+
+    // Only add to cart if there are valid selections
+    if (Object.keys(ticketsToAdd).length > 0) {
+      // Send event info and tickets
+      const eventData = {
+        id: event.id,
+        title: event.title,
+        fromDateTime: event.fromDateTime,
+        venue: event.venue,
+        image: event.image,
+        category: event.category,
+        region: event.region
+      };
+      
+      console.log('Adding to cart:', { eventData, ticketsToAdd }); // Debug log
+      addToCart(eventData, ticketsToAdd);
+      setSnackbarOpen(true);
+      
+      // Clear selections after adding to cart
+      setSelected({});
+    }
   };
 
   if (loading) return <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}><Typography variant="h6">Loading...</Typography></Container>;
