@@ -45,29 +45,24 @@ const data = {
   navMain: [
     {
       title: "Home",
-      url: "#",
+      url: "/",
       icon: IconDashboard,
     },
     {
       title: "Sales",
-      url: "#",
+      url: "/sales",
       icon: IconListDetails,
     },
     {
       title: "My Events",
-      url: "#",
+      url: "/events",
       icon: IconChartBar,
     },
     {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: IconSettings,
     },
-    {
-      title: "Test",
-      url: "#",
-      icon: IconFolder,
-    }
   ],
   navClouds: [
     {
