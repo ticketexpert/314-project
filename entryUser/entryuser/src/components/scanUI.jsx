@@ -24,21 +24,11 @@ const ScanUI = () => {
     console.error(err);
   };
 
-  const compareResult = (result) => {
+  const compareResult = async (result) => {
       const ticketNumber = result[0].rawValue;
-      fetch(`http://api.ticketexpert.me/api/events/${ticketNumber}`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Invalid ticket');
-          }
-          return response.json();
-        })
-        .then(data => {
-          alert('Ticket is valid: ' + ticketNumber);
-        })
-        .catch(error => {
-          alert('Ticket is invalid: ' + ticketNumber);
-        });
+      const response = await fetch(`https://api.ticketexpert.me/api/events/${ticketNumber}`);
+      const data = await response.json();
+      alert(data[0].title);
   };
 
   return (
