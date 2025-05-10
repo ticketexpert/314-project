@@ -10,6 +10,10 @@ const ScanUI = () => {
       setResult(data);
       compareResult(data);
       setError('');
+      // Reset the result after 2 seconds to start scanning again
+      setTimeout(() => {
+        setResult('');
+      }, 2000);
     }
   };
 
