@@ -4,15 +4,17 @@ import { Scanner } from '@yudiel/react-qr-scanner';
 const ScanUI = () => {
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
+  const [scannerKey, setScannerKey] = useState(0);
 
   const handleScan = (data) => {
     if (data) {
       setResult(data);
       compareResult(data);
       setError('');
-      // Reset the result after 2 seconds to start scanning again
+      // Force scanner to re-render after 2 seconds
       setTimeout(() => {
         setResult('');
+        setScannerKey(prev => prev + 1);
       }, 2000);
     }
   };
@@ -36,6 +38,7 @@ const ScanUI = () => {
         <h2 className="text-2xl font-bold mb-4 text-center">Ticket Scanner</h2>
         <div className="aspect-square">
           <Scanner
+            key={scannerKey}
             onScan={handleScan}
             onError={handleError}
             constraints={{
