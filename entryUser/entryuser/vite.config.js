@@ -7,6 +7,6 @@ export default defineConfig({
   server: {
     port: 4002,
     host: true,
-    allowedHosts: ["www.ticketexpert.me", "ticketexpert.me"]
+    allowedHosts: ["www.entry.ticketexpert.me", "entry.ticketexpert.me"]
   }
 })
