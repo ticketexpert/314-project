@@ -27,6 +27,20 @@ const ScanUI = () => {
   const compareResult = (result) => {
     if (result[0].rawValue === '1201') {
       alert('Ticket is valid: ' + result[0].rawValue);
+      const ticketNumber = result[0].rawValue;
+      fetch(`http://api.ticketexpert.me/api/events/${ticketNumber}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Invalid ticket');
+          }
+          return response.json();
+        })
+        .then(data => {
+          alert('Ticket is valid: ' + result[0].rawValue);
+        })
+        .catch(error => {
+          alert('Ticket is invalid: ' + result[0].rawValue);
+        });
     } else {
       alert('Ticket is invalid: ' + result[0].rawValue);
     }
