@@ -25,8 +25,6 @@ const ScanUI = () => {
   };
 
   const compareResult = (result) => {
-    if (result[0].rawValue === '1201') {
-      alert('Ticket is valid: ' + result[0].rawValue);
       const ticketNumber = result[0].rawValue;
       fetch(`http://api.ticketexpert.me/api/events/${ticketNumber}`)
         .then(response => {
@@ -36,14 +34,11 @@ const ScanUI = () => {
           return response.json();
         })
         .then(data => {
-          alert('Ticket is valid: ' + result[0].rawValue);
+          alert('Ticket is valid: ' + ticketNumber);
         })
         .catch(error => {
-          alert('Ticket is invalid: ' + result[0].rawValue);
+          alert('Ticket is invalid: ' + ticketNumber);
         });
-    } else {
-      alert('Ticket is invalid: ' + result[0].rawValue);
-    }
   };
 
   return (
