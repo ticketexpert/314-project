@@ -30,6 +30,11 @@ const ScanUI = () => {
     const response = await fetch(`https://api.ticketexpert.me/api/tickets/${ticketNumber}`);
     const data = await response.json();
     console.log(data);
+    setResult({
+      ticketNumber: data.ticketId,
+      eventId: data.eventId,
+      locationDetails: data.locationDetails
+    });
   };
 
   return (
@@ -51,7 +56,9 @@ const ScanUI = () => {
           <div className="text-center">
             <div className="mb-4 p-4 bg-gray-100 rounded-lg">
               <h3 className="font-semibold mb-2">Scan Result:</h3>
-              <p className="break-all">{result[0]?.rawValue}</p>
+              <p className="break-all">Ticket Number: {result.ticketNumber}</p>
+              <p className="break-all">Event ID: {result.eventId}</p>
+              <p className="break-all">Location Details: {JSON.stringify(result.locationDetails)}</p>
             </div>
             <button
               onClick={handleScanNext}
