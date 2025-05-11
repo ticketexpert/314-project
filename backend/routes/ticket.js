@@ -68,4 +68,33 @@ router.get('/:ticketId', async (req, res) => {
   }
 });
 
+// PATCH /api/tickets/:ticketId/status → update ticket status
+router.patch('/:ticketId/status', async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+    const { userId, status } = req.body;
+
+    if (!userId || !status) {
+      return res.status(400).json({ error: 'userId and status are required' });
+    }
+
+    const ticket = await Ticket.findOne({ 
+      where: { 
+        ticketId,
+        userId 
+      }
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found or user does not have permission' });
+    }
+
+    await ticket.update({ ticketStatus: status });
+    res.status(200).json(ticket);
+  } catch (err) {
+    console.error('Error updating ticket status:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
