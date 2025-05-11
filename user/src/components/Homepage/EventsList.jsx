@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Box, Typography, TextField, InputAdornment, MenuItem, Select, FormControl, InputLabel, Stack, Grid, Card, CardContent, Button, Chip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { Link as RouterLink, useSearchParams } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams, useNavigate } from 'react-router-dom';
 
 const getUniqueCategories = (events) => [
   'All',
@@ -27,6 +27,19 @@ export default function EventsList() {
   const [sort, setSort] = useState('title');
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  // Reset all filters when component mounts or when navigating to /events
+  useEffect(() => {
+    // Only reset if we're at the /events path without any query parameters
+    if (window.location.pathname === '/events' && !window.location.search) {
+      setSearch('');
+      setCategory('All');
+      setLocation('All');
+      setDate(null);
+      setSort('title');
+    }
+  }, [window.location.pathname, window.location.search]);
 
   // Handle URL parameters on component mount
   useEffect(() => {
@@ -177,8 +190,18 @@ export default function EventsList() {
   };
 
   const handleLocationChange = (newLocation) => {
-    setLocation(newLocation);
-    updateURL(newLocation, category, search, date);
+    if (newLocation === 'All') {
+      // Reset all filters
+      setLocation('All');
+      setCategory('All');
+      setDate(null);
+      setSearch('');
+      // Update URL to remove all parameters
+      window.history.replaceState(null, '', window.location.pathname);
+    } else {
+      setLocation(newLocation);
+      updateURL(newLocation, category, search, date);
+    }
   };
 
   const handleCategoryChange = (newCategory) => {
@@ -264,13 +287,13 @@ export default function EventsList() {
       <Grid container spacing={3}>
         {filteredEvents.length === 0 ? (
           <Grid item xs={12}>
-            <Card sx={{ p: 4, textAlign: 'center' }}>
+            <Card sx={{ width: { xs: '100%', sm: '80vw' }, p: 4, textAlign: 'center' }}>
               <CardContent>
                 <Typography variant="h6">No events found.</Typography>
                 {location !== 'All' && (
                   <Button
                     variant="outlined"
-                    onClick={() => handleLocationChange('All')}
+                    onClick={() => navigate('/events')}
                     sx={{ mt: 2 }}
                   >
                     View All Events

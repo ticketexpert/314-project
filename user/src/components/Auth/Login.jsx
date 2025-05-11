@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Box, Button, Grid, TextField, Typography, Link as MuiLink, Paper, Divider } from "@mui/material";
+import { Box, Button, Grid, TextField, Typography, Link as MuiLink, Paper, Divider, Alert } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import TELogo from "../../logo"; // Same logo as signup
+import TELogo from "../../logo";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -9,17 +9,32 @@ export default function Login() {
     email: "",
     password: "",
   });
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically make an API call to verify credentials
-    // For now, we'll simulate a successful login
-    localStorage.setItem('isLoggedIn', 'true');
-    navigate("/");
+    setError("");
+    try {
+      const res = await fetch(
+        `https://www.api.ticketexpert.me/api/users/auth?email=${encodeURIComponent(formData.email)}&password=${encodeURIComponent(formData.password)}`
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Login failed.");
+        return;
+      }
+      const user = await res.json();
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userId', user.userId || user.id);
+      navigate("/");
+    } catch (err) {
+      setError("Network error. Please try again.");
+    }
   };
 
   return (
@@ -73,6 +88,7 @@ export default function Login() {
           </Typography>
 
           <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }}>
+            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <TextField
               margin="normal"
               fullWidth

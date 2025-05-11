@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box, Button, Divider, List, ListItem, ListItemButton, ListItemText,
-  Paper, Avatar, Typography
+  Paper, Avatar, Typography, CircularProgress, Alert
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import ProfileContent from "./ProfileContent";
@@ -9,6 +9,7 @@ import TicketsContent from "./TicketsContent";
 import BillingContent from "./BillingContent";
 import NotificationContent from "./NotificationContent";
 import SecurityContent from "./SecurityContent";
+import { useNavigate } from "react-router-dom";
 
 const menuItems = [
   "Profile",
@@ -20,21 +21,168 @@ const menuItems = [
 
 export default function AccountSettings() {
   const [activeTab, setActiveTab] = useState("Profile");
+  const [user, setUser] = useState({ name: "", email: "", location: "", avatar: "" });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const fetchUserDetails = async (userId) => {
+    try {
+      const response = await fetch(`https://www.api.ticketexpert.me/api/users?userId=${userId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user details');
+      }
+      const userData = await response.json();
+      
+      if (!Array.isArray(userData) || userData.length === 0) {
+        throw new Error('User not found');
+      }
+
+      const userDetails = userData[0];
+      
+      const mappedUserData = {
+        name: userDetails.name || `${userDetails.firstName || ''} ${userDetails.lastName || ''}`.trim(),
+        email: userDetails.email || '',
+        location: userDetails.location || '',
+        avatar: userDetails.avatar || '',
+        firstName: userDetails.firstName || '',
+        lastName: userDetails.lastName || '',
+        role: userDetails.role || 'Customer',
+        userId: userDetails.userId
+      };
+
+      setUser(mappedUserData);
+      
+      Object.entries(mappedUserData).forEach(([key, value]) => {
+        localStorage.setItem(`user${key.charAt(0).toUpperCase() + key.slice(1)}`, value);
+      });
+    } catch (err) {
+      console.error('Error fetching user details:', err);
+      setError("Failed to load user details. Please try again later.");
+      setUser({
+        name: localStorage.getItem("userName") || "User",
+        email: localStorage.getItem("userEmail") || "",
+        location: localStorage.getItem("userLocation") || "",
+        avatar: localStorage.getItem("userAvatar") || "",
+        firstName: localStorage.getItem("userFirstName") || "",
+        lastName: localStorage.getItem("userLastName") || "",
+        role: localStorage.getItem("userRole") || "Customer",
+        userId: localStorage.getItem("userId") || ""
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    const userId = localStorage.getItem("userId");
+    
+    if (!isLoggedIn || !userId) {
+      navigate("/login");
+      return;
+    }
+
+    fetchUserDetails(userId);
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userLocation");
+    localStorage.removeItem("userAvatar");
+    localStorage.removeItem("userFirstName");
+    localStorage.removeItem("userLastName");
+    localStorage.removeItem("userRole");
+    navigate("/login");
+  };
+
+  const handleUpdateProfile = async (updatedData) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      setError("User not authenticated");
+      return false;
+    }
+
+    try {
+      const newUserData = {
+        ...user,
+        ...updatedData
+      };
+      
+      setUser(newUserData);
+      
+      Object.entries(newUserData).forEach(([key, value]) => {
+        localStorage.setItem(`user${key.charAt(0).toUpperCase() + key.slice(1)}`, value);
+      });
+
+      return true;
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      setError("Failed to update profile. Please try again later.");
+      return false;
+    }
+  };
+
+  const fetchUserEvents = async () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      setError("User not authenticated");
+      return [];
+    }
+
+    try {
+      const response = await fetch(`https://www.api.ticketexpert.me/api/users/events?userId=${userId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user events');
+      }
+      const events = await response.json();
+      return events;
+    } catch (err) {
+      console.error('Error fetching user events:', err);
+      setError("Failed to load your events. Please try again later.");
+      return [];
+    }
+  };
 
   const renderContent = () => {
+    if (loading) {
+      return (
+        <Box display="flex" justifyContent="center" alignItems="center" width="100%" height="100%">
+          <CircularProgress />
+        </Box>
+      );
+    }
+
+    if (error) {
+      return (
+        <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+          {error}
+        </Alert>
+      );
+    }
+
+    const contentProps = {
+      user,
+      onUpdateProfile: handleUpdateProfile,
+      setError
+    };
+
     switch (activeTab) {
       case "Profile":
-        return <ProfileContent />;
+        return <ProfileContent {...contentProps} />;
       case "My Tickets":
-        return <TicketsContent />;
+        return <TicketsContent {...contentProps} />;
       case "Payment and Billing Address":
-        return <BillingContent />;
+        return <BillingContent {...contentProps} />;
       case "Notification":
-        return <NotificationContent />;
+        return <NotificationContent {...contentProps} />;
       case "Login and Security":
-        return <SecurityContent />;
+        return <SecurityContent {...contentProps} />;
       default:
-        return <ProfileContent />;
+        return <ProfileContent {...contentProps} />;
     }
   };
 
@@ -60,86 +208,91 @@ export default function AccountSettings() {
       >
         {/* Sidebar */}
         <Box
-  width="25%"
-  display="flex"
-  flexDirection="column"
-  alignItems="center"
-  p={3}
-  sx={{
-    backgroundColor: "white",
-    borderRight: "1px solid #e0e0e0",
-  }}
->
-  {/* Big Avatar Section */}
-  <Box
-    sx={{
-      width: "100%",
-      borderRadius: "24px",
-      background: "linear-gradient(to bottom right, #02735E, #04D9B1)",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "left",
-      p: 3,
-      mb: 4,
-    }}
-  >
-    <Avatar
-      alt="User Avatar"
-      src=""
-      sx={{ width: 100, height: 100, mb: 2 }}
-    />
-    <Typography variant="h6" color="white" fontWeight="bold">
-      Matthew Gale
-    </Typography>
-    <Typography color="white" fontSize="14px">
-      Wollongong, NSW
-    </Typography>
-    <Typography color="white" fontSize="12px">
-      mattg@ticketexpert.me
-    </Typography>
-  </Box>
+          width="25%"
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          p={3}
+          sx={{
+            backgroundColor: "white",
+            borderRight: "1px solid #e0e0e0",
+          }}
+        >
+          {/* Big Avatar Section */}
+          <Box
+            sx={{
+              width: "100%",
+              borderRadius: "24px",
+              background: "linear-gradient(to bottom right, #02735E, #04D9B1)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "left",
+              p: 3,
+              mb: 4,
+            }}
+          >
+            {loading ? (
+              <CircularProgress sx={{ color: 'white' }} />
+            ) : (
+              <>
+                <Avatar
+                  alt="User Avatar"
+                  src={user.avatar}
+                  sx={{ width: 100, height: 100, mb: 2 }}
+                />
+                <Typography variant="h6" color="white" fontWeight="bold">
+                  {user.name}
+                </Typography>
+                <Typography color="white" fontSize="14px">
+                  {user.location}
+                </Typography>
+                <Typography color="white" fontSize="12px">
+                  {user.email}
+                </Typography>
+              </>
+            )}
+          </Box>
 
-  {/* Menu Items */}
-  <Box display="flex" flexDirection="column" width="100%" gap={1}>
-    {menuItems.map((text) => (
-      <Button
-        key={text}
-        fullWidth
-        onClick={() => setActiveTab(text)}
-        sx={{
-          justifyContent: "flex-start",
-          textTransform: "none",
-          fontWeight: activeTab === text ? "bold" : "normal",
-          color: "#02735E",
-          bgcolor: activeTab === text ? "rgba(22, 101, 52, 0.1)" : "transparent",
-          borderRadius: "12px",
-          px: 2,
-          py: 1.5,
-          "&:hover": {
-            bgcolor: "linear-gradient(180deg, #02735E 0%, #04D9B1 100%)",
-          },
-        }}
-      >
-        {text}
-      </Button>
-    ))}
-  </Box>
+          {/* Menu Items */}
+          <Box display="flex" flexDirection="column" width="100%" gap={1}>
+            {menuItems.map((text) => (
+              <Button
+                key={text}
+                fullWidth
+                onClick={() => setActiveTab(text)}
+                sx={{
+                  justifyContent: "flex-start",
+                  textTransform: "none",
+                  fontWeight: activeTab === text ? "bold" : "normal",
+                  color: "#02735E",
+                  bgcolor: activeTab === text ? "rgba(22, 101, 52, 0.1)" : "transparent",
+                  borderRadius: "12px",
+                  px: 2,
+                  py: 1.5,
+                  "&:hover": {
+                    bgcolor: "linear-gradient(180deg, #02735E 0%, #04D9B1 100%)",
+                  },
+                }}
+              >
+                {text}
+              </Button>
+            ))}
+          </Box>
 
-  {/* Logout Button */}
-  <Button
-    variant="text"
-    sx={{
-      color: "#b91c1c",
-      mt: "auto",
-      fontWeight: "bold",
-      textTransform: "none",
-    }}
-    onClick={() => console.log("Logout clicked")}
-  >
-    Logout
-  </Button>
-</Box>
-
+          {/* Logout Button */}
+          <Button
+            variant="text"
+            sx={{
+              color: "#b91c1c",
+              mt: "auto",
+              fontWeight: "bold",
+              textTransform: "none",
+            }}
+            onClick={handleLogout}
+          >
+            Logout
+          </Button>
+        </Box>
 
         {/* Main Content */}
         <Box

@@ -25,14 +25,14 @@ router.get('/', async (req, res) => {
   try {
     const {userId} = req.query;
 
-    // Check if userId is provided
+    // If no userId provided, return all users
     if (!userId) {
-      return res.status(400).json({ error: 'userId parameter is required' });
+      const users = await User.findAll();
+      return res.status(200).json(users);
     }
 
-    // Convert userId to integer and find exact match
+    // If userId provided, find specific user
     const where = { userId: parseInt(userId) };
-
     const users = await User.findAll({ where });
     res.status(200).json(users);
   } catch (err) {

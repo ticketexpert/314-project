@@ -1,23 +1,81 @@
-import React, { useState } from "react";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { 
+  Box, 
+  Button, 
+  TextField, 
+  Typography, 
+  Alert, 
+  CircularProgress,
+  Snackbar
+} from "@mui/material";
 
-export default function ProfileContent() {
+export default function ProfileContent({ user, onUpdateProfile, setError }) {
   const [formData, setFormData] = useState({
-    firstName: "Matthew",
-    lastName: "Gale",
-    email: "mattg@ticketexpert.me",
-    phone: "04932112345",
-    bio: "Hi, Something should be here",
-    preferredLocation: "Wollongong, NSW 2500",
-    country: "Australia",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    bio: "",
+    preferredLocation: "",
+    country: "",
   });
+
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  // Initialize form data when user data is available
+  useEffect(() => {
+    if (user) {
+      // Split the full name into first and last name
+      const nameParts = (user.name || "").trim().split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || ""; // Join the rest as last name
+
+      setFormData({
+        firstName,
+        lastName,
+        email: user.email || "",
+        phone: user.phone || "",
+        bio: user.bio || "",
+        preferredLocation: user.location || "",
+        country: user.country || "",
+      });
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    console.log("Profile saved:", formData);
+  const handleSave = async () => {
+    setLoading(true);
+    setError("");
+    
+    try {
+      // Combine first and last name back into full name
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+
+      // Prepare the data to match the backend structure
+      const updatedData = {
+        name: fullName,
+        email: formData.email,
+        phone: formData.phone,
+        bio: formData.bio,
+        location: formData.preferredLocation,
+        country: formData.country,
+      };
+
+      const success = await onUpdateProfile(updatedData);
+      
+      if (success) {
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      }
+    } catch (err) {
+      setError("Failed to update profile. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const textFieldStyles = {
@@ -34,6 +92,14 @@ export default function ProfileContent() {
     },
   };
 
+  if (!user) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" width="100%" height="100%">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box width="100%">
       <Typography variant="h4" fontWeight="bold" mb={4} color="#166534">
@@ -49,6 +115,8 @@ export default function ProfileContent() {
             value={formData.firstName}
             onChange={handleChange}
             sx={textFieldStyles}
+            disabled={loading}
+            placeholder="Enter first name"
           />
           <TextField
             label="Last Name"
@@ -57,6 +125,8 @@ export default function ProfileContent() {
             value={formData.lastName}
             onChange={handleChange}
             sx={textFieldStyles}
+            disabled={loading}
+            placeholder="Enter last name"
           />
         </Box>
 
@@ -67,6 +137,7 @@ export default function ProfileContent() {
           value={formData.email}
           onChange={handleChange}
           sx={textFieldStyles}
+          disabled={loading}
         />
 
         <TextField
@@ -76,6 +147,7 @@ export default function ProfileContent() {
           value={formData.phone}
           onChange={handleChange}
           sx={textFieldStyles}
+          disabled={loading}
         />
 
         <TextField
@@ -87,6 +159,7 @@ export default function ProfileContent() {
           value={formData.bio}
           onChange={handleChange}
           sx={textFieldStyles}
+          disabled={loading}
         />
 
         <Box display="flex" gap={2}>
@@ -97,6 +170,7 @@ export default function ProfileContent() {
             value={formData.preferredLocation}
             onChange={handleChange}
             sx={textFieldStyles}
+            disabled={loading}
           />
           <TextField
             label="Country"
@@ -105,17 +179,37 @@ export default function ProfileContent() {
             value={formData.country}
             onChange={handleChange}
             sx={textFieldStyles}
+            disabled={loading}
           />
         </Box>
 
         <Button
           variant="contained"
-          sx={{ backgroundColor: "#166534", mt: 2 }}
+          sx={{ 
+            backgroundColor: "#166534", 
+            mt: 2,
+            height: "48px",
+            "&:hover": {
+              backgroundColor: "#14502d"
+            }
+          }}
           onClick={handleSave}
+          disabled={loading}
         >
-          Save Information
+          {loading ? <CircularProgress size={24} color="inherit" /> : "Save Information"}
         </Button>
       </Box>
+
+      <Snackbar
+        open={success}
+        autoHideDuration={3000}
+        onClose={() => setSuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" sx={{ width: '100%' }}>
+          Profile updated successfully!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

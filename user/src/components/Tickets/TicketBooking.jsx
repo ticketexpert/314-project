@@ -39,7 +39,7 @@ export default function TicketBooking() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const { addToCart } = useCart();
+  const { cartItems, addToCart } = useCart();
 
   useEffect(() => {
     async function fetchEvent() {
@@ -70,19 +70,51 @@ export default function TicketBooking() {
     : 0;
 
   const handleAddToCart = () => {
+    console.log('Event object:', event);
+
+    // Find a unique event ID
+    const eventId = event._id || event.id || event.eventId || event.uuid;
+    if (!eventId) {
+      alert('Event is missing a unique ID. Cannot add to cart.');
+      return;
+    }
+
+    // Create tickets object with only the selected quantities
     const ticketsToAdd = {};
     Object.entries(selected).forEach(([type, quantity]) => {
       if (quantity > 0) {
-        const ticket = event.pricing.find(t => t.type === type);
-        ticketsToAdd[type] = {
-          quantity,
-          price: ticket.price
-        };
+        // Find the corresponding ticket in event.pricing
+        const ticketInfo = event.pricing.find(t => t.type === type);
+        if (ticketInfo) {
+          ticketsToAdd[type] = {
+            type: type,
+            quantity: quantity,
+            price: ticketInfo.price
+          };
+        }
       }
     });
-    
-    addToCart(event, ticketsToAdd);
-    setSnackbarOpen(true);
+
+    if (Object.keys(ticketsToAdd).length > 0) {
+      // Check if event already exists in cart
+      const exists = cartItems.some(item => item.eventId === eventId);
+
+      // Always pass a unique event ID
+      const eventData = {
+        id: eventId,
+        title: event.title,
+        fromDateTime: event.fromDateTime,
+        venue: event.venue,
+        image: event.image,
+        category: event.category,
+        region: event.region
+      };
+
+      addToCart(eventData, ticketsToAdd); // Your context logic will merge or add as needed
+
+      setSnackbarOpen(true);
+      setSelected({});
+    }
   };
 
   if (loading) return <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}><Typography variant="h6">Loading...</Typography></Container>;

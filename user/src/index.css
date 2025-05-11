@@ -1,5 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap');
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Inter", "Roboto", "Helvetica", "Arial", sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
