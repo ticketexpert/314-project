@@ -20,21 +20,49 @@ const ScanUI = () => {
     console.error(err);
   };
 
-  const handleScanNext = () => {
-    window.location.reload();
+  const handleScanNext = async (userId, ticketId) => {
+    try {
+      const response = await fetch(`https://api.ticketexpert.me/api/tickets/${ticketId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId, status: 'scanned' })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Ticket status updated:', data);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating ticket status:', error);
+      setError('Error updating ticket status: ' + error.message);
+    }
   };
 
   const compareResult = async (result) => {
-    console.log(result[0].rawValue);
-    const ticketNumber = result[0].rawValue;
-    const response = await fetch(`https://api.ticketexpert.me/api/tickets/${ticketNumber}`);
-    const data = await response.json();
-    console.log(data);
-    setResult({
-      ticketNumber: data.ticketId,
-      eventId: data.eventId,
-      locationDetails: data.locationDetails
-    });
+    try {
+      console.log(result[0].rawValue);
+      const ticketNumber = result[0].rawValue;
+      const response = await fetch(`https://api.ticketexpert.me/api/tickets/${ticketNumber}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log(data);
+      setResult({
+        ticketNumber: data.ticketId,
+        eventId: data.eventId,
+        locationDetails: data.locationDetails,
+        userId: data.userId
+      });
+    } catch (error) {
+      console.error('Error fetching ticket data:', error);
+      setError('Error fetching ticket data: ' + error.message);
+    }
   };
 
   return (
@@ -61,7 +89,7 @@ const ScanUI = () => {
               <p className="break-all">Location Details: {JSON.stringify(result.locationDetails)}</p>
             </div>
             <button
-              onClick={handleScanNext}
+              onClick={() => handleScanNext(result.userId, result.ticketNumber)}
               className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
             >
               Scan Next

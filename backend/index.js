@@ -10,7 +10,7 @@ const ticketRoutes = require('./routes/ticket');
 // Enable CORS for specific origins
 app.use(cors({
     origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true
 }));
 
