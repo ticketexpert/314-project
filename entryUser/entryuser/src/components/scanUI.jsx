@@ -57,7 +57,8 @@ const ScanUI = () => {
         ticketNumber: data.ticketId,
         eventId: data.eventId,
         locationDetails: data.locationDetails,
-        userId: data.userId
+        userId: data.userId,
+        status: data.ticketStatus
       });
     } catch (error) {
       console.error('Error fetching ticket data:', error);
@@ -87,6 +88,7 @@ const ScanUI = () => {
               <p className="break-all">Ticket Number: {result.ticketNumber}</p>
               <p className="break-all">Event ID: {result.eventId}</p>
               <p className="break-all">Location Details: {JSON.stringify(result.locationDetails)}</p>
+              <p className={`break-all ${result.status === 'scanned' ? 'text-red-500' : 'text-green-500'}`}>Status: {result.status}</p>
             </div>
             <button
               onClick={() => handleScanNext(result.userId, result.ticketNumber)}
