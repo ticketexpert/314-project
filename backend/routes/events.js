@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
 router.get('/smallEvents', async (req, res) => {
   try {
     const events = await Event.findAll({
-      attributes: ['title', 'region', 'venue', 'fromDateTime', 'toDateTime']
+      attributes: ['eventId', 'title', 'region', 'venue', 'fromDateTime', 'toDateTime']
     });
     res.json(events);
   } catch (error) {
