@@ -72,5 +72,8 @@ Tests can be configured per module. CI pipelines are defined in .github/workflow
 📄 License
 MIT License. See LICENSE file for details.
 
-Contribution
-@matthew
+## 👥 Contributors
+
+- [@BergaDev](https://github.com/BergaDev) – Matthew Bergamini  
+- [@khiemhuu](https://github.com/khiemhuu) – Huu Khiem Nguyen  
+- [@Abby010](https://github.com/Abby010) – Abhishek Mehta
