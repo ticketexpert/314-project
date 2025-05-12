@@ -48,10 +48,14 @@ cd 314-project
 npm install
 
 # Install dependencies for each module
-cd backend && npm install
-cd ../user && npm install
-cd ../organiser && npm install
-cd ../entryUser/entryuser && npm install
+cd backend
+npm install
+cd ../user
+npm install
+cd ../organiser
+npm install
+cd ../entryUser/entryuser
+npm install
 
 # Running the applications
 # Backend
@@ -84,5 +88,6 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 - [@BergaDev](https://github.com/BergaDev) – Matthew Bergamini
 - [@khiemhuu](https://github.com/khiemhuu) – Huu Khiem Nguyen
 - [@Abby010](https://github.com/Abby010) – Abhishek Mehta
+- [@pentpen01]
 
 Hope this revised version is helpful! Let me know if you have any other questions.
