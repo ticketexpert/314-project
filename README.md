@@ -16,9 +16,6 @@ TicketExpert is a modern, full-stack web application for managing events, users,
 ├── package-lock.json # Exact dependency versions
 └── README.md # Project documentation
 
-markdown
-Copy
-Edit
 
 ## 🚀 Features
 
