@@ -13,6 +13,17 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/smallEvents', async (req, res) => {
+  try {
+    const events = await Event.findAll({
+      attributes: ['title', 'region', 'venue', 'fromDateTime', 'toDateTime']
+    });
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Get single event
 router.get('/:id', async (req, res) => {
   try {
