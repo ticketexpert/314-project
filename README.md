@@ -8,15 +8,15 @@ TicketExpert is a modern, full-stack web application designed to streamline even
 ```
 .
 ├── .github/workflows       # CI/CD automation workflows
-├── backend               # Express.js API for events, users, and tickets
+├── backend                 # Express.js API for events, users, and tickets
 ├── entryUser/entryuser     # Portal for ticket validation at events
-├── organiser             # Dashboard for event creation and ticket management
-├── user                  # Attendee interface for browsing and booking tickets
-├── node_modules          # Project dependencies
-├── .gitignore            # Specifies intentionally untracked files that Git should ignore
-├── package.json          # Project metadata and script commands
-├── package-lock.json     # Records the exact versions of dependencies
-└── README.md             # Project documentation (this file)
+├── organiser               # Dashboard for event creation and ticket management
+├── user                    # Attendee interface for browsing and booking tickets
+├── node_modules            # Project dependencies
+├── .gitignore              # Specifies intentionally untracked files that Git should ignore
+├── package.json            # Project metadata and script commands
+├── package-lock.json       # Records the exact versions of dependencies
+└── README.md               # Project documentation (this file)
 ```
 
 ## ✨ Key Features
@@ -88,6 +88,6 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 - [@BergaDev](https://github.com/BergaDev) – Matthew Bergamini
 - [@khiemhuu](https://github.com/khiemhuu) – Huu Khiem Nguyen
 - [@Abby010](https://github.com/Abby010) – Abhishek Mehta
-- [@pentpen01]
+- [@Pentpen1](https://github.com/Pentpen1) - Matthew Gale
 
 Hope this revised version is helpful! Let me know if you have any other questions.
