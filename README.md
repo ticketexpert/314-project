@@ -1,10 +1,12 @@
-# **🎟️ TicketExpert - Your All-in-One Event Management Platform**
+
+# 🎟️ TicketExpert - Your All-in-One Event Management Platform
 
 TicketExpert is a modern, full-stack web application designed to streamline event management and ticketing. Our platform provides dedicated portals for event organizers, entry personnel, and attendees, all powered by a robust backend.
 
-## **📂 Project Structure**
+## 📂 Project Structure
 
-`.
+```
+.
 ├── .github/workflows       # CI/CD automation workflows
 ├── backend               # Express.js API for events, users, and tickets
 ├── entryUser/entryuser     # Portal for ticket validation at events
@@ -14,9 +16,10 @@ TicketExpert is a modern, full-stack web application designed to streamline even
 ├── .gitignore            # Specifies intentionally untracked files that Git should ignore
 ├── package.json          # Project metadata and script commands
 ├── package-lock.json     # Records the exact versions of dependencies
-└── README.md             # Project documentation (this file)`
+└── README.md             # Project documentation (this file)
+```
 
-## **✨ Key Features**
+## ✨ Key Features
 
 - **🎫 Effortless Ticket Booking:** A secure and intuitive system for reserving event tickets.
 - **📅 Simplified Event Management:** Tools for organizers to easily create, update, and publish event details.
@@ -26,7 +29,7 @@ TicketExpert is a modern, full-stack web application designed to streamline even
 - **🔒 Robust Authentication & Authorization:** Secure, role-based access control to protect your data.
 - **⚙️ Automated CI/CD:** Integrated GitHub Actions for continuous integration and deployment.
 
-## **🛠️ Under the Hood**
+## 🛠️ Under the Hood
 
 - **Frontend:** React, styled with the elegant Material UI (MUI) library.
 - **Backend:** Powered by Node.js and Express.js, leveraging Sequelize ORM for database interactions.
@@ -34,11 +37,10 @@ TicketExpert is a modern, full-stack web application designed to streamline even
 - **CI/CD:** Automated using GitHub Actions for seamless development and deployment.
 - **Deployment:** Flexible deployment options supporting Vercel, Render, and AWS.
 
-## **🚀 Get Started**
+## 🚀 Get Started
 
-**Bash**
-
-`# Clone the repository
+```bash
+# Clone the repository
 git clone https://github.com/ticketexpert/314-project.git
 cd 314-project
 
@@ -66,17 +68,18 @@ npm run dev
 
 # Ticket Scanner
 cd ../entryUser/entryuser
-npm run dev`
+npm run dev
+```
 
-## **🧪 Testing**
+## 🧪 Testing
 
 Testing frameworks and configurations are specific to each module. Continuous Integration pipelines are defined within the `.github/workflows` directory.
 
-## **📜 License**
+## 📜 License
 
 This project is licensed under the MIT License. See the `LICENSE` file for more details.
 
-## **🤝 Meet the Team**
+## 🤝 Meet the Team
 
 - [@BergaDev](https://github.com/BergaDev) – Matthew Bergamini
 - [@khiemhuu](https://github.com/khiemhuu) – Huu Khiem Nguyen
