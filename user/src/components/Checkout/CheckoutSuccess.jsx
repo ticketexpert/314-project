@@ -6,15 +6,45 @@ import { useNavigate } from 'react-router-dom';
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('orderSummary');
-    if (stored) {
-      setOrder(JSON.parse(stored));
-      // Optionally clear after reading:
-      // localStorage.removeItem('orderSummary');
+    try {
+      const stored = localStorage.getItem('orderSummary');
+      if (stored) {
+        const parsedOrder = JSON.parse(stored);
+        setOrder(parsedOrder);
+        console.log('Retrieved order:', parsedOrder);
+      } else {
+        console.warn('No order summary found in localStorage');
+        setError('No order details found');
+      }
+    } catch (err) {
+      console.error('Error retrieving order summary:', err);
+      setError('Error loading order details');
     }
   }, []);
+
+  // If there's an error, show a message and provide a way to go back
+  if (error) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8 }}>
+        <Paper elevation={3} sx={{ p: { xs: 3, md: 6 }, borderRadius: 4, maxWidth: 480, mx: 'auto', textAlign: 'center', bgcolor: '#fff' }}>
+          <Typography variant="h6" color="error" gutterBottom>
+            {error}
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/events')}
+            sx={{ mt: 2, borderRadius: 99, fontWeight: 600, px: 4, py: 1.5 }}
+          >
+            Browse Events
+          </Button>
+        </Paper>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8 }}>
@@ -35,23 +65,25 @@ const CheckoutSuccess = () => {
             <>
               <Typography variant="body2" sx={{ mb: 0.5 }}>
                 <b>Order Date:</b> {new Date(order.date).toLocaleString()}
-              </Typography>
+              </Typography> <br/>
               <Typography variant="body2" sx={{ mb: 0.5 }}>
                 <b>Contact:</b> {order.contact.firstName} {order.contact.lastName} ({order.contact.email})
-              </Typography>
+              </Typography> <br/> 
               <Divider sx={{ my: 1 }} />
               {order.cartItems.map((item, idx) => (
                 <Box key={item.eventId || idx} sx={{ mb: 1 }}>
                   <Typography variant="body2" fontWeight={600}>
                     {item.eventTitle}
-                  </Typography>
+                  </Typography><br/>
                   <Typography variant="caption" color="text.secondary">
                     {new Date(item.eventDate).toLocaleDateString()} @ {item.eventVenue}
                   </Typography>
                   <ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
                     {Object.entries(item.tickets).map(([type, ticket]) => (
                       <li key={type}>
+                        <Typography variant="body2" fontWeight={600}>
                         {ticket.quantity} x {type} Ticket @ ${ticket.price.toFixed(2)}
+                        </Typography>
                       </li>
                     ))}
                   </ul>
@@ -64,7 +96,7 @@ const CheckoutSuccess = () => {
             </>
           ) : (
             <Typography variant="body2" color="text.secondary">
-              (No order details found)
+              Loading order details...
             </Typography>
           )}
         </Box>
@@ -80,7 +112,7 @@ const CheckoutSuccess = () => {
           <Button
             variant="outlined"
             color="success"
-            onClick={() => navigate('/account/tickets')}
+            onClick={() => navigate('/account?tab=tickets')}
             sx={{ borderRadius: 99, fontWeight: 600, px: 4, py: 1.5 }}
           >
             View My Tickets

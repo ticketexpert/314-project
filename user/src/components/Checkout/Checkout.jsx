@@ -401,7 +401,62 @@ const Checkout = () => {
     });
   };
 
-  // Enhanced submit handler with better feedback
+  // Add function to create tickets
+  const createTickets = async (orderData) => {
+    try {
+      const userId = localStorage.getItem('userId'); // Get current user's ID
+      if (!userId) {
+        throw new Error('User not logged in');
+      }
+
+      // Generate order number from timestamp
+      const orderNumber = Date.now().toString();
+
+      // Create tickets for each cart item
+      for (const item of orderData.cartItems) {
+        for (const [ticketType, ticketInfo] of Object.entries(item.tickets)) {
+          for (let i = 0; i < ticketInfo.quantity; i++) {
+            // Generate random 6-letter ticket ID
+            const ticketId = Array.from({length: 6}, () => 
+              String.fromCharCode(65 + Math.floor(Math.random() * 26))
+            ).join('');
+
+            const ticketData = {
+              ticketId: ticketId,
+              eventId: Number(item.eventId),
+              userId: Number(userId),
+              ticketType: ticketType,
+              ticketStatus: 'active',
+              locationDetails: {
+                section: ticketType,
+                row: 'None',
+                seat: `${i + 1}`
+              },
+              orderNumber: orderNumber
+            };
+
+            const response = await fetch('https://api.ticketexpert.me/api/tickets', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(ticketData)
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Failed to create ticket: ${response.statusText} - ${errorText}`);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error creating tickets:', error);
+      throw error;
+    }
+  };
+
+  // Enhanced submit handler with ticket creation
   const handleSubmit = async e => {
     e.preventDefault();
     if (!validateStep(activeStep)) return;
@@ -410,6 +465,17 @@ const Checkout = () => {
     setError('');
 
     try {
+      // Prepare order data
+      const orderData = {
+        contact,
+        cartItems,
+        total: getCartTotal(),
+        date: new Date().toISOString()
+      };
+
+      // Store order summary in localStorage before payment processing
+      localStorage.setItem('orderSummary', JSON.stringify(orderData));
+
       if (selectedPaymentMethod === 'credit') {
         if (!useSavedCard && !validateCardDetails()) {
           setIsProcessingPayment(false);
@@ -432,14 +498,6 @@ const Checkout = () => {
           message: 'Payment processed successfully!',
           severity: 'success'
         });
-
-        // Store order summary in localStorage
-        localStorage.setItem('orderSummary', JSON.stringify({
-          contact,
-          cartItems,
-          total: getCartTotal(),
-          date: new Date().toISOString()
-        }));
       }
 
       // Handle PayPal payment
@@ -453,11 +511,19 @@ const Checkout = () => {
         });
       }
 
+      // Create tickets after successful payment
+      await createTickets(orderData);
+
       // Navigate to success page
       navigate('/checkout/success');
     } catch (err) {
-      // This catch block will never be reached now, but keeping it for future use
       console.error('Payment error:', err);
+      setError('An error occurred during payment processing. Please try again.');
+      setSnackbar({
+        open: true,
+        message: err.message || 'Payment failed. Please try again.',
+        severity: 'error'
+      });
     } finally {
       setIsProcessingPayment(false);
     }

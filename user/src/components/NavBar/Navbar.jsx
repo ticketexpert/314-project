@@ -5,13 +5,16 @@ import AuthBtn from './AuthBtn';
 import "./Navbar.css";
 import Tick from '../../assets/Tick.svg';
 import { Link } from 'react-router-dom';
-import { Badge, IconButton } from '@mui/material';
+import { Badge, IconButton, Menu, MenuItem, Typography, Box } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useCart } from '../../context/CartContext';
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
   const navRef = useRef(null);
   const { getCartCount } = useCart();
 
@@ -26,6 +29,33 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchNotifications();
+    }
+  }, [isLoggedIn]);
+
+  const fetchNotifications = async () => {
+    try {
+      const userId = localStorage.getItem('userId'); // Assuming you store userId in localStorage
+      const response = await fetch(`https://api.ticketexpert.me/api/users/${userId}/notifications`);
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const handleNotificationClick = (event) => {
+    setNotificationAnchorEl(event.currentTarget);
+  };
+
+  const handleNotificationClose = () => {
+    setNotificationAnchorEl(null);
+  };
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -55,6 +85,53 @@ const Navbar = () => {
                     </IconButton>
                 </Badge>
             </Link>
+            {isLoggedIn && (
+              <>
+                <IconButton 
+                  onClick={handleNotificationClick}
+                  sx={{ color: '#9F1B32' }}
+                >
+                  <Badge badgeContent={notifications.length} color="error">
+                    <NotificationsIcon />
+                  </Badge>
+                </IconButton>
+                <Menu
+                  anchorEl={notificationAnchorEl}
+                  open={Boolean(notificationAnchorEl)}
+                  onClose={handleNotificationClose}
+                  PaperProps={{
+                    elevation: 3,
+                    sx: {
+                      mt: 1.5,
+                      minWidth: 300,
+                      maxHeight: 400,
+                      borderRadius: 2,
+                    },
+                  }}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                  {notifications.length > 0 ? (
+                    notifications.map((notification, index) => (
+                      <MenuItem key={index} onClick={handleNotificationClose}>
+                        <Box>
+                          <Typography variant="subtitle2">{notification.title}</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {notification.message}
+                          </Typography>
+                        </Box>
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem>
+                      <Typography variant="body2" color="text.secondary">
+                        No new notifications
+                      </Typography>
+                    </MenuItem>
+                  )}
+                </Menu>
+              </>
+            )}
             {isLoggedIn ? (
                 <AvatarDemo onLogout={handleLogout} />
             ) : (

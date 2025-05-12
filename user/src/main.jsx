@@ -10,7 +10,7 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 // Google Fonts: Instrument Sans - add in index.html instead
 const muiTheme = createTheme({
   typography: {
-    fontFamily: '"Instrument Sans", sans-serif',
+    fontFamily: '"Rethink Sans", sans-serif',
   },
 })
 

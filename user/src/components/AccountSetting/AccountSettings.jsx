@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import {
   Box, Button, Divider, List, ListItem, ListItemButton, ListItemText,
-  Paper, Avatar, Typography, CircularProgress, Alert
+  Paper, Avatar, Typography, CircularProgress, Alert, Breadcrumbs, Link
 } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
+import { ArrowBack, Home, NavigateNext } from "@mui/icons-material";
 import ProfileContent from "./ProfileContent";
 import TicketsContent from "./TicketsContent";
 import BillingContent from "./BillingContent";
 import NotificationContent from "./NotificationContent";
 import SecurityContent from "./SecurityContent";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const menuItems = [
   "Profile",
@@ -25,6 +25,26 @@ export default function AccountSettings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Get the tab parameter from URL
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    
+    // Map URL parameter to tab name
+    const tabMapping = {
+      'tickets': 'My Tickets',
+      'profile': 'Profile',
+      'billing': 'Payment and Billing Address',
+      'notification': 'Notification',
+      'security': 'Login and Security'
+    };
+
+    if (tabParam && tabMapping[tabParam]) {
+      setActiveTab(tabMapping[tabParam]);
+    }
+  }, [location.search]);
 
   const fetchUserDetails = async (userId) => {
     try {
@@ -305,6 +325,42 @@ export default function AccountSettings() {
           bgcolor="white"
           overflow="auto"
         >
+          {/* Breadcrumb Navigation */}
+          <Breadcrumbs 
+            separator={<NavigateNext fontSize="small" />} 
+            aria-label="breadcrumb"
+            sx={{ 
+              mb: 3,
+              '& .MuiBreadcrumbs-separator': {
+                color: '#02735E'
+              }
+            }}
+          >
+            <Link
+              component="button"
+              variant="body1"
+              onClick={() => navigate('/')}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                color: '#02735E',
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline'
+                }
+              }}
+            >
+              <Home sx={{ mr: 0.5, fontSize: 20 }} />
+              Home
+            </Link>
+            <Typography color="text.primary" sx={{ display: 'flex', alignItems: 'center' }}>
+              Account Settings
+            </Typography>
+            <Typography color="text.primary" sx={{ display: 'flex', alignItems: 'center' }}>
+              {activeTab}
+            </Typography>
+          </Breadcrumbs>
+
           {renderContent()}
         </Box>
       </Paper>
