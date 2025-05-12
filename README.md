@@ -53,26 +53,27 @@ cd backend && npm install
 cd ../user && npm install
 cd ../organiser && npm install
 🚧 Running the App
-bash
-Copy
-Edit
 # Run backend
 cd backend
 npm run dev
 
 # Run user portal
-cd ../user
+cd user
 npm run dev
 
 # Run organiser portal
-cd ../organiser
+cd organiser
+npm run dev
+
+# Run ticket scanner
+cd entryUser
+cd entryuser
 npm run dev
 🧪 Running Tests
 Tests can be configured per module. CI pipelines are defined in .github/workflows.
 
-🙋 Contributing
-Contributions are welcome! Please fork the repository and open a pull request.
-
 📄 License
 MIT License. See LICENSE file for details.
 
+Contribution
+@matthew
