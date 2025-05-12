@@ -36,8 +36,6 @@ TicketExpert is a modern, full-stack web application for managing events, users,
 - **Deployment**: Vercel / Render / AWS (depending on environment)
 
 ## 📦 Installation
-
-```bash
 # Clone the repo
 git clone https://github.com/ticketexpert/314-project.git
 cd 314-project
