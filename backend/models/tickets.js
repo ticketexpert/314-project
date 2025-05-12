@@ -3,9 +3,16 @@ const sequelize = require('../db');
 
 const tickets = sequelize.define('tickets', {
   ticketId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING(6),
     primaryKey: true,
-    autoIncrement: true
+    defaultValue: () => {
+      const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      let result = '';
+      for (let i = 0; i < 6; i++) {
+        result += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return result;
+    }
   },
   eventId: {
     type: DataTypes.INTEGER,
@@ -24,6 +31,10 @@ const tickets = sequelize.define('tickets', {
     allowNull: false
   },
   ticketType: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  orderNumber: {
     type: DataTypes.STRING,
     allowNull: false
   }

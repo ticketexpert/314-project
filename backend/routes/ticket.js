@@ -46,6 +46,17 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
+// GET /api/tickets/order/:orderNumber → get ticket by orderNumber
+router.get('/order/:orderNumber', async (req, res) => {
+  try {
+    const { orderNumber } = req.params;
+    const ticket = await Ticket.findOne({ where: { orderNumber } });
+    res.status(200).json(ticket);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/tickets/:eventId/:userId → get ticket by eventId and userId
 router.get('/:eventId/:userId', async (req, res) => {
   try {
