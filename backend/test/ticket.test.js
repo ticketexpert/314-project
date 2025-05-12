@@ -57,7 +57,8 @@ describe('Ticket API', () => {
         userId: testUser.userId,
         locationDetails: { section: 'A', row: '1', seat: '1' },
         ticketStatus: 'active',
-        ticketType: 'standard'
+        ticketType: 'standard',
+        orderNumber: Math.floor(Math.random() * 2147483647),
       };
 
       const res = await chai.request(app)
@@ -68,6 +69,7 @@ describe('Ticket API', () => {
       expect(res.body).to.have.property('ticketId');
       expect(res.body.eventId).to.equal(ticketData.eventId);
       expect(res.body.userId).to.equal(ticketData.userId);
+      expect(res.body.orderNumber).to.equal(ticketData.orderNumber.toString());
       testTicket = res.body;
     });
 
@@ -147,6 +149,24 @@ describe('Ticket API', () => {
     it('should return null for non-existent ticketId', async () => {
       const res = await chai.request(app)
         .get('/api/tickets/99999');
+
+      expect(res).to.have.status(200);
+      expect(res.body).to.be.null;
+    });
+  });
+
+  describe('GET /api/tickets/order/:orderNumber', () => {
+    it('should get ticket by orderNumber', async () => {
+      const res = await chai.request(app)
+        .get(`/api/tickets/order/${testTicket.orderNumber}`);
+
+      expect(res).to.have.status(200);
+      expect(res.body.orderNumber).to.equal(testTicket.orderNumber);
+    });
+
+    it('should return null for non-existent orderNumber', async () => {
+      const res = await chai.request(app)
+        .get('/api/tickets/order/99999');
 
       expect(res).to.have.status(200);
       expect(res.body).to.be.null;

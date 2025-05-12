@@ -307,7 +307,8 @@ describe('Events API', () => {
           userId: userId,
           locationDetails: { section: 'A', row: '1', seat: '1' },
           ticketStatus: 'active',
-          ticketType: 'standard'
+          ticketType: 'standard',
+          orderNumber: Math.floor(Math.random() * 2147483647)
         };
 
         const res = await chai.request(app)
