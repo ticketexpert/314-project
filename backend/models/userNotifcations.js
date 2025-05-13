@@ -25,6 +25,11 @@ const UserNotifications = sequelize.define('UserNotifications', {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: true,
+  },
+  currentNotifs: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
   }
 });
 

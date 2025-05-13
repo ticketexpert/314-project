@@ -32,7 +32,6 @@ describe('User Notifications API', () => {
     it('should handle invalid notification settings', async () => {
       const invalidSettings = {
         userId: 2,
-        // Missing required fields
       };
 
       const res = await chai.request(app).post('/api/userNotifcation').send(invalidSettings);

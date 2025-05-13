@@ -5,8 +5,8 @@ const { UserNotifications } = require('../models');
 // POST /api/userNotifcation → create user notification
 router.post('/', async (req, res) => {
     try {
-        const { userId, bookingConf, eventReminder, eventUpdates, specialAnnouncements } = req.body;
-        const userNotification = await UserNotifications.create({ userId, bookingConf, eventReminder, eventUpdates, specialAnnouncements });
+        const { userId, bookingConf, eventReminder, eventUpdates, specialAnnouncements, currentNotifs } = req.body;
+        const userNotification = await UserNotifications.create({ userId, bookingConf, eventReminder, eventUpdates, specialAnnouncements, currentNotifs });
         res.json(userNotification);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -38,8 +38,8 @@ router.get('/:userId', async (req, res) => {
 router.put('/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const { bookingConf, eventReminder, eventUpdates, specialAnnouncements } = req.body;
-        const userNotification = await UserNotifications.update({ bookingConf, eventReminder, eventUpdates, specialAnnouncements }, { where: { userId } });
+        const { bookingConf, eventReminder, eventUpdates, specialAnnouncements, currentNotifs } = req.body;
+        const userNotification = await UserNotifications.update({ bookingConf, eventReminder, eventUpdates, specialAnnouncements, currentNotifs }, { where: { userId } });
         res.json(userNotification);
     } catch (error) {
         res.status(500).json({ message: error.message });
