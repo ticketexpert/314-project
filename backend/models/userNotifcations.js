@@ -1,0 +1,31 @@
+const { DataTypes } = require('sequelize');
+const sequelize = require('../db');
+
+const UserNotifications = sequelize.define('UserNotifications', {
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  bookingConf: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  },
+  eventReminder: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  },
+  eventUpdates: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  },
+  specialAnnouncements: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  }
+});
+
+module.exports = UserNotifications;

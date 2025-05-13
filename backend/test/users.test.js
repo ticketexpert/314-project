@@ -31,6 +31,18 @@ describe('Users API', () => {
       const res = await chai.request(app).post('/api/users').send(newUser);
       expect(res).to.have.status(201);
       expect(res.body).to.have.property('name', newUser.name);
+
+      // Create notification settings for the new user
+      const notificationSettings = {
+        userId: res.body.userId,
+        bookingConf: true,
+        eventReminder: true,
+        eventUpdates: true,
+        specialAnnouncements: true
+      };
+
+      const notificationRes = await chai.request(app).post('/api/userNotifcation').send(notificationSettings);
+      expect(notificationRes).to.have.status(200);
     });
 
     it('should create multiple users with different roles', async function() {
@@ -62,6 +74,20 @@ describe('Users API', () => {
         expect(res).to.have.status(201);
         expect(res.body).to.have.property('name', user.name);
         expect(res.body).to.have.property('role', user.role);
+
+        // Create notification settings for customers
+        if (user.role === 'Customer') {
+          const notificationSettings = {
+            userId: res.body.userId,
+            bookingConf: true,
+            eventReminder: true,
+            eventUpdates: true,
+            specialAnnouncements: true
+          };
+
+          const notificationRes = await chai.request(app).post('/api/userNotifcation').send(notificationSettings);
+          expect(notificationRes).to.have.status(200);
+        }
       }
     });
   });
