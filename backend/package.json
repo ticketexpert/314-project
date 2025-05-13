@@ -89,7 +89,7 @@
   "scripts": {
     "lint": "eslint --config eslint.config.cjs .",
     "dev": "nodemon index.js",
-    "test": "mocha test/users.test.js test/ticket.test.js test/events.test.js"
+    "test": "NODE_ENV=test mocha test/users.test.js test/ticket.test.js test/events.test.js"
   },
   "keywords": [],
   "author": "",
