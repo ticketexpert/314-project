@@ -18,6 +18,7 @@ import TicketBooking from "./components/Tickets/TicketBooking";
 import Cart from "./components/Cart/Cart";
 import Checkout from "./components/Checkout/Checkout";
 import CheckoutSuccess from './components/Checkout/CheckoutSuccess';
+import FallbackPage from './components/ErrorPage/fallBackPage';
 import { CartProvider } from './context/CartContext';
 
 // Layout component to wrap pages with common elements
@@ -250,22 +251,43 @@ export default function MyApp() {
 				}
 			} catch (error) {
 				console.error('Error checking backend:', error);
-				setBackendStatus('error');
+				if (error.name === 'TypeError' && error.message.includes('CORS')) {
+					setBackendStatus('cors-error');
+				} else {
+					setBackendStatus('error');
+				}
 			}
 		};
 
 		checkBackend();
 	}, []); // Empty dependency array
 
-	useEffect(() => {
-		if (backendStatus === 'up') {
-			alert('Backend is up!');
-		} else if (backendStatus === 'down-404') {
-			alert('Backend is not up! 404 error');
-		} else if (backendStatus === 'down') {
-			alert('Backend is not up!');
-		}
-	}, [backendStatus]); // Only show alert when backend status changes
+	if (backendStatus === 'down-404') {
+		return (
+			<FallbackPage />
+		);
+	}
+
+	if (backendStatus === 'down' || backendStatus === 'error') {
+		return (
+			<FallbackPage />
+		);
+	}
+
+	if (backendStatus === 'cors-error') {
+		return (
+			<FallbackPage />
+		);
+	}
+
+	// Show loading state while checking backend
+	if (!backendStatus) {
+		return (
+			<Flex direction="column" align="center" justify="center" style={{ height: '100vh' }}>
+				<Text size="5" weight="bold">Checking Backend Status...</Text>
+			</Flex>
+		);
+	}
 
 	return (
 		<CartProvider>
