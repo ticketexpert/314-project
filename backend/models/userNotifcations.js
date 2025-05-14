@@ -5,6 +5,7 @@ const UserNotifications = sequelize.define('UserNotifications', {
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    primaryKey: true,
   },
   bookingConf: {
     type: DataTypes.BOOLEAN,
