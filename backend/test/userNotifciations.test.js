@@ -9,6 +9,7 @@ describe('User Notifications API', () => {
     this.timeout(5000); // Increase timeout to 5 seconds
     await sequelize.sync({ force: true }); // Reset DB before tests
   });
+  console.log("=== Starting User Notifications API Tests ===");
 
   describe('POST /api/userNotifcation', () => {
     it('should create new notification settings for a user', async () => {
@@ -19,9 +20,14 @@ describe('User Notifications API', () => {
         eventUpdates: true,
         specialAnnouncements: true
       };
+      
 
       const res = await chai.request(app).post('/api/userNotifcation').send(notificationSettings);
+      console.log("Sent");
       expect(res).to.have.status(200);
+      //REMOVE AFTER TESTING
+      console.log("After Send" );
+      console.log("Response: " + res.body);
       expect(res.body).to.have.property('userId', notificationSettings.userId);
       expect(res.body).to.have.property('bookingConf', notificationSettings.bookingConf);
       expect(res.body).to.have.property('eventReminder', notificationSettings.eventReminder);
@@ -97,3 +103,5 @@ describe('User Notifications API', () => {
     });
   });
 });
+
+
