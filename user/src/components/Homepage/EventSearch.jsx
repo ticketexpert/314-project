@@ -131,6 +131,12 @@ export default function EventSearch() {
         alignItems: 'center',
       }}
     >
+      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'left' }}>
+          <Typography color="#034AA6" variant="h2" fontWeight="bold" mb={0.5}>Effortless Events, Expertly Managed</Typography>
+      </Box>
+      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'left',  pb: 3}}>
+      <Typography color="#166534" variant="h4" fontWeight="bold" mb={0.5}>only on TicketExpert</Typography>
+      </Box>
       <Box
         sx={{
           display: 'flex',
@@ -149,7 +155,7 @@ export default function EventSearch() {
             minWidth: 320,
             borderRadius: '40px',
             p: 2,
-            background: 'linear-gradient(135deg, #034AA6 60%, #166534 100%)',
+            background: 'linear-gradient(135deg, #034AA6 60%,rgb(6, 43, 92) 100%)',
             color: 'white',
             boxShadow: '0 8px 32px rgba(3,58,166,0.10)',
             display: 'flex',
@@ -187,11 +193,11 @@ export default function EventSearch() {
                   border: '2px solid transparent',
                   transition: 'border 0.2s',
                   '&:focus-within': {
-                    border: '2px solid #166534',
+                    border: '2px solid #034AA6',
                   },
                 }}
               >
-                <PlaceIcon sx={{ color: '#166534', mr: 1 }} />
+                <PlaceIcon sx={{ color: '#034AA6', mr: 1 }} />
                 <TextField
                   {...params}
                   placeholder="Enter location"
@@ -224,11 +230,11 @@ export default function EventSearch() {
               border: '2px solid transparent',
               transition: 'border 0.2s',
               '&:focus-within': {
-                border: '2px solid #166534',
+                border: '2px solid #034AA6',
               },
             }}
           >
-            <CalendarTodayIcon sx={{ color: '#166534', mr: 1 }} />
+            <CalendarTodayIcon sx={{ color: '#034AA6', mr: 1 }} />
             <InputBase
               type="date"
               value={searchParams.date}
@@ -245,6 +251,7 @@ export default function EventSearch() {
                   '&::-webkit-calendar-picker-indicator': {
                     filter: 'invert(0.4) sepia(1) saturate(20) hue-rotate(190deg)',
                     cursor: 'pointer',
+                    color: '#034AA6'
                   },
                 },
               }}
@@ -265,11 +272,11 @@ export default function EventSearch() {
               border: '2px solid transparent',
               transition: 'border 0.2s',
               '&:focus-within': {
-                border: '2px solid #166534',
+                border: '2px solid #034AA6',
               },
             }}
           >
-            <PersonSearchIcon sx={{ color: '#166534', mr: 1 }} />
+            <PersonSearchIcon sx={{ color: '#034AA6', mr: 1 }} />
             <InputBase
               placeholder="Find an event or category"
               value={searchParams.query}
