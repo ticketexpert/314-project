@@ -1,9 +1,18 @@
 import React from 'react';
 import { Box, Typography, Button, Stack } from '@mui/material';
 import EventCard from './EventCard';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function TrendingEvents({ title, subtitle = "Don't miss out on these popular events happening soon!", type = 'events', data = [] }) {
+  const navigate = useNavigate();
+  const handleClick = () => {
+    if (type === 'events') {
+      navigate('/events');
+    } else if (type === 'artists') {
+      navigate('/locations ');
+    }
+  };
   return (
     <Box
       sx={{
@@ -36,7 +45,7 @@ export default function TrendingEvents({ title, subtitle = "Don't miss out on th
             {subtitle}
           </Typography>
         </Box>
-         <Button variant="outlined" sx={{ borderRadius: 99, fontWeight: 600, color: '#9F1B32', borderColor: '#9F1B32', display: { xs: 'none', md: 'inline-flex' } }}>
+         <Button variant="outlined" sx={{ borderRadius: 99, fontWeight: 600, color: '#9F1B32', borderColor: '#9F1B32', display: { xs: 'none', md: 'inline-flex' } }} onClick={handleClick}>
           See All
         </Button>
       </Stack>
