@@ -27,7 +27,6 @@ export default function TicketsContent() {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [ticketToReturn, setTicketToReturn] = useState(null);
   const ticketRef = useRef(null);
-
   useEffect(() => {
     const userId = localStorage.getItem('userId');
     if (!userId) {
@@ -764,7 +763,7 @@ export default function TicketsContent() {
                       </Button>
                     </Box>
                   </Box>
-                  <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" mt={{ xs: 3, md: 0 }} ml={{ md: 4 }}>
+                  {ticket.ticketStatus === 'active' && <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" mt={{ xs: 3, md: 0 }} ml={{ md: 4 }}>
                     <Tooltip title="Show QR Code">
                       <Box sx={{ 
                         width: 90, 
@@ -781,7 +780,8 @@ export default function TicketsContent() {
                       </Box>
                     </Tooltip>
                     <Typography fontSize="12px" color="gray">Scan at entry</Typography>
-                  </Box>
+                  </Box>}
+                  
                 </Box>
               </Paper>
             </Zoom>
@@ -898,8 +898,7 @@ export default function TicketsContent() {
                       </Stack>
                     </Box>
                   </Grid>
-
-                  <Grid item xs={12} md={6}>
+                  {selectedTicket.status ==='active' && <Grid item xs={12} md={6}>
                     <Box sx={{ 
                       display: 'flex', 
                       flexDirection: 'column', 
@@ -951,7 +950,8 @@ export default function TicketsContent() {
                         </Button>
                       </Stack>
                     </Box>
-                  </Grid>
+                  </Grid>}
+                  
                 </Grid>
 
                 <Box sx={{ 
