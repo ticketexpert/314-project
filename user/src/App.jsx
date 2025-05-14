@@ -234,7 +234,6 @@ function NotFound() {
 }
 
 
-//TESTING - Backend check, remove later
 export default function MyApp() {
 	const [backendStatus, setBackendStatus] = useState(null);
 
