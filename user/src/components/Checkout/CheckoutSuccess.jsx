@@ -2,12 +2,41 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, Paper, Stack, Divider } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useNavigate } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState(null);
+  const [emailSent, setEmailSent] = useState(false);
 
+  const sendConfirmationEmail = async (orderData) => {
+    try {
+      const templateParams = {
+        toEmail: orderData.contact.email,
+        toName: `${orderData.contact.firstName} ${orderData.contact.lastName}`,
+        orderID: orderData.pageOrderNumber,
+        orderDate: new Date(orderData.date).toLocaleString(),
+        orderTotal: orderData.total.toFixed(2),
+        eventName: orderData.cartItems[0].eventTitle,
+        eventDate: new Date(orderData.cartItems[0].eventDate).toLocaleDateString(),
+        eventVenue: orderData.cartItems[0].eventVenue,
+      };
+
+      await emailjs.send(
+        'service_wjfn4j7', //ServiceID
+        'template_il509uq', //TemplateID,
+        templateParams,
+        '5iRFCEJQiqd2IKEnv' //Public Key
+      );
+      console.log('Confirmation email sent successfully');
+      setEmailSent(true);
+    } catch (error) {
+      console.error('Failed to send confirmation email:', error);
+    }
+  };
+
+  // First useEffect to load order data
   useEffect(() => {
     try {
       const stored = localStorage.getItem('orderSummary');
@@ -23,7 +52,14 @@ const CheckoutSuccess = () => {
       console.error('Error retrieving order summary:', err);
       setError('Error loading order details');
     }
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
+
+  // Second useEffect to handle email sending
+  useEffect(() => {
+    if (order && !emailSent) {
+      sendConfirmationEmail(order);
+    }
+  }, [order, emailSent]); // Only run when order or emailSent changes
 
   // If there's an error, show a message and provide a way to go back
   if (error) {
@@ -68,6 +104,7 @@ const CheckoutSuccess = () => {
               </Typography> <br/>
               <Typography variant="body2" sx={{ mb: 0.5 }}>
                 <b>Contact:</b> {order.contact.firstName} {order.contact.lastName} ({order.contact.email})
+                {/* CONTACT INFO, USE TO SEND EMAIL */}
               </Typography> <br/> 
               <Divider sx={{ my: 1 }} />
               {order.cartItems.map((item, idx) => (
