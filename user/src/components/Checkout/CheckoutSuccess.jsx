@@ -11,48 +11,39 @@ const CheckoutSuccess = () => {
   const [emailSent, setEmailSent] = useState(false);
 
   const sendConfirmationEmail = async (orderData) => {
-    if (!emailSent) {
-      try {
-        const templateParams = {
-          toEmail: orderData.contact.email,
-          toName: `${orderData.contact.firstName} ${orderData.contact.lastName}`,
-          orderID: orderData.pageOrderNumber,
-          orderDate: new Date(orderData.date).toLocaleString(),
-          orderTotal: orderData.total.toFixed(2),
-          eventName: orderData.cartItems[0].eventTitle,
-          eventDate: new Date(orderData.cartItems[0].eventDate).toLocaleDateString(),
-          eventVenue: orderData.cartItems[0].eventVenue,
-        };
+    try {
+      const templateParams = {
+        toEmail: orderData.contact.email,
+        toName: `${orderData.contact.firstName} ${orderData.contact.lastName}`,
+        orderID: orderData.pageOrderNumber,
+        orderDate: new Date(orderData.date).toLocaleString(),
+        orderTotal: orderData.total.toFixed(2),
+        eventName: orderData.cartItems[0].eventTitle,
+        eventDate: new Date(orderData.cartItems[0].eventDate).toLocaleDateString(),
+        eventVenue: orderData.cartItems[0].eventVenue,
+      };
 
-        await emailjs.send(
-          'service_wjfn4j7', //ServiceID
-          'template_il509uq', //TemplateID,
-          templateParams,
-          '5iRFCEJQiqd2IKEnv' //Public Key
-        );
-        console.log("Email sent state: ", emailSent);
-        console.log('Confirmation email sent successfully');
-        setEmailSent(true);
-        console.log("Email sent state after update: ", emailSent);
-        
-      } catch (error) {
-        console.error('Failed to send confirmation email:', error);
-      }
-    } else {
-      console.log('Email already sent for this order');
+      await emailjs.send(
+        'service_wjfn4j7', //ServiceID
+        'template_il509uq', //TemplateID,
+        templateParams,
+        '5iRFCEJQiqd2IKEnv' //Public Key
+      );
+      console.log('Confirmation email sent successfully');
+      setEmailSent(true);
+    } catch (error) {
+      console.error('Failed to send confirmation email:', error);
     }
   };
 
+  // First useEffect to load order data
   useEffect(() => {
     try {
       const stored = localStorage.getItem('orderSummary');
       if (stored) {
         const parsedOrder = JSON.parse(stored);
         setOrder(parsedOrder);
-         // Send email
-         sendConfirmationEmail(parsedOrder);
         console.log('Retrieved order:', parsedOrder);
-       
       } else {
         console.warn('No order summary found in localStorage');
         setError('No order details found');
@@ -61,7 +52,14 @@ const CheckoutSuccess = () => {
       console.error('Error retrieving order summary:', err);
       setError('Error loading order details');
     }
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
+
+  // Second useEffect to handle email sending
+  useEffect(() => {
+    if (order && !emailSent) {
+      sendConfirmationEmail(order);
+    }
+  }, [order, emailSent]); // Only run when order or emailSent changes
 
   // If there's an error, show a message and provide a way to go back
   if (error) {
