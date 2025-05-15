@@ -2,11 +2,47 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, Paper, Stack, Divider } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useNavigate } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState(null);
+  var emailSent = false;
+
+  const sendConfirmationEmail = async (orderData) => {
+    if (!emailSent) {
+    try {
+      const templateParams = {
+        toEmail: orderData.contact.email,
+        toName: `${orderData.contact.firstName} ${orderData.contact.lastName}`,
+        orderID: orderData.pageOrderNumber,
+        orderDate: new Date(orderData.date).toLocaleString(),
+        orderTotal: orderData.total.toFixed(2),
+        eventName: orderData.cartItems[0].eventTitle,
+        eventDate: new Date(orderData.cartItems[0].eventDate).toLocaleDateString(),
+        eventVenue: orderData.cartItems[0].eventVenue,
+      };
+
+      await emailjs.send(
+        'service_wjfn4j7', //ServiceID
+        'template_il509uq', //TemplateID,
+        templateParams,
+        '5iRFCEJQiqd2IKEnv' //Public Key
+      );
+      console.log("Email sent const: ", emailSent);
+      console.log('Confirmation email sent successfully');
+      emailSent = true;
+      console.log("Email sent const: ", emailSent);
+      
+    } catch (error) {
+      console.error('Failed to send confirmation email:', error);
+    }
+    }
+    else {
+      console.log('Email already sent for this order');
+    }
+  };
 
   useEffect(() => {
     try {
@@ -14,7 +50,10 @@ const CheckoutSuccess = () => {
       if (stored) {
         const parsedOrder = JSON.parse(stored);
         setOrder(parsedOrder);
+         // Send email
+         sendConfirmationEmail(parsedOrder);
         console.log('Retrieved order:', parsedOrder);
+       
       } else {
         console.warn('No order summary found in localStorage');
         setError('No order details found');
@@ -68,6 +107,7 @@ const CheckoutSuccess = () => {
               </Typography> <br/>
               <Typography variant="body2" sx={{ mb: 0.5 }}>
                 <b>Contact:</b> {order.contact.firstName} {order.contact.lastName} ({order.contact.email})
+                {/* CONTACT INFO, USE TO SEND EMAIL */}
               </Typography> <br/> 
               <Divider sx={{ my: 1 }} />
               {order.cartItems.map((item, idx) => (

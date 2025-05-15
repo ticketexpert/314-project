@@ -45,6 +45,7 @@ const colorScheme = {
 };
 
 const steps = ['Contact Information', 'Ticket Details', 'Review & Payment'];
+var pageOrderNumber = 0;
 
 // Add payment methods data
 const paymentMethods = [
@@ -411,6 +412,8 @@ const Checkout = () => {
 
       // Generate order number from timestamp
       const orderNumber = Date.now().toString();
+      pageOrderNumber = orderNumber;
+
 
       // Create tickets for each cart item
       for (const item of orderData.cartItems) {
@@ -469,6 +472,7 @@ const Checkout = () => {
       const orderData = {
         contact,
         cartItems,
+        pageOrderNumber,
         total: getCartTotal(),
         date: new Date().toISOString()
       };
