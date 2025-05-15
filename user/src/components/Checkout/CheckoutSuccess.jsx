@@ -8,38 +8,37 @@ const CheckoutSuccess = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState(null);
-  var emailSent = false;
+  const [emailSent, setEmailSent] = useState(false);
 
   const sendConfirmationEmail = async (orderData) => {
-    if (emailSent === false) {
-    try {
-      const templateParams = {
-        toEmail: orderData.contact.email,
-        toName: `${orderData.contact.firstName} ${orderData.contact.lastName}`,
-        orderID: orderData.pageOrderNumber,
-        orderDate: new Date(orderData.date).toLocaleString(),
-        orderTotal: orderData.total.toFixed(2),
-        eventName: orderData.cartItems[0].eventTitle,
-        eventDate: new Date(orderData.cartItems[0].eventDate).toLocaleDateString(),
-        eventVenue: orderData.cartItems[0].eventVenue,
-      };
+    if (!emailSent) {
+      try {
+        const templateParams = {
+          toEmail: orderData.contact.email,
+          toName: `${orderData.contact.firstName} ${orderData.contact.lastName}`,
+          orderID: orderData.pageOrderNumber,
+          orderDate: new Date(orderData.date).toLocaleString(),
+          orderTotal: orderData.total.toFixed(2),
+          eventName: orderData.cartItems[0].eventTitle,
+          eventDate: new Date(orderData.cartItems[0].eventDate).toLocaleDateString(),
+          eventVenue: orderData.cartItems[0].eventVenue,
+        };
 
-      await emailjs.send(
-        'service_wjfn4j7', //ServiceID
-        'template_il509uq', //TemplateID,
-        templateParams,
-        '5iRFCEJQiqd2IKEnv' //Public Key
-      );
-      console.log("Email sent const: ", emailSent);
-      console.log('Confirmation email sent successfully');
-      emailSent = true;
-      console.log("Email sent const: ", emailSent);
-      
-    } catch (error) {
-      console.error('Failed to send confirmation email:', error);
-    }
-    }
-    else {
+        await emailjs.send(
+          'service_wjfn4j7', //ServiceID
+          'template_il509uq', //TemplateID,
+          templateParams,
+          '5iRFCEJQiqd2IKEnv' //Public Key
+        );
+        console.log("Email sent state: ", emailSent);
+        console.log('Confirmation email sent successfully');
+        setEmailSent(true);
+        console.log("Email sent state after update: ", emailSent);
+        
+      } catch (error) {
+        console.error('Failed to send confirmation email:', error);
+      }
+    } else {
       console.log('Email already sent for this order');
     }
   };

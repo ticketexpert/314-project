@@ -45,7 +45,7 @@ const colorScheme = {
 };
 
 const steps = ['Contact Information', 'Ticket Details', 'Review & Payment'];
-var pageOrderNumber = 0;
+let pageOrderNumber = 0;
 
 // Add payment methods data
 const paymentMethods = [
