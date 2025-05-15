@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "@/components/data-table"
@@ -11,30 +14,32 @@ import {
 import data from "./data.json"
 
 export default function Page() {
+  const [tabValue, setTabValue] = useState("overview")
+
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 80)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards />
-              <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
+    <>
+      <SiteHeader tabValue={tabValue} setTabValue={setTabValue}/>
+      <div className="flex flex-1 flex-col gap-2 py-8">
+        <div className="@container/main flex flex-1 flex-col gap-6">
+          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+            <SectionCards />
+            {tabValue === "overview" && (
+              <>
+                <div className="px-4 lg:px-6">
+                  <ChartAreaInteractive />
+                </div>
+                <DataTable data={data} />
+              </>
+            )}
+
+            {tabValue === "organisation-profile" && (
+              <div className="px-4 lg:px-6 text-muted">
+                <p>Organisation profile content goes here.</p>
               </div>
-              <DataTable data={data} />
-            </div>
+            )}
           </div>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </>
   )
 }
