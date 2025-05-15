@@ -127,7 +127,7 @@ const formFieldSx = {
 };
 
 const Checkout = () => {
-  const { cartItems, getCartTotal } = useCart();
+  const { cartItems, getCartTotal, clearCart } = useCart();
   const navigate = useNavigate();
   const tickets = flattenTickets(cartItems);
   const event = cartItems[0];
@@ -517,6 +517,9 @@ const Checkout = () => {
 
       // Create tickets after successful payment
       await createTickets(orderData);
+
+      // Clear the cart after successful checkout
+      clearCart();
 
       // Navigate to success page
       navigate('/checkout/success');
