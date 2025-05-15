@@ -11,7 +11,7 @@ const CheckoutSuccess = () => {
   var emailSent = false;
 
   const sendConfirmationEmail = async (orderData) => {
-    if (!emailSent) {
+    if (emailSent === false) {
     try {
       const templateParams = {
         toEmail: orderData.contact.email,
