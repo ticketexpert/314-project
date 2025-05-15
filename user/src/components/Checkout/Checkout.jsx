@@ -828,7 +828,6 @@ const Checkout = () => {
                                     fullWidth
                                     label="First Name"
                                     name="firstName"
-                                    value={ticketHolders[`${eventKey}-${idx}`]?.firstName || ''}
                                     onChange={e => handleTicketHolderChange(eventKey, idx, e)}
                                     required
                                     variant="outlined"
@@ -840,7 +839,6 @@ const Checkout = () => {
                                     fullWidth
                                     label="Last Name"
                                     name="lastName"
-                                    value={ticketHolders[`${eventKey}-${idx}`]?.lastName || ''}
                                     onChange={e => handleTicketHolderChange(eventKey, idx, e)}
                                     required
                                     variant="outlined"
@@ -853,7 +851,6 @@ const Checkout = () => {
                                   fullWidth
                                   label="Email address"
                                   name="email"
-                                  value={ticketHolders[`${eventKey}-${idx}`]?.email || ''}
                                   onChange={e => handleTicketHolderChange(eventKey, idx, e)}
                                   required
                                   variant="outlined"
@@ -865,7 +862,6 @@ const Checkout = () => {
                                   fullWidth
                                   label="Phone Number"
                                   name="phone"
-                                  value={ticketHolders[`${eventKey}-${idx}`]?.phone || ''}
                                   onChange={e => handleTicketHolderChange(eventKey, idx, e)}
                                   variant="outlined"
                                   sx={formFieldSx}
