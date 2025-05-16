@@ -6,4 +6,9 @@ router.get('/', (req, res) => {
     res.json({ status: 'ok', message: 'Backend is responding' });
 });
 
+// GET /status/version - Returns the version of the site
+router.get('/version', (req, res) => {
+    res.json({ version: 'Fri 16May 12PM' });
+});
+
 module.exports = router;
