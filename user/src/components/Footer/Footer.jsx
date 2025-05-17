@@ -9,6 +9,7 @@ export default function Footer() {
   const [categories, setCategories] = useState([]);
   const [popularEvents, setPopularEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [version, setVersion] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,6 +37,15 @@ export default function Footer() {
     };
 
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchVersion = async () => {
+      const response = await fetch('https://api.ticketexpert.me/status/version');
+      const data = await response.json();
+      setVersion(data.version);
+    };
+    fetchVersion();
   }, []);
 
   const footerSections = [
@@ -156,6 +166,9 @@ export default function Footer() {
       >
         <Typography fontSize={14} color="text.secondary">
           © {new Date().getFullYear()} TicketExpert. All rights reserved.
+          <Typography component="span" fontSize={14} color="text.secondary" sx={{ ml: 1 }}>
+            | Backend API Version: {loading ? '...' : version}
+          </Typography>
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
