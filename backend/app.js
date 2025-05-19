@@ -19,7 +19,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/users', userRoutes);
 app.use('/status', statusRoutes);
 app.use('/api/tickets', ticketRoutes);
-app.use('/api/userNotifcation', userNotifcationRoutes);
+app.use('/api/userNotification', userNotifcationRoutes);
 
 // Export the app so it can be used in test files
 module.exports = app;
