@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/user');
+const { User, UserNotifications } = require('../models');
 const Event = require('../models/event');
 const { Op } = require('sequelize');
 
@@ -8,9 +8,14 @@ const { Op } = require('sequelize');
 router.post('/', async (req, res) => {
   try {
     const user = await User.create(req.body);
-    console.log("This worked");
+    // Create default notification settings for the new user
+    await UserNotifications.create({
+      userId: user.userId
+    });
+    console.log("User and notification settings created successfully");
     res.status(201).json(user);
   } catch (err) {
+    console.error('Error creating user:', err);
     if (err.message === 'Validation error'){
       res.status(401).json({ 'error': 'User already exists'});
     } else {

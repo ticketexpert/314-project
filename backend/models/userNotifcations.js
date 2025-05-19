@@ -30,7 +30,7 @@ const UserNotifications = sequelize.define('UserNotifications', {
   currentNotifs: {
     type: DataTypes.JSON,
     allowNull: true,
-    defaultValue: [],
+    defaultValue: {"title":"Welcome to TicketExpert!","message":"Glad to have ya here!"},
   }
 });
 
