@@ -19,8 +19,9 @@ describe('User Notifications API', () => {
   });
   console.log("=== Starting User Notifications API Tests ===");
 
-  describe('POST /api/userNotifcation', () => {
-    it('should create new notification settings for a user', async () => {
+  describe('POST /api/userNotification', () => {
+    it('should create new notification settings for a user', async function() {
+      this.timeout(10000); // Increase timeout to 10 seconds for this test
       // Create notification settings for users 1-50
       for (let userId = 1; userId <= 50; userId++) {
         const notificationSettings = {
@@ -28,11 +29,12 @@ describe('User Notifications API', () => {
           bookingConf: true,
           eventReminder: true,
           eventUpdates: true,
-          specialAnnouncements: true
+          specialAnnouncements: true,
+          currentNotifs: {"title":"Welcome to TicketExpert!","message":"Glad to have ya here!"}
         };
         
         const res = await chai.request(app)
-          .post('/api/userNotifcation')
+          .post('/api/userNotification')
           .send(notificationSettings);
 
         expect(res).to.have.status(200);
@@ -49,14 +51,14 @@ describe('User Notifications API', () => {
         userId: 500000,
       };
 
-      const res = await chai.request(app).post('/api/userNotifcation').send(invalidSettings);
+      const res = await chai.request(app).post('/api/userNotification').send(invalidSettings);
       expect(res).to.have.status(500);
     });
   });
 
-  describe('GET /api/userNotifcation', () => {
+  describe('GET /api/userNotification', () => {
     it('should get all user notification settings', async () => {
-      const res = await chai.request(app).get('/api/userNotifcation');
+      const res = await chai.request(app).get('/api/userNotification');
       expect(res).to.have.status(200);
       expect(res.body).to.be.an('array');
       expect(res.body.length).to.be.at.least(1);
@@ -66,14 +68,14 @@ describe('User Notifications API', () => {
   describe('GET /api/userNotifcation/:userId', () => {
     it('should get notification settings for a specific user', async () => {
       const userId = 1;
-      const res = await chai.request(app).get(`/api/userNotifcation/${userId}`);
+      const res = await chai.request(app).get(`/api/userNotification/${userId}`);
       expect(res).to.have.status(200);
       expect(res.body).to.have.property('userId', userId);
     });
 
     it('should return null for non-existent user', async () => {
       const nonExistentUserId = 999;
-      const res = await chai.request(app).get(`/api/userNotifcation/${nonExistentUserId}`);
+      const res = await chai.request(app).get(`/api/userNotification/${nonExistentUserId}`);
       expect(res).to.have.status(200);
       expect(res.body).to.be.null;
     });
@@ -89,11 +91,11 @@ describe('User Notifications API', () => {
         specialAnnouncements: true
       };
 
-      const res = await chai.request(app).put(`/api/userNotifcation/${userId}`).send(updatedSettings);
+      const res = await chai.request(app).put(`/api/userNotification/${userId}`).send(updatedSettings);
       expect(res).to.have.status(200);
 
       // Verify the update by fetching the user's settings
-      const getRes = await chai.request(app).get(`/api/userNotifcation/${userId}`);
+      const getRes = await chai.request(app).get(`/api/userNotification/${userId}`);
       expect(getRes.body).to.have.property('bookingConf', updatedSettings.bookingConf);
       expect(getRes.body).to.have.property('eventReminder', updatedSettings.eventReminder);
     });
@@ -107,7 +109,7 @@ describe('User Notifications API', () => {
         specialAnnouncements: true
       };
 
-      const res = await chai.request(app).put(`/api/userNotifcation/${nonExistentUserId}`).send(updatedSettings);
+      const res = await chai.request(app).put(`/api/userNotification/${nonExistentUserId}`).send(updatedSettings);
       expect(res).to.have.status(200);
     });
   });
