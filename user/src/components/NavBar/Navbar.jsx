@@ -42,8 +42,12 @@ const Navbar = () => {
       const response = await fetch(`https://api.ticketexpert.me/api/userNotification/${userId}`);
       if (response.ok) {
         const data = await response.json();
-        setNotifications(data.currentNotifs);
-        console.log(data.currentNotifs);
+        // Convert single notification to array if needed
+        const notifsArray = Array.isArray(data.currentNotifs) 
+          ? data.currentNotifs 
+          : [data.currentNotifs];
+        setNotifications(notifsArray);
+        console.log('Notifications:', notifsArray);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
