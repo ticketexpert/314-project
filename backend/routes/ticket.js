@@ -14,7 +14,7 @@ router.post('/', async (req, res) => {
 
     try {
       await axios.patch(`https://www.api.ticketexpert.me/api/events/${eventId}/tickets/${type}`, {
-        quantity: 1
+        "quantity": 1
       });
     } catch (patchError) {
       console.error('Error updating event ticket quantity:', patchError);
