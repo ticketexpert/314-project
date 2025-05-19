@@ -39,10 +39,11 @@ const Navbar = () => {
   const fetchNotifications = async () => {
     try {
       const userId = localStorage.getItem('userId'); // Assuming you store userId in localStorage
-      const response = await fetch(`https://api.ticketexpert.me/api/users/${userId}/notifications`);
+      const response = await fetch(`https://api.ticketexpert.me/api/userNotifcation/${userId}`);
       if (response.ok) {
         const data = await response.json();
-        setNotifications(data);
+        setNotifications(data.currentNotifs);
+        console.log(data.currentNotifs);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
