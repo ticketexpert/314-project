@@ -138,11 +138,6 @@ function DragHandle({ id }: { id: number }) {
 
 const columns: ColumnDef<z.infer<typeof schema>>[] = [
   {
-    id: "drag",
-    header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.id} />,
-  },
-  {
     id: "select",
     header: ({ table }) => (
       <div className="flex items-center justify-center">
@@ -169,8 +164,18 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "header",
-    header: "Header",
+    accessorKey: "date",
+    header: "Date",
+    enableHiding: false
+  },
+  {
+    accessorKey: "location",
+    header: "Location",
+    enableHiding: false
+  },
+  {
+    accessorKey: "name",
+    header: "Event Name",
     cell: ({ row }) => {
       return <TableCellViewer item={row.original} />
     },
@@ -202,8 +207,8 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     ),
   },
   {
-    accessorKey: "target",
-    header: () => <div className="w-full text-right">Target</div>,
+    accessorKey: "sold",
+    header: () => <div className="w-full text-right">Sold</div>,
     cell: ({ row }) => (
       <form
         onSubmit={(e) => {

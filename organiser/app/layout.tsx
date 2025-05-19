@@ -3,10 +3,13 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
   SidebarProvider,
+  SidebarTrigger,
 } from "@/components/ui/sidebar"
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +45,11 @@ export default function RootLayout({
           }
         >
           <AppSidebar variant="inset" />
-          <SidebarInset>
+          <SidebarInset className="px-4 pt-4">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger />
+              <Separator orientation="vertical" className="mx-2 h-6"/>
+            </div>
             {children}
           </SidebarInset>
         </SidebarProvider>
