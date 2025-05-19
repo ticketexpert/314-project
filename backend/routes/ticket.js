@@ -1,12 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const { Ticket, Event, User } = require('../models');
+const axios = require('axios');
 
 // POST /api/tickets → create ticket
 router.post('/', async (req, res) => {
   try {
     console.log('Creating ticket with data:', req.body);
     const ticket = await Ticket.create(req.body);
+    console.log('Ticket created:', ticket);
+    const eventId = req.body.eventId;
+    const type = req.body.ticketType;
+
+    try {
+      await axios.patch(`https://www.api.ticketexpert.me/api/events/${eventId}/tickets/${type}`, {
+        quantity: 1
+      });
+    } catch (patchError) {
+      console.error('Error updating event ticket quantity:', patchError);
+      // TODO, if error stop creating?
+    }
+
     res.status(201).json(ticket);
   } catch (err) {
     console.error('Error creating ticket:', err);
