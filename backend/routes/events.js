@@ -78,6 +78,9 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// PATCH numTicketsAvailable
+
+
 // GET /api/events → with optional filters
 router.get('/filter', async (req, res) => {
     try {
@@ -101,5 +104,40 @@ router.get('/filter', async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   });  
+
+// PATCH /api/events/:eventId/tickets/:type
+router.patch('/:eventId/tickets/:type', async (req, res) => {
+  try {
+    const { eventId, type } = req.params;
+    const { quantity } = req.body;
+
+    const event = await Event.findByPk(eventId);
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    // Find the ticket type in the pricing array
+    const ticketIndex = event.pricing.findIndex(ticket => ticket.type === type);
+    if (ticketIndex === -1) {
+      return res.status(404).json({ error: 'Ticket type not found' });
+    }
+
+    // Create a new pricing array with the updated values
+    const updatedPricing = [...event.pricing];
+    updatedPricing[ticketIndex] = {
+      ...updatedPricing[ticketIndex],
+      numTicketsAvailable: updatedPricing[ticketIndex].numTicketsAvailable - quantity
+    };
+
+    // Update the event with the new pricing array
+    await event.update({ pricing: updatedPricing });
+
+    // Fetch the updated event to return
+    const updatedEvent = await Event.findByPk(eventId);
+    res.json(updatedEvent);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;
