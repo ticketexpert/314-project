@@ -46,7 +46,7 @@ const Event = sequelize.define('Event', {
   pricing: {
     type: DataTypes.ARRAY(DataTypes.JSON),
     defaultValue: [],
-    // Each pricing object should include: { price: number, tier: string, numTicketsAvailable: number }
+    // Each pricing object should include: { price: number, type: string, numTicketsAvailable: number }
   },
   refundPolicy: {
     type: DataTypes.TEXT,

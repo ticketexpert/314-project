@@ -42,7 +42,7 @@ describe('Ticket API', () => {
       toDateTime: new Date(Date.now() + 86400000),
       region: 'Test Region',
       venue: 'Test Venue',
-      pricing: [{ price: 100, tier: 'Standard', numTicketsAvailable: 50 }],
+      pricing: [{ price: 100, type: 'Standard', numTicketsAvailable: 50 }],
       refundPolicy: 'Test Policy',
       organiser: 'Test Organiser',
       orgDescription: 'Test Org Description',
@@ -57,7 +57,7 @@ describe('Ticket API', () => {
         userId: testUser.userId,
         locationDetails: { section: 'A', row: '1', seat: '1' },
         ticketStatus: 'active',
-        ticketType: 'standard',
+        ticketType: testEvent.pricing[0].type,
         orderNumber: Math.floor(Math.random() * 2147483647),
       };
 

@@ -108,6 +108,7 @@ router.get('/filter', async (req, res) => {
 // PATCH /api/events/:eventId/tickets/:type
 router.patch('/:eventId/tickets/:type', async (req, res) => {
   try {
+    console.log('---------This IS ACTUALLY RUNNING IN THE TEST Triggered patch route events.js---------');
     const { eventId, type } = req.params;
     const { quantity } = req.body;
 
@@ -122,19 +123,15 @@ router.patch('/:eventId/tickets/:type', async (req, res) => {
       return res.status(404).json({ error: 'Ticket type not found' });
     }
 
-    // Create a new pricing array with the updated values
-    const updatedPricing = [...event.pricing];
-    updatedPricing[ticketIndex] = {
-      ...updatedPricing[ticketIndex],
-      numTicketsAvailable: updatedPricing[ticketIndex].numTicketsAvailable - quantity
-    };
+    // Update the array value
+    event.pricing[ticketIndex].numTicketsAvailable = event.pricing[ticketIndex].numTicketsAvailable - quantity;
 
-    // Update the event with the new pricing array
-    await event.update({ pricing: updatedPricing });
+    // Mark the pricing field as changed - NEEDED OTHERWISE DIDNT WORK
+    event.changed('pricing', true);
+    await event.save();
 
-    // Fetch the updated event to return
-    const updatedEvent = await Event.findByPk(eventId);
-    res.json(updatedEvent);
+    console.log('---------This IS ACTUALLY RUNNING IN THE TEST After save events.js---------');
+    res.status(200).json({ message: 'Ticket quantity updated successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
