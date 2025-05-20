@@ -11,10 +11,16 @@ router.post('/', async (req, res) => {
     //console.log('Ticket created:', ticket);
     const eventId = req.body.eventId;
     const type = req.body.ticketType;
+    let eventName = "";
     
     console.log('------ Ticket event name is:', req.body);
 
-    
+    try {
+      const response = await axios.get(`https://www.api.ticketexpert.me/api/events/${eventId}`, {});
+      eventName = response.data.title;
+    } catch (getError) {
+      console.error('Error getting event:', getError);
+    }
 
     try {
       //Working the whole time, I was just pinging an old version of the backend, points at production backend
@@ -29,7 +35,7 @@ router.post('/', async (req, res) => {
 
     try {
       await axios.put(`https://www.api.ticketexpert.me/api/userNotification/${req.body.userId}`, {
-        "currentNotifs": {"title": "Ticket Booked!", "message": "Your ticket to " + req.body.eventTitle + " awaits!"}
+        "currentNotifs": {"title": "Ticket Booked!", "message": "Your ticket to " + eventName + " awaits!"}
       });
     } catch (postError) {
       console.error('Error posting user notification:', postError);
