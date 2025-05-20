@@ -165,40 +165,15 @@ const Checkout = () => {
     expiry: '',
     cvc: ''
   });
-  const [savedCards, setSavedCards] = useState([]);
-  const [useSavedCard, setUseSavedCard] = useState(false);
-  const [selectedSavedCard, setSelectedSavedCard] = useState(null);
   const [cardValidation, setCardValidation] = useState({
     number: { isValid: true, message: '' },
     expiry: { isValid: true, message: '' },
     cvc: { isValid: true, message: '' },
     name: { isValid: true, message: '' }
   });
-  const [isLoadingCards, setIsLoadingCards] = useState(true);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [promoApplied, setPromoApplied] = useState(false);
-
-  // Load saved payment methods with loading state
-  useEffect(() => {
-    const loadSavedCards = async () => {
-      setIsLoadingCards(true);
-      try {
-        const cards = await getPaymentMethods();
-        setSavedCards(cards);
-      } catch (error) {
-        console.error('Error loading saved cards:', error);
-        setSnackbar({
-          open: true,
-          message: 'Failed to load saved cards. Please try again.',
-          severity: 'error'
-        });
-      } finally {
-        setIsLoadingCards(false);
-      }
-    };
-    loadSavedCards();
-  }, []);
 
   // Get card brand logo
   const getCardBrandLogo = (cardType) => {
@@ -481,27 +456,39 @@ const Checkout = () => {
       localStorage.setItem('orderSummary', JSON.stringify(orderData));
 
       if (selectedPaymentMethod === 'credit') {
-        if (!useSavedCard && !validateCardDetails()) {
+        if (!validateCardDetails()) {
           setIsProcessingPayment(false);
           return;
         }
 
-        // Save new card if not using saved card
-        if (!useSavedCard) {
-          const cardData = {
-            ...cardDetails,
-            cardType: getCardType(cardDetails.number)
-          };
-          await savePaymentMethod(cardData);
-        }
+        // Prepare payment data with only necessary information
+        const paymentData = {
+          amount: getCartTotal(),
+          cardNumber: cardDetails.number.replace(/\s/g, ''), // Remove spaces from card number
+          cardName: cardDetails.name,
+          cardExpiry: cardDetails.expiry,
+          cardCvc: cardDetails.cvc
+        };
 
-        // Simulate successful payment processing
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setSnackbar({
-          open: true,
-          message: 'Payment processed successfully!',
-          severity: 'success'
+        const response = await fetch('https://api.ticketexpert.me/api/paymentsGateway', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(paymentData)
         });
+
+        const data = await response.json();
+        console.log(data);
+        if (data.Success == "Success") {
+          setSnackbar({
+            open: true,
+            message: 'Payment processed successfully!',
+            severity: 'success'
+          });
+        } else {
+          throw new Error('Payment processing failed');
+        }
       }
 
       // Handle PayPal payment
@@ -548,30 +535,33 @@ const Checkout = () => {
 
   if (isCartEmpty) {
     return (
-      <Box sx={{ bgcolor: colorScheme.grey.background, minHeight: '100vh', py: 4 }}>
+      <Box sx={{ minHeight: '100vh', py: 4 }}>
         <Container maxWidth="md">
-          <Paper elevation={2} sx={{ p: 6, borderRadius: 4, textAlign: 'center', bgcolor: '#fff' }}>
-            <Typography variant="h4" color={colorScheme.red.primary} gutterBottom fontWeight="bold">
+          <Paper elevation={2} sx={{ p: 6, borderRadius: 4, textAlign: 'center', bgcolor: colorScheme.blue.light }}>
+            <Typography variant="h4" color={colorScheme.blue.primary} gutterBottom fontWeight="bold">
               Your Cart is Empty
             </Typography>
+            <br/>
             <Typography variant="body1" color="text.secondary" paragraph sx={{ mb: 4 }}>
               Add tickets to your cart to start the checkout process.
             </Typography>
+            <br/>
+            <br/>
             <Button
               variant="contained"
               size="large"
               onClick={() => navigate('/events')}
               sx={{
-                bgcolor: colorScheme.red.primary,
+                bgcolor: colorScheme.blue.primary,
                 borderRadius: 99,
                 fontWeight: 600,
                 px: 4,
                 py: 1.5,
                 fontSize: '1.1rem',
-                boxShadow: '0 4px 12px rgba(159,27,50,0.15)',
+                boxShadow: '0 4px 12px rgba(85, 193, 255, 0.15)',
                 '&:hover': {
-                  bgcolor: colorScheme.red.hover,
-                  boxShadow: '0 6px 16px rgba(159,27,50,0.2)'
+                  bgcolor: colorScheme.blue.hover,
+                  boxShadow: '0 6px 16px rgba(113, 170, 255, 0.2)'
                 }
               }}
             >
@@ -1011,215 +1001,145 @@ const Checkout = () => {
                         </Paper>
                       ))}
 
-                      {/* Credit Card Form with loading state */}
+                      {/* Credit Card Form */}
                       {selectedPaymentMethod === 'credit' && (
                         <Box sx={{ mt: 2 }}>
-                          {isLoadingCards ? (
-                            <Stack spacing={2}>
-                              <Skeleton variant="rectangular" height={40} />
-                              <Skeleton variant="rectangular" height={40} />
-                              <Skeleton variant="rectangular" height={40} />
-                            </Stack>
-                          ) : (
-                            <>
-                              {savedCards.length > 0 && (
-                                <FormControl component="fieldset" sx={{ mb: 3 }}>
-                                  <FormLabel component="legend">Use saved card</FormLabel>
-                                  <RadioGroup
-                                    value={useSavedCard}
-                                    onChange={(e) => setUseSavedCard(e.target.value === 'true')}
-                                  >
-                                    <FormControlLabel
-                                      value={true}
-                                      control={<Radio />}
-                                      label="Use saved card"
-                                    />
-                                    <FormControlLabel
-                                      value={false}
-                                      control={<Radio />}
-                                      label="Use new card"
-                                    />
-                                  </RadioGroup>
-                                </FormControl>
-                              )}
-
-                              {useSavedCard ? (
-                                <Stack spacing={2}>
-                                  {savedCards.map((card) => (
-                                    <Paper
-                                      key={card.id}
-                                      elevation={selectedSavedCard === card.id ? 2 : 0}
-                                      sx={{
-                                        p: 2,
-                                        border: 2,
-                                        borderColor: selectedSavedCard === card.id ? colorScheme.red.primary : colorScheme.grey.border,
-                                        borderRadius: 2,
-                                        cursor: 'pointer',
-                                        '&:hover': {
-                                          borderColor: colorScheme.red.primary,
-                                          bgcolor: colorScheme.red.light
-                                        }
-                                      }}
-                                      onClick={() => setSelectedSavedCard(card.id)}
-                                    >
-                                      <Stack direction="row" spacing={2} alignItems="center">
-                                        <img
-                                          src={getCardBrandLogo(card.cardType)}
-                                          alt={card.cardType}
-                                          style={{ height: 24 }}
-                                        />
-                                        <Box>
-                                          <Typography variant="subtitle1" fontWeight={600}>
-                                            {card.cardType.charAt(0).toUpperCase() + card.cardType.slice(1)}
-                                          </Typography>
-                                          <Typography variant="body2" color="text.secondary">
-                                            •••• {card.last4}
-                                          </Typography>
-                                        </Box>
-                                      </Stack>
-                                    </Paper>
-                                  ))}
-                                </Stack>
-                              ) : (
-                                <Stack spacing={3}>
-                                  {/* Card Number Row */}
-                                  <TextField
-                                    fullWidth
-                                    label="Card Number"
-                                    name="number"
-                                    value={cardDetails.number}
-                                    onChange={handleCardDetailsChange}
-                                    placeholder="1234 5678 9012 3456"
-                                    error={!cardValidation.number.isValid}
-                                    helperText={cardValidation.number.message}
-                                    InputProps={{
-                                      endAdornment: (
-                                        <InputAdornment position="end">
-                                          {cardDetails.number && (
-                                            <img
-                                              src={getCardBrandLogo(getCardType(cardDetails.number))}
-                                              alt="card type"
-                                              style={{ height: 24 }}
-                                            />
-                                          )}
-                                        </InputAdornment>
-                                      )
-                                    }}
-                                    sx={{
-                                      bgcolor: '#fff',
-                                      borderRadius: 2,
-                                      '& .MuiOutlinedInput-root': {
-                                        '& fieldset': {
-                                          borderColor: colorScheme.grey.border,
-                                        },
-                                        '&:hover fieldset': {
-                                          borderColor: colorScheme.red.primary,
-                                        },
-                                        '&.Mui-focused fieldset': {
-                                          borderColor: colorScheme.red.primary,
-                                        },
-                                      },
-                                    }}
-                                  />
-
-                                  {/* Name on Card Row */}
-                                  <TextField
-                                    fullWidth
-                                    label="Name on Card"
-                                    name="name"
-                                    value={cardDetails.name}
-                                    onChange={handleCardDetailsChange}
-                                    placeholder="Adam Smith"
-                                    error={!cardValidation.name.isValid}
-                                    helperText={cardValidation.name.message}
-                                    sx={{
-                                      bgcolor: '#fff',
-                                      borderRadius: 2,
-                                      '& .MuiOutlinedInput-root': {
-                                        '& fieldset': {
-                                          borderColor: colorScheme.grey.border,
-                                        },
-                                        '&:hover fieldset': {
-                                          borderColor: colorScheme.red.primary,
-                                        },
-                                        '&.Mui-focused fieldset': {
-                                          borderColor: colorScheme.red.primary,
-                                        },
-                                      },
-                                    }}
-                                  />
-
-                                  {/* Expiry and CVC Row */}
-                                  <Grid container spacing={2}>
-                                    <Grid item xs={8}>
-                                      <TextField
-                                        fullWidth
-                                        label="Expiry Date"
-                                        name="expiry"
-                                        value={cardDetails.expiry}
-                                        onChange={handleCardDetailsChange}
-                                        placeholder="MM/YY"
-                                        error={!cardValidation.expiry.isValid}
-                                        helperText={cardValidation.expiry.message}
-                                        sx={{
-                                          bgcolor: '#fff',
-                                          borderRadius: 2,
-                                          '& .MuiOutlinedInput-root': {
-                                            '& fieldset': {
-                                              borderColor: colorScheme.grey.border,
-                                            },
-                                            '&:hover fieldset': {
-                                              borderColor: colorScheme.red.primary,
-                                            },
-                                            '&.Mui-focused fieldset': {
-                                              borderColor: colorScheme.red.primary,
-                                            },
-                                          },
-                                        }}
+                          <Stack spacing={3}>
+                            {/* Card Number Row */}
+                            <TextField
+                              fullWidth
+                              label="Card Number"
+                              name="number"
+                              value={cardDetails.number}
+                              onChange={handleCardDetailsChange}
+                              placeholder="1234 5678 9012 3456"
+                              error={!cardValidation.number.isValid}
+                              helperText={cardValidation.number.message}
+                              InputProps={{
+                                endAdornment: (
+                                  <InputAdornment position="end">
+                                    {cardDetails.number && (
+                                      <img
+                                        src={getCardBrandLogo(getCardType(cardDetails.number))}
+                                        alt="card type"
+                                        style={{ height: 24 }}
                                       />
-                                    </Grid>
-                                    <Grid item xs={4}>
-                                      <TextField
-                                        fullWidth
-                                        label="CVC"
-                                        name="cvc"
-                                        value={cardDetails.cvc}
-                                        onChange={handleCardDetailsChange}
-                                        placeholder="123"
-                                        error={!cardValidation.cvc.isValid}
-                                        helperText={cardValidation.cvc.message}
-                                        sx={{
-                                          bgcolor: '#fff',
-                                          borderRadius: 2,
-                                          '& .MuiOutlinedInput-root': {
-                                            '& fieldset': {
-                                              borderColor: colorScheme.grey.border,
-                                            },
-                                            '&:hover fieldset': {
-                                              borderColor: colorScheme.red.primary,
-                                            },
-                                            '&.Mui-focused fieldset': {
-                                              borderColor: colorScheme.red.primary,
-                                            },
-                                          },
-                                        }}
-                                      />
-                                    </Grid>
-                                  </Grid>
-                                </Stack>
-                              )}
-                              <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Typography variant="body2" color="text.secondary">
-                                  We accept:
-                                </Typography>
-                                <Box sx={{ display: 'flex', gap: 1 }}>
-                                  <img src={visaLogo} alt="Visa" style={{ height: 20 }} />
-                                  <img src={mastercardLogo} alt="Mastercard" style={{ height: 20 }} />
-                                  <img src={amexLogo} alt="Amex" style={{ height: 20 }} />
-                                </Box>
-                              </Box>
-                            </>
-                          )}
+                                    )}
+                                  </InputAdornment>
+                                )
+                              }}
+                              sx={{
+                                bgcolor: '#fff',
+                                borderRadius: 2,
+                                '& .MuiOutlinedInput-root': {
+                                  '& fieldset': {
+                                    borderColor: colorScheme.grey.border,
+                                  },
+                                  '&:hover fieldset': {
+                                    borderColor: colorScheme.red.primary,
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: colorScheme.red.primary,
+                                  },
+                                },
+                              }}
+                            />
+
+                            {/* Name on Card Row */}
+                            <TextField
+                              fullWidth
+                              label="Name on Card"
+                              name="name"
+                              value={cardDetails.name}
+                              onChange={handleCardDetailsChange}
+                              placeholder="Adam Smith"
+                              error={!cardValidation.name.isValid}
+                              helperText={cardValidation.name.message}
+                              sx={{
+                                bgcolor: '#fff',
+                                borderRadius: 2,
+                                '& .MuiOutlinedInput-root': {
+                                  '& fieldset': {
+                                    borderColor: colorScheme.grey.border,
+                                  },
+                                  '&:hover fieldset': {
+                                    borderColor: colorScheme.red.primary,
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: colorScheme.red.primary,
+                                  },
+                                },
+                              }}
+                            />
+
+                            {/* Expiry and CVC Row */}
+                            <Grid container spacing={2}>
+                              <Grid item xs={8}>
+                                <TextField
+                                  fullWidth
+                                  label="Expiry Date"
+                                  name="expiry"
+                                  value={cardDetails.expiry}
+                                  onChange={handleCardDetailsChange}
+                                  placeholder="MM/YY"
+                                  error={!cardValidation.expiry.isValid}
+                                  helperText={cardValidation.expiry.message}
+                                  sx={{
+                                    bgcolor: '#fff',
+                                    borderRadius: 2,
+                                    '& .MuiOutlinedInput-root': {
+                                      '& fieldset': {
+                                        borderColor: colorScheme.grey.border,
+                                      },
+                                      '&:hover fieldset': {
+                                        borderColor: colorScheme.red.primary,
+                                      },
+                                      '&.Mui-focused fieldset': {
+                                        borderColor: colorScheme.red.primary,
+                                      },
+                                    },
+                                  }}
+                                />
+                              </Grid>
+                              <Grid item xs={4}>
+                                <TextField
+                                  fullWidth
+                                  label="CVC"
+                                  name="cvc"
+                                  value={cardDetails.cvc}
+                                  onChange={handleCardDetailsChange}
+                                  placeholder="123"
+                                  error={!cardValidation.cvc.isValid}
+                                  helperText={cardValidation.cvc.message}
+                                  sx={{
+                                    bgcolor: '#fff',
+                                    borderRadius: 2,
+                                    '& .MuiOutlinedInput-root': {
+                                      '& fieldset': {
+                                        borderColor: colorScheme.grey.border,
+                                      },
+                                      '&:hover fieldset': {
+                                        borderColor: colorScheme.red.primary,
+                                      },
+                                      '&.Mui-focused fieldset': {
+                                        borderColor: colorScheme.red.primary,
+                                      },
+                                    },
+                                  }}
+                                />
+                              </Grid>
+                            </Grid>
+                          </Stack>
+                          <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              We accept:
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <img src={visaLogo} alt="Visa" style={{ height: 20 }} />
+                              <img src={mastercardLogo} alt="Mastercard" style={{ height: 20 }} />
+                              <img src={amexLogo} alt="Amex" style={{ height: 20 }} />
+                            </Box>
+                          </Box>
                         </Box>
                       )}
 
