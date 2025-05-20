@@ -60,7 +60,7 @@ const data = {
     },
     {
       title: "Settings",
-      url: "/settings",
+      url: "/profile",
       icon: IconSettings,
     },
   ],
