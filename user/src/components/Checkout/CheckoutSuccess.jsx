@@ -9,6 +9,7 @@ const CheckoutSuccess = () => {
   const [order, setOrder] = useState(null);
   const [error, setError] = useState(null);
   const [emailSent, setEmailSent] = useState(false);
+  const [orderNum, setOrderNum] = useState(null);
 
   const sendConfirmationEmail = async (orderData) => {
     try {
@@ -23,11 +24,13 @@ const CheckoutSuccess = () => {
         eventVenue: orderData.cartItems[0].eventVenue,
       };
 
+
+      //TODO: remove comments when wanting to send emails, disbaled for testing 
       await emailjs.send(
         'service_wjfn4j7', //ServiceID
-        'template_il509uq', //TemplateID,
+        //'template_il509uq', //TemplateID,
         templateParams,
-        '5iRFCEJQiqd2IKEnv' //Public Key
+        //'5iRFCEJQiqd2IKEnv' //Public Key
       );
       console.log('Confirmation email sent successfully');
       setEmailSent(true);

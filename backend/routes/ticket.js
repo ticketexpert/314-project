@@ -23,6 +23,14 @@ router.post('/', async (req, res) => {
       // TODO, if error stop creating?
     }
 
+    try {
+      await axios.put(`https://www.api.ticketexpert.me/api/userNotifcation/${req.body.userId}`, {
+        "currentNotifs": {"title": "Ticket Booked!", "message": "Your ticket to " + req.body.eventTitle + " awaits!"}
+      });
+    } catch (postError) {
+      console.error('Error posting user notification:', postError);
+    }
+
     res.status(201).json(ticket);
   } catch (err) {
     console.error('Error creating ticket:', err);
