@@ -301,17 +301,18 @@ describe('Events API', () => {
       for (let i = 0; i < 50; i++) {
         const randomEvent = events[Math.floor(Math.random() * events.length)];
         const userId = i + 1; 
-        /*
-        const randomTicketType = randomEvent.pricing[Math.floor(Math.random() * randomEvent.pricing.length)];
-        const ticketType = randomEvent.pricing[randomTicketType].type;
-        */
+        
+        const numTicketTypes = randomEvent.pricing.length;
+        const minCeiled = Math.ceil(0);
+        const maxFloored = Math.floor(numTicketTypes - 1);
+        const randomTicketType = Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
 
         const ticketData = {
           eventId: randomEvent.eventId,
           userId: userId,
           locationDetails: { section: 'A', row: '1', seat: '1' },
           ticketStatus: 'active',
-          ticketType: randomEvent.pricing[0].type,
+          ticketType: randomEvent.pricing[randomTicketType].type,
           orderNumber: Math.floor(Math.random() * 2147483647)
         };
 

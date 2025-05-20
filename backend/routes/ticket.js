@@ -12,12 +12,11 @@ router.post('/', async (req, res) => {
     const eventId = req.body.eventId;
     const type = req.body.ticketType;
 
-    console.log('---------This IS ACTUALLY RUNNING IN THE TEST (ticket.js)---------');
     try {
+      //Working the whole time, I was just pinging an old version of the backend, points at production backend
       await axios.patch(`https://www.api.ticketexpert.me/api/events/${eventId}/tickets/${type}`, {
         "quantity": 1
       });
-      console.log('---------This IS ACTUALLY RUNNING IN THE TEST (in try for axios, ticket.js)---------');
     } catch (patchError) {
       console.error('Error updating event ticket quantity:', patchError);
       console.log('ERROR: Parmas are: ' + eventId + ' ' + type + ' ' + req.body.quantity);
