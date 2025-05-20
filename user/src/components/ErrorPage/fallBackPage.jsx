@@ -5,6 +5,22 @@ const FallbackPage = () => {
   const handleRedirect = () => {
     window.location.href = 'https://www.userFallback.ticketexpert.me';
   };
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    const fetchErrorMessage = async () => {
+      try {
+        const response = await axios.get('https://www.api.ticketexpert.me/status');
+        setErrorMessage(response.data.message);
+      } catch (error) {
+        setErrorMessage('Error fetching error message', error);
+        console.error('Error fetching error message:', error);
+      }
+    };
+    fetchErrorMessage();
+  }, []);
+  
+  
 
   return (
     <Box
@@ -22,6 +38,7 @@ const FallbackPage = () => {
       
       <Typography variant="h5" gutterBottom>
         We're currently experiencing technical difficulties. Our team is working to resolve the issue.
+        The error message is {errorMessage}
       </Typography>
 
       <Typography variant="body1" marginBottom={4}>
