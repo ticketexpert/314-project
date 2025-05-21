@@ -7,7 +7,7 @@ const statusRoutes = require('./routes/status');
 const ticketRoutes = require('./routes/ticket');
 const userNotifcationRoutes = require('./routes/userNotifcation');
 const paymentsGatewayRoutes = require('./routes/paymentsGateway');
-
+const eventDataRoutes = require('./routes/eventData');
 // Enable CORS for specific origins
 app.use(cors({
     origin: '*',
@@ -22,5 +22,6 @@ app.use('/status', statusRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/userNotification', userNotifcationRoutes);
 app.use('/api/paymentsGateway', paymentsGatewayRoutes);
+app.use('/api/eventData', eventDataRoutes);
 // Export the app so it can be used in test files
 module.exports = app;

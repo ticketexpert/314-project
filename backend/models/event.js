@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
+const eventData = require('./eventData');
 
 const Event = sequelize.define('Event', {
   eventId: {
@@ -73,5 +74,9 @@ const Event = sequelize.define('Event', {
     defaultValue: [],
   }
 });
+
+// Define the association
+Event.hasOne(eventData, { foreignKey: 'eventId' });
+eventData.belongsTo(Event, { foreignKey: 'eventId' });
 
 module.exports = Event;

@@ -42,6 +42,23 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const event = await Event.create(req.body);
+
+    eventCapacity = req.body.pricing.reduce((total, priceType) => {
+      return total + priceType.numTicketsAvailable;
+    }, 0);
+
+    try {
+      await axios.post('https://www.api.ticketexpert.me/api/eventData', {
+        eventId: event.eventId,
+        eventStatus: 'Upcoming',
+        eventCapacity: eventCapacity,
+        ticketsSold: 0,
+        ticketsAvailable: eventCapacity
+      });
+    } catch (error) {
+      console.error('Error posting event data:', error);
+    }
+
     res.status(201).json(event);
   } catch (error) {
     res.status(400).json({ message: error.message });
