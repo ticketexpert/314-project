@@ -75,7 +75,7 @@ const Event = sequelize.define('Event', {
   }
 });
 
-// Define the association
+// Define the associations after both models are defined
 Event.hasOne(eventData, { foreignKey: 'eventId' });
 eventData.belongsTo(Event, { foreignKey: 'eventId' });
 

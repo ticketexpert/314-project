@@ -1,16 +1,11 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
-const Event = require('./event');
 
 const eventData = sequelize.define('eventData', {
   eventId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    allowNull: false,
-    references: {
-      model: Event,
-      key: 'eventId'
-    }
+    allowNull: false
   },
   eventStatus: {
     type: DataTypes.STRING,
@@ -29,9 +24,5 @@ const eventData = sequelize.define('eventData', {
     allowNull: false
   }
 });
-
-// Define the association
-eventData.belongsTo(Event, { foreignKey: 'eventId' });
-Event.hasOne(eventData, { foreignKey: 'eventId' });
 
 module.exports = eventData;
