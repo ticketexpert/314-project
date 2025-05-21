@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Event = require('../models/event');
+const EventDataModel = require('../models/eventData');
 const { Op } = require('sequelize');
+const axios = require('axios');
 
 // Get all events
 router.get('/', async (req, res) => {
@@ -43,12 +45,12 @@ router.post('/', async (req, res) => {
   try {
     const event = await Event.create(req.body);
 
-    eventCapacity = req.body.pricing.reduce((total, priceType) => {
+    const eventCapacity = req.body.pricing.reduce((total, priceType) => {
       return total + priceType.numTicketsAvailable;
     }, 0);
 
     try {
-      await axios.post('https://www.api.ticketexpert.me/api/eventData', {
+      await EventDataModel.create({
         eventId: event.eventId,
         eventStatus: 'Upcoming',
         eventCapacity: eventCapacity,
@@ -56,7 +58,7 @@ router.post('/', async (req, res) => {
         ticketsAvailable: eventCapacity
       });
     } catch (error) {
-      console.error('Error posting event data:', error);
+      console.error('Error creating event data:', error);
     }
 
     res.status(201).json(event);

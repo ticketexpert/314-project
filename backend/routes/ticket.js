@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { Ticket, Event, User } = require('../models');
+const EventDataModel = require('../models/eventData');
+const { Op, literal } = require('sequelize');
 const axios = require('axios');
 
 // POST /api/tickets → create ticket
@@ -12,8 +14,6 @@ router.post('/', async (req, res) => {
     const eventId = req.body.eventId;
     const type = req.body.ticketType;
     let eventName = "";
-    
-    console.log('------ Ticket event name is:', req.body);
 
     try {
       const response = await axios.get(`https://www.api.ticketexpert.me/api/events/${eventId}`, {});
@@ -31,6 +31,29 @@ router.post('/', async (req, res) => {
       console.error('Error updating event ticket quantity:', patchError);
       console.log('ERROR: Parmas are: ' + eventId + ' ' + type + ' ' + req.body.quantity);
       // TODO, if error stop creating?
+    }
+
+    let ticketCost = 0;
+    try {
+      const response = await axios.get(`https://www.api.ticketexpert.me/api/events/${eventId}`, {});
+      ticketCost = response.data.pricing.find(p => p.type === type).price;
+    } catch (getError) {
+      console.error('Error getting event:', getError);
+    }
+
+    //Needed that COALESCE to work, seemed to be an issue with the decimals
+    try {
+      await EventDataModel.update({
+        ticketsSold: literal('"ticketsSold" + 1'),
+        ticketsAvailable: literal('"ticketsAvailable" - 1'),
+        gross: literal(`COALESCE(gross, 0) + ${parseFloat(ticketCost)}`)
+      }, {
+        where: {
+          eventId: eventId
+        }
+      });
+    } catch (updateError) {
+      console.error('Error updating event data:', updateError);
     }
 
     try {

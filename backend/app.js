@@ -8,6 +8,8 @@ const ticketRoutes = require('./routes/ticket');
 const userNotifcationRoutes = require('./routes/userNotifcation');
 const paymentsGatewayRoutes = require('./routes/paymentsGateway');
 const eventDataRoutes = require('./routes/eventData');
+require('./models/associations'); // Load model associations
+
 // Enable CORS for specific origins
 app.use(cors({
     origin: '*',

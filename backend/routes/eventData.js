@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const eventData = require('../models/eventData');
+const EventDataModel = require('../models/eventData');
 
 router.get('/', async (req, res) => {
   try {
-    const eventData = await eventData.findAll();
-    res.json(eventData);
+    const allEventData = await EventDataModel.findAll();
+    res.json(allEventData);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const eventData = await eventData.findByPk(req.params.id);
+    const eventData = await EventDataModel.findByPk(req.params.id);
     res.json(eventData);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -22,10 +22,24 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const eventData = await eventData.create(req.body);
-    res.status(201).json(eventData);
+    const newEventData = await EventDataModel.create(req.body);
+    res.status(201).json(newEventData);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  try {
+    const eventData = await EventDataModel.findByPk(req.params.id);
+    if (eventData) {
+      await eventData.update(req.body);
+      res.json(eventData);
+    } else {
+      res.status(404).json({ message: 'Event data not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 

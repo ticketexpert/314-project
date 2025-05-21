@@ -22,6 +22,10 @@ const eventData = sequelize.define('eventData', {
   ticketsAvailable: {
     type: DataTypes.INTEGER,
     allowNull: false
+  },
+  gross: {
+    type: DataTypes.DECIMAL(10,2),
+    allowNull: true
   }
 });
 
