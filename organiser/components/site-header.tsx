@@ -8,12 +8,10 @@ export function SiteHeader({ tabValue, setTabValue }: {
 }) {
   return (
     <header className="flex flex-col h-[--header-height] shrink-0 border-b px-4 lf:px-6 py-2">
-      {/* Top row */}
       <div className="flex items-center gap-2">
         <h1 className="font-sans font-semibold text-4xl text-[#034AA6]">Hey Matthew!</h1>
       </div>
-
-      {/* Tabs below the name */}
+      
       <div className="mt-4">
         <Tabs defaultValue="overview">
           <TabsList>
