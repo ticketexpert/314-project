@@ -90,8 +90,8 @@ describe('Events API', () => {
           tags: ['technology', 'networking', 'professional'],
           image: 'https://plus.unsplash.com/premium_photo-1679547202671-f9dbbf466db4?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           description: 'Annual technology conference featuring industry leaders',
-          fromDateTime: '2025-05-01T09:00:00Z',
-          toDateTime: '2025-05-03T17:00:00Z',
+          fromDateTime: '2025-07-01T22:00:00.000Z',
+          toDateTime: '2025-07-02T13:50:00.000Z',
           region: 'Sydney',
           venue: 'Sydney Convention Centre',
           pricing: [
@@ -106,13 +106,13 @@ describe('Events API', () => {
           eventOrgId: 1
         },
         {
-          title: 'Summer Music Festival',
+          title: 'Winter Music Festival',
           category: 'festival',
           tags: ['music', 'outdoor', 'entertainment'],
           image: 'https://plus.unsplash.com/premium_photo-1661284892176-fd7713b764a6?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           description: 'Three day outdoor music festival',
-          fromDateTime: '2025-01-15T12:00:00Z',
-          toDateTime: '2025-01-17T23:00:00Z',
+          fromDateTime: '2025-07-05T06:00:00.000Z',
+          toDateTime: '2025-07-24T13:59:00.000Z',
           region: 'Melbourne',
           venue: 'Melbourne Park',
           pricing: [
@@ -131,8 +131,8 @@ describe('Events API', () => {
           tags: ['business', 'professional', 'networking'],
           image: 'https://images.unsplash.com/photo-1556741576-1d17b478d761?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           description: 'Professional development and networking event',
-          fromDateTime: '2025-03-20T09:00:00Z',
-          toDateTime: '2025-03-20T17:00:00Z',
+          fromDateTime: '2025-07-08T06:00:00.000Z',
+          toDateTime: '2025-07-08T11:00:00.000Z',
           region: 'Brisbane',
           venue: 'Brisbane Business Centre',
           pricing: [
@@ -151,8 +151,8 @@ describe('Events API', () => {
           tags: ['art', 'culture', 'visual-arts'],
           image: 'https://plus.unsplash.com/premium_photo-1706430433607-48f37bdd71b8?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           description: 'Contemporary art showcase featuring local artists',
-          fromDateTime: '2025-09-10T10:00:00Z',
-          toDateTime: '2025-09-30T18:00:00Z',
+          fromDateTime: '2025-07-12T00:00:00.000Z',
+          toDateTime: '2025-07-13T07:00:00.000Z',
           region: 'Perth',
           venue: 'Perth Art Gallery',
           pricing: [
@@ -172,8 +172,8 @@ describe('Events API', () => {
           tags: ['food', 'wine', 'culinary', 'tasting'],
           image: 'https://plus.unsplash.com/premium_photo-1680086880881-442721afe30c?q=80&w=1674&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           description: 'Celebration of local cuisine and wines',
-          fromDateTime: '2025-07-15T11:00:00Z',
-          toDateTime: '2025-07-17T22:00:00Z',
+          fromDateTime: '2025-07-25T04:00:00.000Z',
+          toDateTime: '2025-07-27T07:00:00.000Z',
           region: 'Adelaide',
           venue: 'Adelaide Showgrounds',
           pricing: [
@@ -193,8 +193,8 @@ describe('Events API', () => {
           tags: ['startup', 'entrepreneurship', 'pitching', 'networking'],
           image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=1674&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           description: 'Entrepreneurs pitch their innovative ideas',
-          fromDateTime: '2025-06-20T18:00:00Z',
-          toDateTime: '2025-06-20T22:00:00Z',
+          fromDateTime: '2025-08-08T05:00:00.000Z',
+          toDateTime: '2025-08-10T11:00:00.000Z',
           region: 'Sydney',
           venue: 'Sydney Startup Hub',
           pricing: [
@@ -213,8 +213,8 @@ describe('Events API', () => {
           tags: ['fitness', 'health', 'training', 'wellness'],
           image: 'https://plus.unsplash.com/premium_photo-1664109999778-84bdb22b883a?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           description: 'Intensive fitness training program',
-          fromDateTime: '2025-08-05T06:00:00Z',
-          toDateTime: '2025-08-07T18:00:00Z',
+          fromDateTime: '2025-08-01T21:00:00.000Z',
+          toDateTime: '2025-08-02T12:00:00.000Z',
           region: 'Gold Coast',
           venue: 'Gold Coast Sports Centre',
           pricing: [
@@ -233,14 +233,14 @@ describe('Events API', () => {
           tags: ['photography', 'art', 'skills', 'professional'],
           image: 'https://www.khiemng.com/_next/image?url=%2Fimages%2Fgallery%2FMANLY4.jpeg&w=1080&q=75',
           description: 'Learn advanced photography techniques',
-          fromDateTime: '2025-10-12T09:00:00Z',
-          toDateTime: '2025-10-13T17:00:00Z',
+          fromDateTime: '2025-08-16T00:00:00.000Z',
+          toDateTime: '2025-08-18T08:00:00.000Z',
           region: 'Melbourne',
           venue: 'Melbourne Arts Centre',
           pricing: [
-            { type: 'Basic', price: 199, numTicketsAvailable: 50 },
-            { type: 'Advanced', price: 299, numTicketsAvailable: 30 },
-            { type: 'Equipment Included', price: 399, numTicketsAvailable: 20 }
+            { type: 'Basic', price: 50, numTicketsAvailable: 50 },
+            { type: 'Advanced', price: 100, numTicketsAvailable: 30 },
+            { type: 'Equipment Included', price: 799, numTicketsAvailable: 20 }
           ],
           refundPolicy: 'Full refund available up to 7 days before the event',
           organiser: 'Melbourne Photography Institute',
@@ -254,8 +254,8 @@ describe('Events API', () => {
           tags: ['comedy', 'entertainment', 'nightlife'],
           image: 'https://images.unsplash.com/photo-1527224857830-43a7acc85260?q=80&w=1742&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           description: 'Stand-up comedy featuring top comedians',
-          fromDateTime: '2025-11-25T19:00:00Z',
-          toDateTime: '2025-11-25T23:00:00Z',
+          fromDateTime: '2025-08-22T07:00:00.000Z',
+          toDateTime: '2025-08-22T01:59:00.000Z',
           region: 'Brisbane',
           venue: 'Brisbane Comedy Club',
           pricing: [
