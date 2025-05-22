@@ -25,58 +25,32 @@ router.post('/', async (req, res) => {
 });
 
 //GET /api/users
-// UserID meth
 router.get('/', async (req, res) => {
   try {
-    const {userId} = req.query;
-
-    // If no userId provided, return all users
-    if (!userId) {
       const users = await User.findAll();
       return res.status(200).json(users);
-    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-    // If userId provided, find specific user
-    const where = { userId: parseInt(userId) };
-    const users = await User.findAll({ where });
+//GET /api/users/role/:searchRole
+router.get('/role/:searchRole', async (req, res) => {
+  try {
+    const { searchRole } = req.params;
+    const users = await User.findAll({ where: { role: searchRole } });
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-//GET /api/users/role
-router.get('/role', async (req, res) => {
-  try {
-    const { role } = req.query;
-    const users = await User.findAll({ where: { role } });
-    res.status(200).json(users);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-//PUT /api/users/role
-router.put('/role', async (req, res) => {
-  try {
-    const { userId, role } = req.body;
-    const user = await User.findByPk(userId);
-    user.role = role;
-    await user.save();
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
-// Email and Password meth
+// Email and Password method
 //Auth url
 router.get('/auth', async (req, res) => {
   try {
     const { email, password } = req.query;
 
-    // Check if both email and password are provided
     if (!email || !password) {
       return res.status(400).json({ error: 'Both email and password are required' });
     }
@@ -89,10 +63,39 @@ router.get('/auth', async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found or invalid credentials' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
+    const userResponse = {
+      userId: user.userId,
+      email: user.email,
+      role: user.role,
+      eventOrgId: user.eventOrgId,
+      events: user.events
+    };
 
+    res.status(200).json(userResponse);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error during authentication' });
+  }
+});
+
+//GET /api/users/:userId
+router.get('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByPk(userId);
     res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//GET /api/users/:eventOrgId
+router.get('/:eventOrgId', async (req, res) => {
+  try {
+    const { eventOrgId } = req.params;
+    const users = await User.findAll({ where: { eventOrgId } });
+    res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -101,7 +104,6 @@ router.get('/auth', async (req, res) => {
 //Add event to user
 router.post('/addEvent', async (req, res) => {
   try {
-    // Try to get userId and eventId from either query params or request body
     const userId = req.query.userId || req.body.userId;
     const eventId = req.query.eventId || req.body.eventId;
 
@@ -117,24 +119,17 @@ router.post('/addEvent', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     } 
-
-    // Initialize events array if it's null
     if (!user.events) {
       user.events = [];
     }
 
-    // Check if eventId exists in user
     if (user.events.includes(parseInt(eventId))) {
       return res.status(400).json({ error: 'Event already in user\'s events' });
     }
-
-    // Add eventId to user's events array
     user.events = [...user.events, parseInt(eventId)];
     
-    // Save the user with the updated events array
     await user.save();
 
-    // Fetch the updated user to verify the changes
     const updatedUser = await User.findByPk(userId);
     
     res.status(200).json({ 
@@ -170,18 +165,5 @@ router.get('/events', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-//GET /api/users/:eventOrgId
-router.get('/:eventOrgId', async (req, res) => {
-  try {
-    const { eventOrgId } = req.params;
-    const users = await User.findAll({ where: { eventOrgId } });
-    res.status(200).json(users);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
 
 module.exports = router; 
