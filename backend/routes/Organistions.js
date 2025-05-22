@@ -68,9 +68,9 @@ router.put('/:id/users', async (req, res) => {
   }
 });
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:passedEventOrgId', async (req, res) => {
   try {
-    const organisation = await Organisation.findByPk(req.params.id);
+    const organisation = await Organisation.findByPk(req.params.passedEventOrgId);
     if (!organisation) {
       return res.status(404).json({ message: 'Org not found' });
     }
