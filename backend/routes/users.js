@@ -47,11 +47,11 @@ router.get('/:userId', async (req, res) => {
 });
 
 
-//GET /api/users/role
-router.get('/role', async (req, res) => {
+//GET /api/users/role/:searchRole
+router.get('/role/:searchRole', async (req, res) => {
   try {
-    const { role } = req.query;
-    const users = await User.findAll({ where: { role } });
+    const { searchRole } = req.params;
+    const users = await User.findAll({ where: { role: searchRole } });
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
