@@ -21,36 +21,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-//Patch /api/organisations/:eventOrgId
-router.patch('/:eventOrgId', async (req, res) => {
-  try {    
-    const organisation = await Organisation.findByPk(req.params.eventOrgId);
-    if (!organisation) {
-      return res.status(404).json({ message: 'Organisation not found' });
-    } else {
-      if (req.body.users) {
-        if (!organisation.users) {
-          organisation.users = [];
-        }
-        const newUsers = Array.isArray(req.body.users) ? req.body.users : [req.body.users];
-        organisation.users = [...new Set([...organisation.users, ...newUsers])];
-        delete req.body.users;
-      }
 
-      if (req.body.userId) {
-        const user = await User.findByPk(req.body.userId);
-        if (user) {
-          await user.update({ eventOrgId: req.params.eventOrgId });
-        }
-      }
-     
-      const updatedOrg = await organisation.update(req.body);
-      res.json(updatedOrg);
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+
 
 //PUT /api/organisations/:eventOrgId
 router.put('/:eventOrgId', async (req, res) => {
@@ -91,6 +63,32 @@ router.put('/:id/users', async (req, res) => {
     const organisation = await Organisation.findByPk(req.params.id);
     const users = await User.findAll({ where: { organisationId: organisation.id } });
     res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.patch('/:id', async (req, res) => {
+  try {
+    const organisation = await Organisation.findByPk(req.params.id);
+    if (!organisation) {
+      return res.status(404).json({ message: 'Org not found' });
+    }
+    if (req.body.users) {
+      const currentUsers = organisation.users || [];
+      const newUsers = req.body.users;
+      
+      for (const userId of newUsers) {
+        await User.update(
+          { eventOrgId: organisation.eventOrgId },
+          { where: { userId: userId } }
+        );
+      }
+      req.body.users = [...currentUsers, ...newUsers];
+    }
+
+    const updatedOrg = await organisation.update(req.body);
+    res.json(updatedOrg);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
