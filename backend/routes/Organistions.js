@@ -54,6 +54,21 @@ router.patch('/:eventOrgId', async (req, res) => {
   }
 });
 
+//PUT /api/organisations/:eventOrgId
+router.put('/:eventOrgId', async (req, res) => {
+  try {
+    const organisation = await Organisation.findByPk(req.params.eventOrgId);
+    if (!organisation) {
+      return res.status(404).json({ message: 'Organisation not found' });
+    }
+
+    const updatedOrg = await organisation.update(req.body);
+    res.json(updatedOrg);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const organisation = await Organisation.findByPk(req.params.id);
