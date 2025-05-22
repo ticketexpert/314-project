@@ -36,6 +36,13 @@ router.patch('/:eventOrgId', async (req, res) => {
         organisation.users = [...new Set([...organisation.users, ...newUsers])];
         delete req.body.users;
       }
+
+      if (req.body.userId) {
+        const user = await User.findByPk(req.body.userId);
+        if (user) {
+          await user.update({ eventOrgId: req.params.eventOrgId });
+        }
+      }
      
       const updatedOrg = await organisation.update(req.body);
       res.json(updatedOrg);
