@@ -39,21 +39,7 @@ router.put('/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
         const { bookingConf, eventReminder, eventUpdates, specialAnnouncements, currentNotifs } = req.body;
-        
-        //Update currentNotifs
-        const existingNotification = await UserNotifications.findOne({ where: { userId } });
-        const updatedCurrentNotifs = [...(existingNotification.currentNotifs || []), ...currentNotifs];
-        
-        const userNotification = await UserNotifications.update(
-            { 
-                bookingConf, 
-                eventReminder, 
-                eventUpdates, 
-                specialAnnouncements, 
-                currentNotifs: updatedCurrentNotifs 
-            }, 
-            { where: { userId } }
-        );
+        const userNotification = await UserNotifications.update({ bookingConf, eventReminder, eventUpdates, specialAnnouncements, currentNotifs }, { where: { userId } });
         
         res.json(userNotification);
     } catch (error) {
