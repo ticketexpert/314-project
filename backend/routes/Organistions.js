@@ -20,6 +20,17 @@ router.post('/', async (req, res) => {
   }
 });
 
+//Pathc /api/organisations/:eventOrgId
+router.patch('/:eventOrgId', async (req, res) => {
+  try {
+    const organisation = await Organisation.findByPk(req.params.eventOrgId);
+    await organisation.update(req.body);
+    res.json(organisation);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const organisation = await Organisation.findByPk(req.params.id);
@@ -48,5 +59,7 @@ router.put('/:id/users', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+
 
 module.exports = router;
