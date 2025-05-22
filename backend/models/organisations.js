@@ -18,6 +18,10 @@ const Organisation = sequelize.define('Organisation', {
   contact: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  events: {
+    type: DataTypes.ARRAY(DataTypes.INTEGER),
+    allowNull: true
   }
 });
 

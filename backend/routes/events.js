@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Event = require('../models/event');
 const EventDataModel = require('../models/eventData');
-const { Op } = require('sequelize');
+const Organisation = require('../models/organisations');
+const { Op, literal } = require('sequelize');
 const axios = require('axios');
 
 // Get all events
@@ -60,6 +61,18 @@ router.post('/', async (req, res) => {
       });
     } catch (error) {
       console.error('Error creating event data:', error);
+    }
+
+    try {
+      await Organisation.update({
+        events: literal(`array_append(events, ${event.eventId})`)
+      }, {
+        where: {
+          eventOrgId: event.eventOrgId
+        }
+      });
+    } catch (error) {
+      console.error('Error updating organisation:', error);
     }
 
     res.status(201).json(event);
