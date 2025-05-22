@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { User, UserNotifications } = require('../models');
+const { User, UserNotifications, Organisation } = require('../models');
 const Event = require('../models/event');
 const { Op } = require('sequelize');
 
@@ -162,6 +162,43 @@ router.get('/events', async (req, res) => {
 
     res.status(200).json(events);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/users/:userId
+router.patch('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { eventOrgId, ...updateData } = req.body;
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (eventOrgId) {
+      const organization = await Organisation.findByPk(eventOrgId);
+      if (!organization) {
+        return res.status(404).json({ error: 'Organization not found' });
+      }
+      updateData.eventOrgId = eventOrgId;
+
+      if (!organization.users) {
+        organization.users = [];
+      }
+      if (!organization.users.includes(parseInt(userId))) {
+        await Organisation.update(
+          { users: [...organization.users, userId] },
+          { where: { eventOrgId: eventOrgId } }
+        );
+      }
+    }
+    await user.update(updateData);
+    const updatedUser = await User.findByPk(userId);
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    console.error('Error updating user:', err);
     res.status(500).json({ error: err.message });
   }
 });
