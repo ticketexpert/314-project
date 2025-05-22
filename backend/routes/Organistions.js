@@ -20,13 +20,18 @@ router.post('/', async (req, res) => {
   }
 });
 
-//Pathc /api/organisations/:eventOrgId
+//Patch /api/organisations/:eventOrgId
 router.patch('/:eventOrgId', async (req, res) => {
-  try {
+  try {    
     const organisation = await Organisation.findByPk(req.params.eventOrgId);
-    await organisation.update(req.body);
-    res.json(organisation);
+    if (!organisation) {
+      return res.status(404).json({ message: 'Organisation not found' });
+    }
+    
+    const updatedOrg = await organisation.update(req.body);
+    res.json(updatedOrg);
   } catch (error) {
+    console.error('Error updating organisation:', error);
     res.status(500).json({ message: error.message });
   }
 });
