@@ -184,14 +184,11 @@ router.patch('/:userId', async (req, res) => {
       }
       updateData.eventOrgId = eventOrgId;
 
-      if (!organization.users) {
-        organization.users = [];
-      }
-      if (!organization.users.includes(parseInt(userId))) {
-        await Organisation.update(
-          { users: [...organization.users, userId] },
-          { where: { eventOrgId: eventOrgId } }
-        );
+      const currentUsers = organization.users || [];
+      if (!currentUsers.includes(parseInt(userId))) {
+        await organization.update({
+          users: [...currentUsers, parseInt(userId)]
+        });
       }
     }
     await user.update(updateData);

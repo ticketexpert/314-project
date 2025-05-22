@@ -4,6 +4,7 @@ const User = require('./user');
 const Ticket = require('./tickets');
 const UserNotifications = require('./userNotifcations');
 const eventData = require('./eventData');
+const Organisation = require('./organisations');
 
 // Set up associations
 Event.hasMany(Ticket, { foreignKey: 'eventId' });
@@ -30,5 +31,6 @@ module.exports = {
   User,
   Ticket,
   UserNotifications,
-  eventData
+  eventData,
+  Organisation
 };
