@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { QRCodeSVG } from 'qrcode.react'
+import { QRCodeSVG } from 'qrcode.react'  
 
 interface Ticket {
   ticketId: string;
