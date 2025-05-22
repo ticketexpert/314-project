@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
@@ -8,6 +8,17 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import TELogo from "@/components/logo"
+
+interface Organization {
+  eventOrgId: number;
+  name: string;
+  description: string;
+  contact: string;
+  events: number[];
+  users: number[] | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function LoginPage() {
   const router = useRouter()
@@ -17,6 +28,14 @@ export default function LoginPage() {
   })
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const isLoggedIn = localStorage.getItem('isLoggedIn')
+    if (isLoggedIn === 'true') {
+      router.push('/home')
+    }
+  }, [router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -54,16 +73,73 @@ export default function LoginPage() {
         return
       }
 
+      console.log('Found user:', user)
+
+      // Fetch organizations to find the matching organization
+      const orgsRes = await fetch('https://api.ticketexpert.me/api/organisations')
+      if (!orgsRes.ok) {
+        throw new Error('Failed to fetch organizations')
+      }
+
+      const organizations: Organization[] = await orgsRes.json()
+      console.log('All organizations:', organizations)
+
+      // Try to find organization by users array first
+      let userOrg = organizations.find(org => 
+        org.users && org.users.includes(user.userId)
+      )
+
+      // If not found in users array, try to find by eventOrgId
+      if (!userOrg && user.eventOrgId) {
+        userOrg = organizations.find(org => 
+          org.eventOrgId === user.eventOrgId
+        )
+      }
+
+      console.log('Found organization:', userOrg)
+
+      if (!userOrg) {
+        console.warn('No organization found for user:', user)
+        setError("No organization found for this user")
+        return
+      }
+
+      // Clear any existing data first
+      localStorage.clear()
+
       // Store user data in localStorage
       localStorage.setItem('isLoggedIn', 'true')
       localStorage.setItem('userId', user.userId.toString())
       localStorage.setItem('userRole', user.role)
-      if (user.eventOrgId) {
-        localStorage.setItem('organizationId', user.eventOrgId.toString())
+      
+      // Store organization data
+      const orgId = userOrg.eventOrgId.toString()
+      localStorage.setItem('organizationId', orgId)
+      localStorage.setItem('organizationName', userOrg.name)
+      
+      console.log('Stored organization data:', {
+        id: orgId,
+        name: userOrg.name
+      })
+
+      // Verify the data was stored
+      const storedOrgId = localStorage.getItem('organizationId')
+      console.log('Stored organization ID:', storedOrgId)
+
+      if (!storedOrgId) {
+        setError("Failed to store organization data")
+        return
+      }
+
+      // Double check the organization ID is correct
+      if (storedOrgId !== orgId) {
+        setError("Organization ID mismatch")
+        return
       }
 
       router.push("/home")
     } catch (err) {
+      console.error('Login error:', err)
       setError("Network error. Please try again.")
     } finally {
       setIsLoading(false)

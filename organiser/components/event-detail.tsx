@@ -1,0 +1,903 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useParams } from "next/navigation"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, Clock, MapPin, DollarSign, Users, Share2, Edit2, Ticket, Eye, Download, Printer, MoreVertical, Trash2, CheckCircle2, XCircle, RefreshCcw } from "lucide-react"
+import { format } from "date-fns"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { QRCodeSVG } from 'qrcode.react'
+
+interface Ticket {
+  ticketId: string;
+  eventId: number;
+  userId: number;
+  locationDetails: {
+    section: string;
+    row: string;
+    seat: string;
+  };
+  ticketStatus: string;
+  ticketType: string;
+  orderNumber: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Event {
+  eventId: number;
+  title: string;
+  category: string;
+  tags: string[];
+  image: string;
+  description: string;
+  fromDateTime: string;
+  toDateTime: string;
+  region: string;
+  venue: string;
+  pricing: {
+    type: string;
+    price: number;
+    numTicketsAvailable: number;
+  }[];
+  refundPolicy: string;
+  eventOrgId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Organization {
+  eventOrgId: number;
+  name: string;
+  description: string;
+  contact: string;
+  events: number[];
+  users: number[] | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface EventDetailProps {
+  onEditEvent: () => void;
+}
+
+export function EventDetail({ onEditEvent }: EventDetailProps) {
+  const params = useParams()
+  const [event, setEvent] = useState<Event | null>(null)
+  const [organization, setOrganization] = useState<Organization | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [tickets, setTickets] = useState<Ticket[]>([])
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<{ open: boolean, ticket: Ticket | null }>({ open: false, ticket: null })
+  const [statusMenu, setStatusMenu] = useState<{ open: boolean, ticket: Ticket | null }>({ open: false, ticket: null })
+
+  useEffect(() => {
+    const fetchEventAndOrganization = async () => {
+      try {
+        const eventId = params?.eventId
+        if (!eventId) {
+          throw new Error('Event ID not found')
+        }
+
+        console.log('Fetching event details for:', eventId) // Debug log
+
+        // Fetch event details
+        const eventResponse = await fetch(`https://api.ticketexpert.me/api/events/${eventId}`)
+        if (!eventResponse.ok) {
+          throw new Error('Failed to fetch event')
+        }
+        const eventData = await eventResponse.json()
+        console.log('Fetched event data:', eventData) // Debug log
+        setEvent(eventData)
+
+        // Fetch organization details using eventOrgId
+        if (eventData.eventOrgId) {
+          const orgResponse = await fetch(`https://api.ticketexpert.me/api/organisations/${eventData.eventOrgId}`)
+          if (!orgResponse.ok) {
+            throw new Error('Failed to fetch organization')
+          }
+          const orgData = await orgResponse.json()
+          console.log('Fetched organization data:', orgData) // Debug log
+          setOrganization(orgData)
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        setError(error instanceof Error ? error.message : 'An error occurred')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchEventAndOrganization()
+  }, [params])
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      if (!event?.eventId) return;
+      
+      try {
+        console.log('Fetching tickets for event:', event.eventId)
+        const response = await fetch('https://api.ticketexpert.me/api/tickets')
+        if (!response.ok) {
+          throw new Error('Failed to fetch tickets')
+        }
+        const allTickets = await response.json()
+        // Filter tickets for this event
+        const eventTickets = allTickets.filter((ticket: Ticket) => ticket.eventId === event.eventId)
+        console.log('Fetched tickets:', eventTickets)
+        setTickets(eventTickets)
+      } catch (error) {
+        console.error('Error fetching tickets:', error)
+        setError(error instanceof Error ? error.message : 'Failed to load tickets')
+      }
+    }
+
+    fetchTickets()
+  }, [event?.eventId])
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date'
+      }
+      return format(date, 'MMM d, yyyy h:mm a')
+    } catch (error) {
+      console.error('Error formatting date:', error)
+      return 'Invalid Date'
+    }
+  }
+
+  const handleViewTicket = (ticket: Ticket) => {
+    setSelectedTicket(ticket)
+    setIsTicketModalOpen(true)
+  }
+
+  const handleDownloadTicket = (ticket: Ticket) => {
+    // Create CSV content for single ticket
+    const headers = [
+      'Ticket ID',
+      'Order Number',
+      'Ticket Type',
+      'Status',
+      'Section',
+      'Row',
+      'Seat',
+      'Purchase Date'
+    ]
+
+    const csvContent = [
+      headers.join(','),
+      [
+        ticket.ticketId,
+        ticket.orderNumber,
+        ticket.ticketType,
+        ticket.ticketStatus,
+        ticket.locationDetails.section,
+        ticket.locationDetails.row,
+        ticket.locationDetails.seat,
+        formatDate(ticket.createdAt)
+      ].join(',')
+    ].join('\n')
+
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `ticket-${ticket.ticketId}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  }
+
+  const handlePrintTicket = (ticket: Ticket) => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      alert('Please allow popups to print tickets')
+      return
+    }
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Ticket - ${event?.title || 'Event Ticket'}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+          <style>
+            body {
+              font-family: 'Rethink Sans', sans-serif;
+              margin: 20px;
+              padding: 0;
+              background: #f8fafc;
+            }
+            .ticket {
+              border: 2px solid #D12026;
+              padding: 30px;
+              max-width: 800px;
+              margin: 0 auto;
+              background: #ecfdf5;
+              border-radius: 16px;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .header {
+              background: linear-gradient(97deg, #F99B1C -1.26%, #D12026 68.5%);
+              color: white;
+              padding: 30px;
+              text-align: center;
+              margin: -30px -30px 30px -30px;
+              border-radius: 14px 14px 0 0;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 28px;
+              font-weight: 600;
+            }
+            .header p {
+              margin: 10px 0 0;
+              font-size: 18px;
+              opacity: 0.9;
+            }
+            .ticket-info {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 30px;
+              margin-bottom: 30px;
+            }
+            .info-section {
+              background: rgba(22,101,52,0.05);
+              padding: 20px;
+              border-radius: 12px;
+            }
+            .info-section h3 {
+              margin: 0 0 15px;
+              color: #166534;
+              font-size: 18px;
+              font-weight: 600;
+            }
+            .info-row {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 12px;
+              font-size: 15px;
+            }
+            .info-label {
+              color: #4b5563;
+            }
+            .info-value {
+              font-weight: 500;
+              color: #166534;
+            }
+            .qr-code {
+              text-align: center;
+              margin: 30px 0;
+            }
+            .qr-code img {
+              max-width: 200px;
+              padding: 15px;
+              background: white;
+              border-radius: 12px;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .qr-code p {
+              margin-top: 10px;
+              color: #4b5563;
+              font-size: 14px;
+            }
+            .purchase-date {
+              text-align: center;
+              margin-top: 20px;
+              font-size: 14px;
+              color: #6b7280;
+            }
+            @media print {
+              body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                background: white;
+              }
+              .ticket {
+                box-shadow: none;
+                border: 2px solid #D12026;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="ticket">
+            <div class="header">
+              <h1>${event?.title || 'Event Ticket'}</h1>
+              <p>${event?.venue || 'Venue'}</p>
+            </div>
+            <div class="ticket-info">
+              <div class="info-section">
+                <h3>Ticket Information</h3>
+                <div class="info-row">
+                  <span class="info-label">Ticket ID</span>
+                  <span class="info-value">${ticket.ticketId}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Order Number</span>
+                  <span class="info-value">${ticket.orderNumber}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Ticket Type</span>
+                  <span class="info-value">${ticket.ticketType}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Status</span>
+                  <span class="info-value">${ticket.ticketStatus}</span>
+                </div>
+              </div>
+              <div class="info-section">
+                <h3>Location Details</h3>
+                <div class="info-row">
+                  <span class="info-label">Section</span>
+                  <span class="info-value">${ticket.locationDetails.section}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Row</span>
+                  <span class="info-value">${ticket.locationDetails.row}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Seat</span>
+                  <span class="info-value">${ticket.locationDetails.seat}</span>
+                </div>
+              </div>
+            </div>
+            <div class="qr-code">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${ticket.ticketId}" alt="QR Code" />
+              <p>Scan at entry</p>
+            </div>
+            <div class="purchase-date">
+              Purchase Date: ${formatDate(ticket.createdAt)}
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+
+    printWindow.document.write(htmlContent)
+    printWindow.document.close()
+
+    // Wait for content to load before printing
+    printWindow.onload = () => {
+      printWindow.focus()
+      printWindow.print()
+      printWindow.close()
+    }
+  }
+
+  const handleExportCSV = () => {
+    // Create CSV content
+    const headers = [
+      'Ticket ID',
+      'Order Number',
+      'Ticket Type',
+      'Status',
+      'Section',
+      'Row',
+      'Seat',
+      'Purchase Date'
+    ]
+
+    const csvContent = [
+      headers.join(','),
+      ...tickets.map(ticket => [
+        ticket.ticketId,
+        ticket.orderNumber,
+        ticket.ticketType,
+        ticket.ticketStatus,
+        ticket.locationDetails.section,
+        ticket.locationDetails.row,
+        ticket.locationDetails.seat,
+        formatDate(ticket.createdAt)
+      ].join(','))
+    ].join('\n')
+
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `${event?.title}-tickets.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  }
+
+  const handleShareEvent = async () => {
+    const eventUrl = `https://ticketexpert.me/event/${event?.eventId}`
+    
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: event?.title || 'Event',
+          text: `Check out this event: ${event?.title}`,
+          url: eventUrl
+        })
+      } else {
+        // Fallback for browsers that don't support Web Share API
+        await navigator.clipboard.writeText(eventUrl)
+        alert('Event URL copied to clipboard!')
+      }
+    } catch (error) {
+      console.error('Error sharing event:', error)
+    }
+  }
+
+  const handleDeleteTicket = async (ticketId: string) => {
+    setActionLoading(ticketId)
+    try {
+      const res = await fetch(`https://api.ticketexpert.me/api/tickets/${ticketId}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to delete ticket')
+      setTickets(tickets => tickets.filter(t => t.ticketId !== ticketId))
+      setConfirmDelete({ open: false, ticket: null })
+    } catch (e) {
+      alert('Error deleting ticket')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleChangeStatus = async (ticket: Ticket, newStatus: string) => {
+    setActionLoading(ticket.ticketId)
+    try {
+      const res = await fetch(`https://api.ticketexpert.me/api/tickets/${ticket.ticketId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: ticket.userId,
+          status: newStatus
+        })
+      })
+      if (!res.ok) throw new Error('Failed to update status')
+      setTickets(tickets => tickets.map(t => t.ticketId === ticket.ticketId ? { ...t, ticketStatus: newStatus } : t))
+      setStatusMenu({ open: false, ticket: null })
+    } catch (e) {
+      alert('Error updating status')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleApproveRefund = (ticket: Ticket) => handleChangeStatus(ticket, 'refunded')
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#004AAD]" />
+      </div>
+    )
+  }
+
+  if (error || !event) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <h2 className="text-2xl font-bold text-red-600 mb-2">Event Not Found</h2>
+        <p className="text-gray-600">{error || 'The event you are looking for does not exist.'}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Event Header */}
+      <div className="relative rounded-xl overflow-hidden">
+        <img
+          src={event.image}
+          alt={event.title}
+          className="w-full h-[400px] object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+          <Badge className="mb-4 bg-white/20 hover:bg-white/30 text-white border-none">
+            {event.category}
+          </Badge>
+          <h1 className="text-4xl font-bold mb-4">{event.title}</h1>
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>{formatDate(event.fromDateTime)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              <span>{event.venue}, {event.region}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Tabs defaultValue="details" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="details">Event Details</TabsTrigger>
+          <TabsTrigger value="tickets">Ticket Sales</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details">
+          {/* Main Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* About Event */}
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-bold text-[#004AAD] mb-4">About This Event</h2>
+                  <p className="text-gray-600 leading-relaxed">{event.description}</p>
+                </CardContent>
+              </Card>
+
+              {/* Event Details */}
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-bold text-[#004AAD] mb-4">Event Details</h2>
+                  <div className="space-y-6">
+                    {/* Date and Time */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="h-5 w-5 text-[#004AAD]" />
+                        <h3 className="font-semibold">Date & Time</h3>
+                      </div>
+                      <p className="text-gray-600">
+                        {formatDate(event.fromDateTime)} - {formatDate(event.toDateTime)}
+                      </p>
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPin className="h-5 w-5 text-[#004AAD]" />
+                        <h3 className="font-semibold">Location</h3>
+                      </div>
+                      <p className="text-gray-600">{event.venue}, {event.region}</p>
+                    </div>
+
+                    {/* Pricing */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <DollarSign className="h-5 w-5 text-[#004AAD]" />
+                        <h3 className="font-semibold">Pricing</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {event.pricing.map((price, index) => (
+                          <div
+                            key={index}
+                            className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                          >
+                            <div>
+                              <p className="font-medium">{price.type}</p>
+                              <p className="text-sm text-gray-500">
+                                {price.numTicketsAvailable} tickets available
+                              </p>
+                            </div>
+                            <p className="text-lg font-bold text-[#004AAD]">
+                              ${price.price.toFixed(2)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-4 text-sm text-gray-600">
+                        <span className="font-semibold">Refund Policy:</span> {event.refundPolicy}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-6">
+              {/* Organization Info */}
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Users className="h-5 w-5 text-[#004AAD]" />
+                    <h2 className="text-xl font-bold text-[#004AAD]">Organization</h2>
+                  </div>
+                  {organization ? (
+                    <>
+                      <h3 className="text-lg font-bold mb-2">{organization.name}</h3>
+                      <p className="text-gray-600 mb-4">{organization.description}</p>
+                      <div className="space-y-3">
+                        <Button 
+                          className="w-full bg-[#004AAD] hover:bg-[#003d8f]"
+                          onClick={onEditEvent}
+                        >
+                          <Edit2 className="h-4 w-4 mr-2" />
+                          Edit Event
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={handleShareEvent}
+                        >
+                          <Share2 className="h-4 w-4 mr-2" />
+                          Share Event
+                        </Button>
+                      </div>
+                      <div className="mt-4">
+                        <p className="text-sm font-semibold text-gray-600 mb-1">
+                          Contact Information
+                        </p>
+                        <p className="text-sm text-gray-600">{organization.contact}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-gray-600">Organization information not available</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Tags */}
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-bold text-[#004AAD] mb-4">Tags</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {event.tags.map((tag, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="bg-gray-100 hover:bg-gray-200"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="tickets">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-[#004AAD]">Ticket Sales</h2>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                    onClick={handleExportCSV}
+                  >
+                    <Download className="h-4 w-4" />
+                    Export CSV
+                  </Button>
+                </div>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Ticket ID</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Purchase Date</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tickets.map((ticket) => (
+                    <TableRow key={ticket.ticketId}>
+                      <TableCell>#{ticket.ticketId}</TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">Order #{ticket.orderNumber}</p>
+                          <p className="text-sm text-gray-500">
+                            {ticket.locationDetails.section} - Row {ticket.locationDetails.row}, Seat {ticket.locationDetails.seat}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>{ticket.ticketType}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            ticket.ticketStatus === 'active'
+                              ? 'default'
+                              : 'destructive'
+                          }
+                        >
+                          {ticket.ticketStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(ticket.createdAt)}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2 items-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewTicket(ticket)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDownloadTicket(ticket)}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setStatusMenu({ open: true, ticket })}
+                            disabled={actionLoading === ticket.ticketId}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setConfirmDelete({ open: true, ticket })}
+                            disabled={actionLoading === ticket.ticketId}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          {ticket.ticketStatus === 'refund_request' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleApproveRefund(ticket)}
+                              disabled={actionLoading === ticket.ticketId}
+                            >
+                              <CheckCircle2 className="h-4 w-4 text-green-600" />
+                              Approve Refund
+                            </Button>
+                          )}
+                        </div>
+                        {/* Status menu dropdown */}
+                        {statusMenu.open && statusMenu.ticket?.ticketId === ticket.ticketId && (
+                          <div className="absolute z-50 bg-white border rounded shadow p-2 mt-2">
+                            <button 
+                              className="block w-full text-left px-2 py-1 hover:bg-gray-100" 
+                              onClick={() => handleChangeStatus(ticket, 'active')}
+                              disabled={ticket.ticketStatus === 'active'}
+                            >
+                              Set Active
+                            </button>
+                            <button 
+                              className="block w-full text-left px-2 py-1 hover:bg-gray-100" 
+                              onClick={() => handleChangeStatus(ticket, 'scanned')}
+                              disabled={ticket.ticketStatus === 'scanned'}
+                            >
+                              Mark as Scanned
+                            </button>
+                            <button 
+                              className="block w-full text-left px-2 py-1 hover:bg-gray-100" 
+                              onClick={() => handleChangeStatus(ticket, 'refunded')}
+                              disabled={ticket.ticketStatus === 'refunded'}
+                            >
+                              Mark as Refunded
+                            </button>
+                            <button 
+                              className="block w-full text-left px-2 py-1 hover:bg-gray-100" 
+                              onClick={() => setStatusMenu({ open: false, ticket: null })}
+                            >
+                              Close
+                            </button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Ticket Information Modal */}
+      <Dialog open={isTicketModalOpen} onOpenChange={setIsTicketModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Ticket Information</DialogTitle>
+            <DialogDescription>
+              Detailed information about the selected ticket
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTicket && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Ticket ID</p>
+                  <p className="font-medium">#{selectedTicket.ticketId}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Status</p>
+                  <Badge
+                    variant={
+                      selectedTicket.ticketStatus === 'active'
+                        ? 'default'
+                        : 'destructive'
+                    }
+                  >
+                    {selectedTicket.ticketStatus}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Order Details</p>
+                <p className="font-medium">Order #{selectedTicket.orderNumber}</p>
+                <p className="text-sm text-gray-500">
+                  {selectedTicket.locationDetails.section} - Row {selectedTicket.locationDetails.row}, Seat {selectedTicket.locationDetails.seat}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Ticket Details</p>
+                <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+                  <p className="font-medium">{selectedTicket.ticketType}</p>
+                  <p className="text-sm text-gray-500">
+                    Purchased on {formatDate(selectedTicket.createdAt)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handlePrintTicket(selectedTicket)}
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleDownloadTicket(selectedTicket)}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+                <Button onClick={() => setIsTicketModalOpen(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation dialog for delete */}
+      {confirmDelete.open && confirmDelete.ticket && (
+        <Dialog open={confirmDelete.open} onOpenChange={open => setConfirmDelete({ open, ticket: open ? confirmDelete.ticket : null })}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Ticket</DialogTitle>
+              <DialogDescription>Are you sure you want to delete ticket #{confirmDelete.ticket.ticketId}?</DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setConfirmDelete({ open: false, ticket: null })}>Cancel</Button>
+              <Button variant="destructive" onClick={() => handleDeleteTicket(confirmDelete.ticket.ticketId)} disabled={actionLoading === confirmDelete.ticket.ticketId}>
+                Delete
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  )
+} 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   Table,
   TableBody,
@@ -41,6 +42,7 @@ interface Event {
 }
 
 export function DataTable() {
+  const router = useRouter()
   const [events, setEvents] = useState<Event[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
@@ -74,6 +76,10 @@ export function DataTable() {
     fetchEvents()
   }, [])
 
+  const handleEventClick = (eventId: number) => {
+    router.push(`/events/${eventId}`)
+  }
+
   if (isLoading) {
     return <div>Loading events...</div>
   }
@@ -102,12 +108,16 @@ export function DataTable() {
             const totalValue = event.pricing.reduce((sum, tier) => sum + (tier.price * tier.numTicketsAvailable), 0)
 
             return (
-              <TableRow key={event.eventId}>
+              <TableRow 
+                key={event.eventId}
+                className="cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => handleEventClick(event.eventId)}
+              >
                 <TableCell>
                   {format(new Date(event.fromDateTime), "MMM d, yyyy")}
                 </TableCell>
                 <TableCell>{event.venue}, {event.region}</TableCell>
-                <TableCell>{event.title}</TableCell>
+                <TableCell className="font-medium">{event.title}</TableCell>
                 <TableCell className="capitalize">{event.category}</TableCell>
                 <TableCell>{totalTickets}</TableCell>
                 <TableCell>${totalValue.toLocaleString()}</TableCell>

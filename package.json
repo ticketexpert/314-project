@@ -4,8 +4,14 @@
     "tailwindcss": "^3.4.17"
   },
   "dependencies": {
+    "@radix-ui/react-alert-dialog": "^1.0.5",
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-tabs": "^1.1.12",
+    "clsx": "^2.1.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
-    "react-router-dom": "^7.5.3"
+    "qrcode.react": "^4.2.0",
+    "react-router-dom": "^7.5.3",
+    "tailwind-merge": "^3.3.0"
   }
 }

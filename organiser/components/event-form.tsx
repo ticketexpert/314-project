@@ -45,25 +45,48 @@ interface Organization {
   events: number[]
 }
 
-export function EventForm() {
+interface EventFormProps {
+  event?: {
+    eventId: number;
+    title: string;
+    category: string;
+    tags: string[];
+    image: string;
+    description: string;
+    fromDateTime: string;
+    toDateTime: string;
+    region: string;
+    venue: string;
+    pricing: {
+      type: string;
+      price: number;
+      numTicketsAvailable: number;
+    }[];
+    refundPolicy: string;
+    eventOrgId: number;
+  } | null;
+  mode: 'create' | 'edit';
+}
+
+export function EventForm({ event, mode }: EventFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [errors, setErrors] = useState<FormErrors>({})
   const [organization, setOrganization] = useState<Organization | null>(null)
   const [eventData, setEventData] = useState({
-    title: "",
-    category: "",
-    tags: [] as string[],
-    image: "",
-    description: "",
-    fromDateTime: new Date(),
-    toDateTime: new Date(new Date().setHours(new Date().getHours() + 1)),
-    region: "",
-    venue: "",
-    pricing: [] as Pricing[],
-    refundPolicy: "",
+    title: event?.title || "",
+    category: event?.category || "",
+    tags: event?.tags || [],
+    image: event?.image || "",
+    description: event?.description || "",
+    fromDateTime: event ? new Date(event.fromDateTime) : new Date(),
+    toDateTime: event ? new Date(event.toDateTime) : new Date(new Date().setHours(new Date().getHours() + 1)),
+    region: event?.region || "",
+    venue: event?.venue || "",
+    pricing: event?.pricing || [],
+    refundPolicy: event?.refundPolicy || "",
     organiser: "",
-    eventOrgId: 0,
+    eventOrgId: event?.eventOrgId || 0,
     orgDescription: "",
     orgContact: "",
     orgEmail: ""
@@ -79,20 +102,21 @@ export function EventForm() {
   useEffect(() => {
     const fetchOrganization = async () => {
       try {
-        const userId = localStorage.getItem('userId')
-        if (!userId) {
-          throw new Error("User ID not found")
+        const organizationId = localStorage.getItem('organizationId')
+        if (!organizationId) {
+          throw new Error("Organization ID not found")
         }
 
-        const response = await fetch('https://api.ticketexpert.me/api/organisations')
+        console.log('Fetching organization:', organizationId)
+
+        // Fetch organization by ID
+        const response = await fetch(`https://api.ticketexpert.me/api/organisations/${organizationId}`)
         if (!response.ok) {
-          throw new Error('Failed to fetch organizations')
+          throw new Error('Failed to fetch organization')
         }
 
-        const organizations: Organization[] = await response.json()
-        const userOrg = organizations.find(org => 
-          org.users && org.users.includes(parseInt(userId))
-        )
+        const userOrg = await response.json()
+        console.log('Fetched organization:', userOrg)
 
         if (userOrg) {
           setOrganization(userOrg)
@@ -105,9 +129,10 @@ export function EventForm() {
             orgEmail: userOrg.contact
           }))
         } else {
-          throw new Error("Organisation not found for this user " + userId)
+          throw new Error("Organization not found")
         }
       } catch (err) {
+        console.error('Error fetching organization:', err)
         setError(err instanceof Error ? err.message : "Failed to load organization data")
       }
     }
@@ -234,21 +259,36 @@ export function EventForm() {
         eventShareLinks: []
       }
 
-      const response = await fetch('https://api.ticketexpert.me/api/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(eventPayload)
-      })
+      let response;
+      if (mode === 'edit' && event?.eventId) {
+        // Update existing event
+        response = await fetch(`https://api.ticketexpert.me/api/events/${event.eventId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(eventPayload)
+        })
+      } else {
+        // Create new event
+        response = await fetch('https://api.ticketexpert.me/api/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(eventPayload)
+        })
+      }
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to create event')
+        throw new Error(errorData.message || `Failed to ${mode === 'edit' ? 'update' : 'create'} event`)
       }
 
-      toast.success("Event created successfully!")
+      toast.success(mode === 'edit' ? "Event updated successfully!" : "Event created successfully!")
+      
       // Reset form
       setEventData({
         title: "",
@@ -566,10 +606,10 @@ export function EventForm() {
           {isLoading ? (
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Creating Event...</span>
+              <span>{mode === 'edit' ? 'Updating Event...' : 'Creating Event...'}</span>
             </div>
           ) : (
-            "Create Event"
+            mode === 'edit' ? 'Update Event' : 'Create Event'
           )}
         </Button>
       </div>

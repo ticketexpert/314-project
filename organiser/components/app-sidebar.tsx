@@ -74,6 +74,11 @@ const data = {
       url: "/profile",
       icon: IconSettings,
     },
+    {
+      title: "Scan Tickets",
+      url: "https://entry.ticketexpert.me/",
+      icon: IconSettings,
+    },
   ],
   navClouds: [
     {
@@ -172,7 +177,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5 hover:bg-white/10 transition-colors rounded-md"
             >
               <a href="#">
-                <NavUser user={userData} />
+                <NavUser />
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

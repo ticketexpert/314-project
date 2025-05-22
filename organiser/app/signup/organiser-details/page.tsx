@@ -162,7 +162,7 @@ export default function OrganiserDetailsPage() {
       localStorage.setItem('organizationId', organization.eventOrgId.toString())
       
       // Redirect to dashboard after successful creation
-      router.push('/dashboard')
+      router.push('/home')
     } catch (err) {
       console.error('Submit error:', err)
       if (err instanceof Error) {
