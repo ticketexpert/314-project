@@ -627,6 +627,7 @@ export default function TicketsContent() {
           }}>
             <Typography variant="h6" fontWeight="bold" mb={1}>No Tickets Found</Typography>
             <Typography fontSize="15px" mb={3}>You haven't purchased any tickets yet.</Typography>
+            <br/>
             <Button
               variant="contained"
               href="/events"
