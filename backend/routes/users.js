@@ -25,25 +25,27 @@ router.post('/', async (req, res) => {
 });
 
 //GET /api/users
-// UserID meth
 router.get('/', async (req, res) => {
   try {
-    const {userId} = req.query;
-
-    // If no userId provided, return all users
-    if (!userId) {
       const users = await User.findAll();
       return res.status(200).json(users);
-    }
-
-    // If userId provided, find specific user
-    const where = { userId: parseInt(userId) };
-    const users = await User.findAll({ where });
+    
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+router.get('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByPk(userId);
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 //GET /api/users/role
 router.get('/role', async (req, res) => {
