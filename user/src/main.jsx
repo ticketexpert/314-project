@@ -7,7 +7,6 @@ import App from './App.jsx'
 import { Theme as RadixTheme } from '@radix-ui/themes'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 
-// Google Fonts: Instrument Sans - add in index.html instead
 const muiTheme = createTheme({
   typography: {
     fontFamily: '"Rethink Sans", sans-serif',
