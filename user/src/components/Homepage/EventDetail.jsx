@@ -289,50 +289,50 @@ export default function EventDetail() {
               </Stack>
               {organization ? (
                 <>
-                  <Typography variant="h6" fontWeight="bold" mb={1}>
+              <Typography variant="h6" fontWeight="bold" mb={1}>
                     {organization.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={3}>
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mb={3}>
                     {organization.description}
                   </Typography>
-                  <Stack spacing={2}>
-                    <Button 
-                      variant="contained" 
-                      size="small"
+              <Stack spacing={2}>
+                <Button 
+                  variant="contained" 
+                  size="small"
                       component={RouterLink}
                       to={`/organization/${organization.eventOrgId}`}
-                      sx={{ 
-                        bgcolor: colorScheme.green.primary,
-                        borderRadius: 99,
-                        fontWeight: 600,
-                        py: 0.75,
-                        px: 2,
-                        fontSize: '0.875rem',
-                        '&:hover': { bgcolor: colorScheme.green.hover }
-                      }}
-                    >
+                  sx={{ 
+                    bgcolor: colorScheme.green.primary,
+                    borderRadius: 99,
+                    fontWeight: 600,
+                    py: 0.75,
+                    px: 2,
+                    fontSize: '0.875rem',
+                    '&:hover': { bgcolor: colorScheme.green.hover }
+                  }}
+                >
                       View Organization
-                    </Button>
-                    <Button 
-                      variant="outlined" 
-                      size="small"
-                      sx={{ 
-                        borderColor: colorScheme.green.primary,
-                        color: colorScheme.green.primary,
-                        borderRadius: 99,
-                        fontWeight: 600,
-                        py: 0.75,
-                        px: 2,
-                        fontSize: '0.875rem',
-                        '&:hover': { 
-                          borderColor: colorScheme.green.hover,
-                          bgcolor: 'rgba(22,101,52,0.04)'
-                        }
-                      }}
-                    >
+                </Button>
+                <Button 
+                  variant="outlined" 
+                  size="small"
+                  sx={{ 
+                    borderColor: colorScheme.green.primary,
+                    color: colorScheme.green.primary,
+                    borderRadius: 99,
+                    fontWeight: 600,
+                    py: 0.75,
+                    px: 2,
+                    fontSize: '0.875rem',
+                    '&:hover': { 
+                      borderColor: colorScheme.green.hover,
+                      bgcolor: 'rgba(22,101,52,0.04)'
+                    }
+                  }}
+                >
                       Contact Organizer
-                    </Button>
-                  </Stack>
+                </Button>
+              </Stack>
                   <Box mt={3}>
                     <Typography variant="subtitle2" color="text.secondary" mb={1}>
                       Contact Information

@@ -121,7 +121,7 @@ export function DataTable() {
                 <TableCell className="capitalize">{event.category}</TableCell>
                 <TableCell>{totalTickets}</TableCell>
                 <TableCell>${totalValue.toLocaleString()}</TableCell>
-              </TableRow>
+            </TableRow>
             )
           })}
         </TableBody>

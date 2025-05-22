@@ -295,13 +295,13 @@ export default function Settings() {
 
         <TabsContent value="password">
           <Card>
-            <CardHeader>
-              <CardTitle>Change Password</CardTitle>
-            </CardHeader>
+        <CardHeader>
+          <CardTitle>Change Password</CardTitle>
+        </CardHeader>
             <CardContent>
               <form onSubmit={handlePasswordChange} className="space-y-4">
-                <div>
-                  <Label htmlFor="current-password" className="mb-1">Current Password</Label>
+          <div>
+            <Label htmlFor="current-password" className="mb-1">Current Password</Label>
                   <Input 
                     id="current-password" 
                     type="password" 
@@ -310,9 +310,9 @@ export default function Settings() {
                     required
                     className="h-14"
                   />
-                </div>
-                <div>
-                  <Label htmlFor="new-password" className="mb-1">New Password</Label>
+          </div>
+          <div>
+            <Label htmlFor="new-password" className="mb-1">New Password</Label>
                   <Input 
                     id="new-password" 
                     type="password" 
@@ -365,7 +365,7 @@ export default function Settings() {
                     <CheckCircle className={`w-4 h-4 ${/[^A-Za-z0-9]/.test(newPassword) ? 'text-green-500' : 'text-gray-300'}`} />
                     <span>At least one special character</span>
                   </div>
-                </div>
+          </div>
 
                 <Button 
                   type="submit" 
@@ -376,8 +376,8 @@ export default function Settings() {
                   {isLoading ? "Updating..." : "Update Password"}
                 </Button>
               </form>
-            </CardContent>
-          </Card>
+        </CardContent>
+      </Card>
         </TabsContent>
       </Tabs>
     </div>

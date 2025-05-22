@@ -12,6 +12,7 @@ import { CalendarIcon, AlertCircle, Plus, Trash2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
+import { useAuth } from "@/contexts/auth-context"
 
 interface Pricing {
   type: string
@@ -66,9 +67,11 @@ interface EventFormProps {
     eventOrgId: number;
   } | null;
   mode: 'create' | 'edit';
+  onSuccess: () => void;
 }
 
-export function EventForm({ event, mode }: EventFormProps) {
+export function EventForm({ event, mode, onSuccess }: EventFormProps) {
+  const { organizationId } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [errors, setErrors] = useState<FormErrors>({})
@@ -102,43 +105,32 @@ export function EventForm({ event, mode }: EventFormProps) {
   useEffect(() => {
     const fetchOrganization = async () => {
       try {
-        const organizationId = localStorage.getItem('organizationId')
         if (!organizationId) {
-          throw new Error("Organization ID not found")
+          throw new Error('Organization ID not found')
         }
 
-        console.log('Fetching organization:', organizationId)
-
-        // Fetch organization by ID
         const response = await fetch(`https://api.ticketexpert.me/api/organisations/${organizationId}`)
         if (!response.ok) {
           throw new Error('Failed to fetch organization')
         }
-
-        const userOrg = await response.json()
-        console.log('Fetched organization:', userOrg)
-
-        if (userOrg) {
-          setOrganization(userOrg)
-          setEventData(prev => ({
-            ...prev,
-            organiser: userOrg.name,
-            eventOrgId: userOrg.eventOrgId,
-            orgDescription: userOrg.description,
-            orgContact: userOrg.contact,
-            orgEmail: userOrg.contact
-          }))
-        } else {
-          throw new Error("Organization not found")
-        }
-      } catch (err) {
-        console.error('Error fetching organization:', err)
-        setError(err instanceof Error ? err.message : "Failed to load organization data")
+        const data = await response.json()
+        setOrganization(data)
+        setEventData(prev => ({
+          ...prev,
+          organiser: data.name,
+          eventOrgId: data.eventOrgId,
+          orgDescription: data.description,
+          orgContact: data.contact,
+          orgEmail: data.contact
+        }))
+      } catch (error) {
+        console.error('Error fetching organization:', error)
+        setError(error instanceof Error ? error.message : 'Failed to load organization')
       }
     }
 
     fetchOrganization()
-  }, [])
+  }, [organizationId])
 
   // Validate form fields
   const validateForm = (): boolean => {
@@ -243,7 +235,6 @@ export function EventForm({ event, mode }: EventFormProps) {
     setError("")
 
     try {
-      const organizationId = localStorage.getItem('organizationId')
       const userRole = localStorage.getItem('userRole')
 
       if (!organizationId || userRole !== 'Organiser') {
@@ -308,6 +299,8 @@ export function EventForm({ event, mode }: EventFormProps) {
         orgContact: "",
         orgEmail: ""
       })
+
+      onSuccess()
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)

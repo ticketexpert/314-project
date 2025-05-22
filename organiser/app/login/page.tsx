@@ -168,7 +168,7 @@ export default function LoginPage() {
               </Alert>
             )}
 
-            <div className="space-y-4">
+          <div className="space-y-4">
               <Input
                 type="email"
                 name="email"
@@ -198,7 +198,7 @@ export default function LoginPage() {
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     <span>Logging in...</span>
-                  </div>
+            </div>
                 ) : (
                   "Log In"
                 )}
@@ -208,11 +208,11 @@ export default function LoginPage() {
             <div className="w-full h-px bg-gray-200 my-6" />
 
             <p className="text-[#1e40af] mt-2">
-              New to TicketExpert?{" "}
+            New to TicketExpert?{" "}
               <Link href="/signup" className="text-[#1e40af] font-bold hover:underline">
                 Sign up
-              </Link>
-            </p>
+            </Link>
+          </p>
           </form>
         </div>
       </div>

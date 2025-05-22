@@ -128,8 +128,8 @@ export default function SalesPage() {
 
   if (isLoading) {
     return (
-      <div className="w-full px-4 py-10 space-y-10">
-        <h1 className="text-4xl font-bold text-[#034AA6]">Sales</h1>
+        <div className="w-full px-4 py-10 space-y-10">
+            <h1 className="text-4xl font-bold text-[#034AA6]">Sales</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="animate-pulse">
@@ -224,6 +224,6 @@ export default function SalesPage() {
           <SalesTable data={tableData} />
         </CardContent>
       </Card>
-    </div>
-  )
+        </div>
+    )
 }

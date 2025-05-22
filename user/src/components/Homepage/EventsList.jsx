@@ -358,8 +358,8 @@ export default function EventsList() {
     <Box sx={{ width: '100vw', maxWidth: 1200, mx: 'auto', my: 4, px: { xs: 1, md: 3 }, pt: '100px' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" fontWeight="bold" color="#9F1B32">
-          {location !== 'All' ? `Events in ${location}` : 'All Events'}
-        </Typography>
+        {location !== 'All' ? `Events in ${location}` : 'All Events'}
+      </Typography>
         {isMobile && (
           <IconButton onClick={() => setShowFilters(!showFilters)} color="primary">
             <FilterListIcon />
@@ -369,18 +369,18 @@ export default function EventsList() {
 
       {showFilters && (
         <>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} mb={3}>
-            <TextField
-              variant="outlined"
-              placeholder="Search events..."
-              value={search}
-              onChange={e => handleSearchChange(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} mb={3}>
+        <TextField
+          variant="outlined"
+          placeholder="Search events..."
+          value={search}
+          onChange={e => handleSearchChange(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
                 endAdornment: search && (
                   <InputAdornment position="end">
                     <IconButton size="small" onClick={() => handleSearchChange('')}>
@@ -388,46 +388,46 @@ export default function EventsList() {
                     </IconButton>
                   </InputAdornment>
                 ),
-              }}
-              sx={{ minWidth: 220, flex: 2 }}
-            />
-            <FormControl sx={{ minWidth: 160 }}>
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={category}
-                label="Category"
-                onChange={e => handleCategoryChange(e.target.value)}
-              >
-                {categories.map(cat => (
-                  <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl sx={{ minWidth: 160 }}>
-              <InputLabel>Location</InputLabel>
-              <Select
-                value={location}
-                label="Location"
-                onChange={e => handleLocationChange(e.target.value)}
-              >
-                {locations.map(loc => (
-                  <MenuItem key={loc} value={loc}>{loc}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl sx={{ minWidth: 160 }}>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sort}
-                label="Sort By"
-                onChange={e => setSort(e.target.value)}
-              >
-                {sortOptions.map(opt => (
-                  <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
+          }}
+          sx={{ minWidth: 220, flex: 2 }}
+        />
+        <FormControl sx={{ minWidth: 160 }}>
+          <InputLabel>Category</InputLabel>
+          <Select
+            value={category}
+            label="Category"
+            onChange={e => handleCategoryChange(e.target.value)}
+          >
+            {categories.map(cat => (
+              <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ minWidth: 160 }}>
+          <InputLabel>Location</InputLabel>
+          <Select
+            value={location}
+            label="Location"
+            onChange={e => handleLocationChange(e.target.value)}
+          >
+            {locations.map(loc => (
+              <MenuItem key={loc} value={loc}>{loc}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ minWidth: 160 }}>
+          <InputLabel>Sort By</InputLabel>
+          <Select
+            value={sort}
+            label="Sort By"
+            onChange={e => setSort(e.target.value)}
+          >
+            {sortOptions.map(opt => (
+              <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Stack>
 
           <Box sx={{ width: '100%', mb: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
