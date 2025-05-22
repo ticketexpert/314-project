@@ -45,6 +45,31 @@ router.get('/', async (req, res) => {
   }
 });
 
+//GET /api/users/role
+router.get('/role', async (req, res) => {
+  try {
+    const { role } = req.query;
+    const users = await User.findAll({ where: { role } });
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//PUT /api/users/role
+router.put('/role', async (req, res) => {
+  try {
+    const { userId, role } = req.body;
+    const user = await User.findByPk(userId);
+    user.role = role;
+    await user.save();
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Email and Password meth
 //Auth url
 router.get('/auth', async (req, res) => {

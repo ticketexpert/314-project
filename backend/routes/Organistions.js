@@ -29,4 +29,24 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/users', async (req, res) => {
+  try {
+    const organisation = await Organisation.findByPk(req.params.id);
+    const users = await User.findAll({ where: { organisationId: organisation.id } });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.put('/:id/users', async (req, res) => {
+  try {
+    const organisation = await Organisation.findByPk(req.params.id);
+    const users = await User.findAll({ where: { organisationId: organisation.id } });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

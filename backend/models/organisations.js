@@ -22,6 +22,10 @@ const Organisation = sequelize.define('Organisation', {
   events: {
     type: DataTypes.ARRAY(DataTypes.INTEGER),
     allowNull: true
+  },
+  users: {
+    type: DataTypes.ARRAY(DataTypes.INTEGER),
+    allowNull: true
   }
 });
 

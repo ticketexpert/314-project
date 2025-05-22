@@ -40,6 +40,11 @@ const User = sequelize.define('User', {
     type: DataTypes.ARRAY(DataTypes.INTEGER),
     allowNull: true,
     defaultValue: []
+  },
+  organisationId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: null
   }
 });
 
