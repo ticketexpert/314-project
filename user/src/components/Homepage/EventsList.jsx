@@ -16,6 +16,8 @@ const getUniqueLocations = (events) => [
 const sortOptions = [
   { value: 'title', label: 'Title (A-Z)' },
   { value: 'date', label: 'Date' },
+  { value: 'price-asc', label: 'Price (Low to High)' },
+  { value: 'price-desc', label: 'Price (High to Low)' },
 ];
 
 export default function EventsList() {
@@ -137,6 +139,7 @@ export default function EventsList() {
       return categoryMatch && locationMatch && dateMatch && searchMatch;
     });
 
+    // Sorting logic
     if (sort === 'title') {
       filtered = filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sort === 'date') {
@@ -144,6 +147,17 @@ export default function EventsList() {
         const dateA = new Date(a.fromDateTime);
         const dateB = new Date(b.fromDateTime);
         return dateA - dateB;
+      });
+    } else if (sort === 'price-asc' || sort === 'price-desc') {
+      filtered = filtered.sort((a, b) => {
+        const priceA = getLowestPrice(a.pricing);
+        const priceB = getLowestPrice(b.pricing);
+        
+        // Handle cases where price is 'N/A'
+        if (priceA === 'N/A') return 1;
+        if (priceB === 'N/A') return -1;
+        
+        return sort === 'price-asc' ? priceA - priceB : priceB - priceA;
       });
     }
     return filtered;
