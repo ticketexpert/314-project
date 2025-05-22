@@ -2,7 +2,7 @@ import TElogo from "./logo"
 
 export function BrandPanel() {
   return (
-    <div className="w-1/2 bg-gradient-to-br from-[#004AAD] to-[#00B893] text-white flex items-end p-8 rounded-[48px]">
+    <div>
       <h1>
         <TElogo />
       </h1>

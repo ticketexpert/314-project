@@ -46,27 +46,33 @@ const colorScheme = {
 export default function EventDetail() {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
+  const [organization, setOrganization] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchEvent = async () => {
+    const fetchEventAndOrganization = async () => {
       try {
-        const response = await fetch(`https://api.ticketexpert.me/api/events/${id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch event');
+        // Fetch event details
+        const eventResponse = await fetch(`https://api.ticketexpert.me/api/events/${id}`);
+        const eventData = await eventResponse.json();
+        setEvent(eventData);
+
+        // Fetch organization details using eventOrgId
+        if (eventData.eventOrgId) {
+          const orgResponse = await fetch(`https://api.ticketexpert.me/api/organisations/${eventData.eventOrgId}`);
+          const orgData = await orgResponse.json();
+          setOrganization(orgData);
         }
-        const data = await response.json();
-        setEvent(data);
       } catch (error) {
-        console.error('Error fetching event:', error);
+        console.error('Error fetching data:', error);
         setError(error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEvent();
+    fetchEventAndOrganization();
   }, [id]);
 
   const formatDate = (dateString) => {
@@ -281,48 +287,66 @@ export default function EventDetail() {
                 <GroupWorkIcon sx={{ color: colorScheme.green.primary }} />
                 <Typography variant="h6" fontWeight="bold" color={colorScheme.green.primary}>Organizer</Typography>
               </Stack>
-              <Typography variant="h6" fontWeight="bold" mb={1}>
-                {event.organiser}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" mb={3}>
-                {event.orgDescription}
-              </Typography> <br/><br/>
-              <Stack spacing={2}>
-                <Button 
-                  variant="contained" 
-                  size="small"
-                  sx={{ 
-                    bgcolor: colorScheme.green.primary,
-                    borderRadius: 99,
-                    fontWeight: 600,
-                    py: 0.75,
-                    px: 2,
-                    fontSize: '0.875rem',
-                    '&:hover': { bgcolor: colorScheme.green.hover }
-                  }}
-                >
-                  Contact Organizer
-                </Button>
-                <Button 
-                  variant="outlined" 
-                  size="small"
-                  sx={{ 
-                    borderColor: colorScheme.green.primary,
-                    color: colorScheme.green.primary,
-                    borderRadius: 99,
-                    fontWeight: 600,
-                    py: 0.75,
-                    px: 2,
-                    fontSize: '0.875rem',
-                    '&:hover': { 
-                      borderColor: colorScheme.green.hover,
-                      bgcolor: 'rgba(22,101,52,0.04)'
-                    }
-                  }}
-                >
-                  Follow Organizer
-                </Button>
-              </Stack>
+              {organization ? (
+                <>
+                  <Typography variant="h6" fontWeight="bold" mb={1}>
+                    {organization.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={3}>
+                    {organization.description}
+                  </Typography>
+                  <Stack spacing={2}>
+                    <Button 
+                      variant="contained" 
+                      size="small"
+                      component={RouterLink}
+                      to={`/organization/${organization.eventOrgId}`}
+                      sx={{ 
+                        bgcolor: colorScheme.green.primary,
+                        borderRadius: 99,
+                        fontWeight: 600,
+                        py: 0.75,
+                        px: 2,
+                        fontSize: '0.875rem',
+                        '&:hover': { bgcolor: colorScheme.green.hover }
+                      }}
+                    >
+                      View Organization
+                    </Button>
+                    <Button 
+                      variant="outlined" 
+                      size="small"
+                      sx={{ 
+                        borderColor: colorScheme.green.primary,
+                        color: colorScheme.green.primary,
+                        borderRadius: 99,
+                        fontWeight: 600,
+                        py: 0.75,
+                        px: 2,
+                        fontSize: '0.875rem',
+                        '&:hover': { 
+                          borderColor: colorScheme.green.hover,
+                          bgcolor: 'rgba(22,101,52,0.04)'
+                        }
+                      }}
+                    >
+                      Contact Organizer
+                    </Button>
+                  </Stack>
+                  <Box mt={3}>
+                    <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                      Contact Information
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {organization.contact}
+                    </Typography>
+                  </Box>
+                </>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Organization information not available
+                </Typography>
+              )}
             </Paper>
 
             {/* Tags - Red Theme */}

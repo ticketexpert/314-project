@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useEffect, useState } from "react"
 import {
   IconCamera,
   IconChartBar,
@@ -34,12 +35,21 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+interface User {
+  userId: number
+  name: string
+  email: string
+  role: string
+  eventOrgId: number | null
+}
+
+const defaultUser = {
+  name: "Loading...",
+  email: "loading@example.com",
+  avatar: "/avatars/shadcn.jpg",
+}
+
 const data = {
-  user: {
-    name: "Matthew Gale",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   brand: {
     title: "Ticket Expert"
   },
@@ -118,6 +128,40 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [userData, setUserData] = useState(defaultUser)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userId = localStorage.getItem('userId')
+        console.log(userId)
+        if (!userId) {
+          console.error('No user ID found in localStorage')
+          return
+        }
+
+        const response = await fetch(`https://api.ticketexpert.me/api/users/${userId}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data')
+        }
+
+        const user: User = await response.json()
+        setUserData({
+          name: user.name,
+          email: user.email,
+          avatar: "/avatars/shadcn.jpg", // You might want to add avatar to your user model
+        })
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchUserData()
+  }, [])
+
   return (
     <Sidebar className="" collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -128,7 +172,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5 hover:bg-white/10 transition-colors rounded-md"
             >
               <a href="#">
-                <NavUser user={data.user} />
+                <NavUser user={userData} />
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

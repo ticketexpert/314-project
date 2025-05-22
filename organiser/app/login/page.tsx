@@ -16,6 +16,7 @@ export default function LoginPage() {
     password: "",
   })
   const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -25,21 +26,47 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setIsLoading(true)
+
     try {
-      const res = await fetch(
+      // First authenticate the user
+      const authRes = await fetch(
         `https://www.api.ticketexpert.me/api/users/auth?email=${encodeURIComponent(formData.email)}&password=${encodeURIComponent(formData.password)}`
       )
-      if (!res.ok) {
-        const data = await res.json()
+
+      if (!authRes.ok) {
+        const data = await authRes.json()
         setError(data.error || "Login failed.")
         return
       }
-      const user = await res.json()
+
+      // Then fetch all users to find the matching user
+      const usersRes = await fetch('https://api.ticketexpert.me/api/users')
+      if (!usersRes.ok) {
+        throw new Error('Failed to fetch users')
+      }
+
+      const users = await usersRes.json()
+      const user = users.find((u: any) => u.email === formData.email)
+
+      if (!user) {
+        setError("User not found")
+        return
+      }
+
+      // Store user data in localStorage
       localStorage.setItem('isLoggedIn', 'true')
-      localStorage.setItem('userId', user.userId || user.id)
-      router.push("/dashboard")
+      localStorage.setItem('userId', user.userId.toString())
+      localStorage.setItem('userRole', user.role)
+      if (user.eventOrgId) {
+        localStorage.setItem('organizationId', user.eventOrgId.toString())
+      }
+
+      router.push("/home")
     } catch (err) {
       setError("Network error. Please try again.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -73,6 +100,7 @@ export default function LoginPage() {
                 value={formData.email}
                 onChange={handleChange}
                 className="h-14"
+                disabled={isLoading}
               />
 
               <Input
@@ -82,13 +110,22 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={handleChange}
                 className="h-14"
+                disabled={isLoading}
               />
 
               <Button
                 type="submit"
                 className="w-[300px] h-[50px] bg-[#1e40af] hover:bg-[#1e3a8a] text-white rounded-full font-bold mt-6"
+                disabled={isLoading}
               >
-                Log In
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Logging in...</span>
+                  </div>
+                ) : (
+                  "Log In"
+                )}
               </Button>
             </div>
 

@@ -76,7 +76,7 @@ export default function SignupPage() {
           name: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
           password: formData.password,
-          role: "Customer",
+          role: "Organiser",
         }),
       })
       const data = await res.json()
@@ -90,8 +90,10 @@ export default function SignupPage() {
       }
       setSuccess("Account created successfully!")
       localStorage.setItem('isLoggedIn', 'true')
-      localStorage.setItem('userId', data.userId || data.id)
-      setTimeout(() => router.push("/signup/favorite"), 1000)
+      localStorage.setItem('userId', data.userId)
+      console.log('User ID: in signup page', data.userId || data.id)
+      localStorage.setItem('userRole', 'Organiser')
+      setTimeout(() => router.push("/signup/organiser-details"), 1000)
     } catch (err) {
       setError("Network error. Please try again.")
     }

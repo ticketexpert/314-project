@@ -1,111 +1,576 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import { format, isAfter, isBefore } from "date-fns"
+import { CalendarIcon, AlertCircle, Plus, Trash2 } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Textarea } from "@/components/ui/textarea"
+import { toast } from "sonner"
+
+interface Pricing {
+  type: string
+  price: number
+  numTicketsAvailable: number
+}
+
+interface FormErrors {
+  title?: string
+  category?: string
+  tags?: string
+  image?: string
+  description?: string
+  fromDateTime?: string
+  toDateTime?: string
+  region?: string
+  venue?: string
+  pricing?: string
+  refundPolicy?: string
+  orgDescription?: string
+  orgContact?: string
+}
+
+interface Organization {
+  eventOrgId: number
+  name: string
+  description: string
+  contact: string
+  email: string
+  users: number[]
+  events: number[]
+}
 
 export function EventForm() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [organization, setOrganization] = useState<Organization | null>(null)
   const [eventData, setEventData] = useState({
-    date: new Date(),
-    location: "",
-    event: "",
-    status: "Upcoming",
-    sold: "",
-    gross: ""
+    title: "",
+    category: "",
+    tags: [] as string[],
+    image: "",
+    description: "",
+    fromDateTime: new Date(),
+    toDateTime: new Date(new Date().setHours(new Date().getHours() + 1)),
+    region: "",
+    venue: "",
+    pricing: [] as Pricing[],
+    refundPolicy: "",
+    organiser: "",
+    eventOrgId: 0,
+    orgDescription: "",
+    orgContact: "",
+    orgEmail: ""
   })
 
-  const handleChange = (field: string, value: string | number | Date) => {
-    setEventData(prev => ({ ...prev, [field]: value }))
+  const [currentPricing, setCurrentPricing] = useState<Pricing>({
+    type: "",
+    price: 0,
+    numTicketsAvailable: 0
+  })
+
+  // Fetch organization data
+  useEffect(() => {
+    const fetchOrganization = async () => {
+      try {
+        const userId = localStorage.getItem('userId')
+        if (!userId) {
+          throw new Error("User ID not found")
+        }
+
+        const response = await fetch('https://api.ticketexpert.me/api/organisations')
+        if (!response.ok) {
+          throw new Error('Failed to fetch organizations')
+        }
+
+        const organizations: Organization[] = await response.json()
+        const userOrg = organizations.find(org => 
+          org.users && org.users.includes(parseInt(userId))
+        )
+
+        if (userOrg) {
+          setOrganization(userOrg)
+          setEventData(prev => ({
+            ...prev,
+            organiser: userOrg.name,
+            eventOrgId: userOrg.eventOrgId,
+            orgDescription: userOrg.description,
+            orgContact: userOrg.contact,
+            orgEmail: userOrg.contact
+          }))
+        } else {
+          throw new Error("Organisation not found for this user " + userId)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load organization data")
+      }
+    }
+
+    fetchOrganization()
+  }, [])
+
+  // Validate form fields
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {}
+    
+    if (!eventData.title.trim()) {
+      newErrors.title = "Event title is required"
+    }
+    if (!eventData.category) {
+      newErrors.category = "Category is required"
+    }
+    if (eventData.tags.length === 0) {
+      newErrors.tags = "At least one tag is required"
+    }
+    if (!eventData.image.trim()) {
+      newErrors.image = "Image URL is required"
+    }
+    if (!eventData.description.trim()) {
+      newErrors.description = "Description is required"
+    }
+    if (!eventData.region.trim()) {
+      newErrors.region = "Region is required"
+    }
+    if (!eventData.venue.trim()) {
+      newErrors.venue = "Venue is required"
+    }
+    if (eventData.pricing.length === 0) {
+      newErrors.pricing = "At least one pricing tier is required"
+    }
+    if (!eventData.refundPolicy.trim()) {
+      newErrors.refundPolicy = "Refund policy is required"
+    }
+    if (!eventData.orgDescription.trim()) {
+      newErrors.orgDescription = "Organization description is required"
+    }
+    if (!eventData.orgContact.trim()) {
+      newErrors.orgContact = "Organization contact is required"
+    }
+
+    // Validate dates
+    if (isBefore(eventData.toDateTime, eventData.fromDateTime)) {
+      newErrors.toDateTime = "End date must be after start date"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = () => {
-    console.log("Event Created:", eventData)
-    alert("Event created successfully!")
+  const handleChange = (field: string, value: string | number | Date | string[]) => {
+    setEventData(prev => ({ ...prev, [field]: value }))
+    // Clear error when field is updated
+    if (errors[field as keyof FormErrors]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }))
+    }
+  }
+
+  const handlePricingChange = (field: string, value: string | number) => {
+    setCurrentPricing(prev => ({ ...prev, [field]: value }))
+  }
+
+  const addPricing = () => {
+    if (!currentPricing.type.trim()) {
+      toast.error("Please enter a ticket type")
+      return
+    }
+    if (currentPricing.price <= 0) {
+      toast.error("Price must be greater than 0")
+      return
+    }
+    if (currentPricing.numTicketsAvailable <= 0) {
+      toast.error("Number of tickets must be greater than 0")
+      return
+    }
+
+    setEventData(prev => ({
+      ...prev,
+      pricing: [...prev.pricing, currentPricing]
+    }))
+    setCurrentPricing({
+      type: "",
+      price: 0,
+      numTicketsAvailable: 0
+    })
+    toast.success("Pricing tier added")
+  }
+
+  const removePricing = (index: number) => {
+    setEventData(prev => ({
+      ...prev,
+      pricing: prev.pricing.filter((_, i) => i !== index)
+    }))
+    toast.success("Pricing tier removed")
+  }
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      toast.error("Please fill in all required fields")
+      return
+    }
+
+    setIsLoading(true)
+    setError("")
+
+    try {
+      const organizationId = localStorage.getItem('organizationId')
+      const userRole = localStorage.getItem('userRole')
+
+      if (!organizationId || userRole !== 'Organiser') {
+        throw new Error("Organization details not found. Please link your organization first.")
+      }
+
+      const eventPayload = {
+        ...eventData,
+        eventOrgId: parseInt(organizationId),
+        fromDateTime: eventData.fromDateTime.toISOString(),
+        toDateTime: eventData.toDateTime.toISOString(),
+        orgFollow: [],
+        eventShareLinks: []
+      }
+
+      const response = await fetch('https://api.ticketexpert.me/api/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(eventPayload)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to create event')
+      }
+
+      toast.success("Event created successfully!")
+      // Reset form
+      setEventData({
+        title: "",
+        category: "",
+        tags: [],
+        image: "",
+        description: "",
+        fromDateTime: new Date(),
+        toDateTime: new Date(new Date().setHours(new Date().getHours() + 1)),
+        region: "",
+        venue: "",
+        pricing: [],
+        refundPolicy: "",
+        organiser: "",
+        eventOrgId: 0,
+        orgDescription: "",
+        orgContact: "",
+        orgEmail: ""
+      })
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message)
+        toast.error(err.message)
+      } else {
+        setError("An unexpected error occurred")
+        toast.error("An unexpected error occurred")
+      }
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="space-y-4">
-        <div>
-          <Label className="mb-2">Date</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {format(eventData.date, "PPP")}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={eventData.date}
-                onSelect={(date) => date && handleChange("date", date)}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+        {/* Organization Details Section */}
+        <div className="p-4 border rounded-lg bg-gray-50 space-y-4">
+          <h3 className="font-semibold text-gray-900">Organization Details</h3>
+          
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-700">Organization Name</p>
+            <p className="text-lg font-semibold text-gray-900">{eventData.organiser}</p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-700">Organization Description</p>
+            <p className="text-gray-900">{eventData.orgDescription}</p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-700">Organization Contact</p>
+            <p className="text-gray-900">{eventData.orgContact}</p>
+          </div>
         </div>
 
+        {/* Event Details Section */}
         <div>
-          <Label htmlFor="location" className="mb-2">Location</Label>
+          <Label htmlFor="title" className="mb-2">Event Title *</Label>
           <Input
-            id="location"
-            value={eventData.location}
-            onChange={(e) => handleChange("location", e.target.value)}
+            id="title"
+            value={eventData.title}
+            onChange={(e) => handleChange("title", e.target.value)}
+            className={errors.title ? "border-red-500" : ""}
+            placeholder="Enter event title"
           />
+          {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title}</p>}
         </div>
 
         <div>
-          <Label htmlFor="event" className="mb-2">Event Name</Label>
-          <Input
-            id="event"
-            value={eventData.event}
-            onChange={(e) => handleChange("event", e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label className="mb-2">Status</Label>
-          <Select value={eventData.status} onValueChange={(value) => handleChange("status", value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue />
+          <Label className="mb-2">Category *</Label>
+          <Select value={eventData.category} onValueChange={(value) => handleChange("category", value)}>
+            <SelectTrigger className={errors.category ? "border-red-500" : ""}>
+              <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Upcoming">Upcoming</SelectItem>
-              <SelectItem value="Live">Live</SelectItem>
-              <SelectItem value="Completed">Completed</SelectItem>
+              <SelectItem value="show">Show</SelectItem>
+              <SelectItem value="festival">Festival</SelectItem>
+              <SelectItem value="workshop">Workshop</SelectItem>
+              <SelectItem value="conference">Conference</SelectItem>
+              <SelectItem value="exhibition">Exhibition</SelectItem>
             </SelectContent>
           </Select>
+          {errors.category && <p className="text-sm text-red-500 mt-1">{errors.category}</p>}
         </div>
 
         <div>
-          <Label htmlFor="sold" className="mb-2">Tickets Sold</Label>
+          <Label htmlFor="tags" className="mb-2">Tags (comma-separated) *</Label>
           <Input
-            id="sold"
-            type="number"
-            value={eventData.sold}
-            onChange={(e) => handleChange("sold", e.target.value)}
+            id="tags"
+            value={eventData.tags.join(', ')}
+            onChange={(e) => handleChange("tags", e.target.value.split(',').map(tag => tag.trim()))}
+            className={errors.tags ? "border-red-500" : ""}
+            placeholder="e.g., music, outdoor, entertainment"
           />
+          {errors.tags && <p className="text-sm text-red-500 mt-1">{errors.tags}</p>}
         </div>
 
         <div>
-          <Label htmlFor="gross" className="mb-2">Gross ($)</Label>
+          <Label htmlFor="image" className="mb-2">Image URL *</Label>
           <Input
-            id="gross"
-            type="text"
-            value={eventData.gross}
-            onChange={(e) => handleChange("gross", e.target.value)}
+            id="image"
+            value={eventData.image}
+            onChange={(e) => handleChange("image", e.target.value)}
+            className={errors.image ? "border-red-500" : ""}
+            placeholder="https://example.com/image.jpg"
           />
+          {errors.image && <p className="text-sm text-red-500 mt-1">{errors.image}</p>}
         </div>
 
-        <Button className="w-full mt-4 bg-[#034AA6]" onClick={handleSubmit}>
-          Create Event
+        <div>
+          <Label htmlFor="description" className="mb-2">Description *</Label>
+          <Textarea
+            id="description"
+            value={eventData.description}
+            onChange={(e) => handleChange("description", e.target.value)}
+            className={`${errors.description ? "border-red-500" : ""} h-32`}
+            placeholder="Enter event description"
+            rows={4}
+          />
+          {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description}</p>}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <Label className="mb-2">Start Date & Time *</Label>
+            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className={`w-full sm:w-auto justify-start text-left font-normal ${errors.fromDateTime ? "border-red-500" : ""}`}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(eventData.fromDateTime, "PPP")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={eventData.fromDateTime}
+                    onSelect={(date) => {
+                      if (date) {
+                        // preserve time
+                        const prev = eventData.fromDateTime
+                        const newDate = new Date(date)
+                        newDate.setHours(prev.getHours(), prev.getMinutes())
+                        handleChange("fromDateTime", newDate)
+                      }
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <Input
+                type="time"
+                value={format(eventData.fromDateTime, "HH:mm")}
+                onChange={e => {
+                  const [h, m] = e.target.value.split(":").map(Number)
+                  const newDate = new Date(eventData.fromDateTime)
+                  newDate.setHours(h, m)
+                  handleChange("fromDateTime", newDate)
+                }}
+                className="w-full sm:w-[160px] h-9 text-lg px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                aria-label="Start time"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label className="mb-2">End Date & Time *</Label>
+            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className={`w-full sm:w-auto justify-start text-left font-normal ${errors.toDateTime ? "border-red-500" : ""}`}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(eventData.toDateTime, "PPP")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={eventData.toDateTime}
+                    onSelect={(date) => {
+                      if (date) {
+                        // preserve time
+                        const prev = eventData.toDateTime
+                        const newDate = new Date(date)
+                        newDate.setHours(prev.getHours(), prev.getMinutes())
+                        handleChange("toDateTime", newDate)
+                      }
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <Input
+                type="time"
+                value={format(eventData.toDateTime, "HH:mm")}
+                onChange={e => {
+                  const [h, m] = e.target.value.split(":").map(Number)
+                  const newDate = new Date(eventData.toDateTime)
+                  newDate.setHours(h, m)
+                  handleChange("toDateTime", newDate)
+                }}
+                className="w-full sm:w-[160px] h-9 text-lg px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                aria-label="End time"
+              />
+            </div>
+            {errors.toDateTime && <p className="text-sm text-red-500 mt-1">{errors.toDateTime}</p>}
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="region" className="mb-2">Region *</Label>
+          <Input
+            id="region"
+            value={eventData.region}
+            onChange={(e) => handleChange("region", e.target.value)}
+            className={errors.region ? "border-red-500" : ""}
+            placeholder="e.g., Sydney, Melbourne"
+          />
+          {errors.region && <p className="text-sm text-red-500 mt-1">{errors.region}</p>}
+        </div>
+
+        <div>
+          <Label htmlFor="venue" className="mb-2">Venue *</Label>
+          <Input
+            id="venue"
+            value={eventData.venue}
+            onChange={(e) => handleChange("venue", e.target.value)}
+            className={errors.venue ? "border-red-500" : ""}
+            placeholder="Enter venue name"
+          />
+          {errors.venue && <p className="text-sm text-red-500 mt-1">{errors.venue}</p>}
+        </div>
+
+        <div className="space-y-4">
+          <Label className="mb-2">Pricing *</Label>
+          <div className="grid grid-cols-3 gap-4">
+            <Input
+              placeholder="Ticket Type"
+              value={currentPricing.type}
+              onChange={(e) => handlePricingChange("type", e.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder="Price"
+              value={currentPricing.price}
+              onChange={(e) => handlePricingChange("price", parseFloat(e.target.value))}
+              min="0"
+              step="0.01"
+            />
+            <Input
+              type="number"
+              placeholder="Available Tickets"
+              value={currentPricing.numTicketsAvailable}
+              onChange={(e) => handlePricingChange("numTicketsAvailable", parseInt(e.target.value))}
+              min="1"
+            />
+          </div>
+          <Button onClick={addPricing} className="w-full">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Pricing
+          </Button>
+
+          {eventData.pricing.map((pricing, index) => (
+            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="space-y-1">
+                <p className="font-medium">{pricing.type}</p>
+                <p className="text-sm text-gray-600">
+                  ${pricing.price.toFixed(2)} - {pricing.numTicketsAvailable} tickets available
+                </p>
+              </div>
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={() => removePricing(index)}
+                className="hover:bg-red-600"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+          {errors.pricing && <p className="text-sm text-red-500 mt-1">{errors.pricing}</p>}
+        </div>
+
+        <div>
+          <Label htmlFor="refundPolicy" className="mb-2">Refund Policy *</Label>
+          <Textarea
+            id="refundPolicy"
+            value={eventData.refundPolicy}
+            onChange={(e) => handleChange("refundPolicy", e.target.value)}
+            className={`${errors.refundPolicy ? "border-red-500" : ""} h-32`}
+            placeholder="Enter refund policy details"
+            rows={3}
+          />
+          {errors.refundPolicy && <p className="text-sm text-red-500 mt-1">{errors.refundPolicy}</p>}
+        </div>
+
+        <Button 
+          className="w-full mt-4 bg-[#034AA6] hover:bg-[#023a8a] transition-colors" 
+          onClick={handleSubmit}
+          disabled={isLoading || !organization}
+        >
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>Creating Event...</span>
+            </div>
+          ) : (
+            "Create Event"
+          )}
         </Button>
       </div>
     </div>
