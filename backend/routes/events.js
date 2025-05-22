@@ -55,7 +55,8 @@ router.post('/', async (req, res) => {
         eventStatus: 'Upcoming',
         eventCapacity: eventCapacity,
         ticketsSold: 0,
-        ticketsAvailable: eventCapacity
+        ticketsAvailable: eventCapacity,
+        eventOrgId: event.eventOrgId
       });
     } catch (error) {
       console.error('Error creating event data:', error);

@@ -56,6 +56,10 @@ const Event = sequelize.define('Event', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  eventOrgId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   orgDescription: {
     type: DataTypes.TEXT,
     allowNull: false,

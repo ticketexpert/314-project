@@ -8,7 +8,8 @@ const ticketRoutes = require('./routes/ticket');
 const userNotifcationRoutes = require('./routes/userNotifcation');
 const paymentsGatewayRoutes = require('./routes/paymentsGateway');
 const eventDataRoutes = require('./routes/eventData');
-require('./models/associations'); // Load model associations
+const organisationRoutes = require('./routes/Organistions');
+
 
 // Enable CORS for specific origins
 app.use(cors({
@@ -22,8 +23,10 @@ app.use('/api/events', eventRoutes);
 app.use('/api/users', userRoutes);
 app.use('/status', statusRoutes);
 app.use('/api/tickets', ticketRoutes);
+//Map to wrong spelling
 app.use('/api/userNotification', userNotifcationRoutes);
 app.use('/api/paymentsGateway', paymentsGatewayRoutes);
 app.use('/api/eventData', eventDataRoutes);
+app.use('/api/organisations', organisationRoutes);
 // Export the app so it can be used in test files
 module.exports = app;

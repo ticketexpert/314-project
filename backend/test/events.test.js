@@ -20,6 +20,67 @@ describe('Events API', () => {
     await sequelize.sync({ force: true }); // Reset DB before tests
   });
 
+  describe('POST /api/organisations', () => {
+    it('should create multiple different types of organisations', async () => {
+      const organisations = [
+        {
+          name: 'Sydney Tech Events',
+          description: 'Leading technology event organizer in Sydney',
+          contact: 'info@sydneytechevents.com'
+        },
+        {
+          name: 'Melbourne Music Events',
+          description: 'Leading organizer of music festivals in Australia',
+          contact: 'contact@melbournemusic.com'
+        },
+        {
+          name: 'Business Growth Australia',
+          description: 'Professional development and business networking organization',
+          contact: 'info@businessgrowth.com.au'
+        },
+        {
+          name: 'Perth Arts Council',
+          description: 'Promoting local artists and cultural events in Perth',
+          contact: 'exhibitions@pertharts.org'
+        },
+        {
+          name: 'South Australian Food & Wine Association',
+          description: 'Celebrating South Australia\'s finest food and wine producers',
+          contact: 'events@safoodwine.org'
+        },
+        {
+          name: 'Sydney Startup Network',
+          description: 'Connecting entrepreneurs with investors and mentors',
+          contact: 'pitch@sydneystartup.net'
+        },
+        {
+          name: 'Gold Coast Fitness Academy',
+          description: 'Professional fitness training and wellness programs',
+          contact: 'bootcamp@gcfitness.com'
+        },
+        {
+          name: 'Melbourne Photography Institute',
+          description: 'Professional photography education and training',
+          contact: 'masterclass@melbournephoto.edu'
+        },
+        {
+          name: 'Brisbane Comedy Collective',
+          description: 'Showcasing the best local and international comedy talent',
+          contact: 'shows@brisbanecomedy.com'
+        }
+      ];
+
+       // Create each organization and verify its creation
+       for (const org of organisations) {
+        const res = await chai.request(app).post('/api/organisations').send(org);
+        expect(res).to.have.status(201);
+        expect(res.body).to.have.property('name', org.name);
+        expect(res.body).to.have.property('description', org.description);
+        expect(res.body).to.have.property('contact', org.contact);
+      }
+    });
+  });
+
   describe('POST /api/events', () => {
     it('should create multiple different types of events', async () => {
       const events = [
@@ -41,7 +102,8 @@ describe('Events API', () => {
           refundPolicy: 'Full refund available up to 30 days before the event',
           organiser: 'Sydney Tech Events',
           orgDescription: 'Leading technology event organizer in Sydney',
-          orgContact: 'info@sydneytechevents.com'
+          orgContact: 'info@sydneytechevents.com',
+          eventOrgId: 1
         },
         {
           title: 'Summer Music Festival',
@@ -60,7 +122,8 @@ describe('Events API', () => {
           refundPolicy: 'No refunds available for festival tickets',
           organiser: 'Melbourne Music Events',
           orgDescription: 'Leading organizer of music festivals in Australia',
-          orgContact: 'contact@melbournemusic.com'
+          orgContact: 'contact@melbournemusic.com',
+          eventOrgId: 2
         },
         {
           title: 'Business Workshop',
@@ -79,7 +142,8 @@ describe('Events API', () => {
           refundPolicy: '50% refund available up to 7 days before the event',
           organiser: 'Business Growth Australia',
           orgDescription: 'Professional development and business networking organization',
-          orgContact: 'info@businessgrowth.com.au'
+          orgContact: 'info@businessgrowth.com.au',
+          eventOrgId: 3
         },
         {
           title: 'Art Exhibition',
@@ -99,7 +163,8 @@ describe('Events API', () => {
           refundPolicy: 'Full refund available up to 24 hours before the event',
           organiser: 'Perth Arts Council',
           orgDescription: 'Promoting local artists and cultural events in Perth',
-          orgContact: 'exhibitions@pertharts.org'
+          orgContact: 'exhibitions@pertharts.org',
+          eventOrgId: 4
         },
         {
           title: 'Food & Wine Festival',
@@ -119,7 +184,8 @@ describe('Events API', () => {
           refundPolicy: 'Full refund available up to 14 days before the event',
           organiser: 'South Australian Food & Wine Association',
           orgDescription: 'Celebrating South Australia\'s finest food and wine producers',
-          orgContact: 'events@safoodwine.org'
+          orgContact: 'events@safoodwine.org',
+          eventOrgId: 5
         },
         {
           title: 'Startup Pitch Night',
@@ -138,7 +204,8 @@ describe('Events API', () => {
           refundPolicy: 'No refunds available for pitch night tickets',
           organiser: 'Sydney Startup Network',
           orgDescription: 'Connecting entrepreneurs with investors and mentors',
-          orgContact: 'pitch@sydneystartup.net'
+          orgContact: 'pitch@sydneystartup.net',
+          eventOrgId: 6
         },
         {
           title: 'Fitness Bootcamp',
@@ -157,7 +224,8 @@ describe('Events API', () => {
           refundPolicy: 'Full refund available up to 48 hours before the event',
           organiser: 'Gold Coast Fitness Academy',
           orgDescription: 'Professional fitness training and wellness programs',
-          orgContact: 'bootcamp@gcfitness.com'
+          orgContact: 'bootcamp@gcfitness.com',
+          eventOrgId: 7
         },
         {
           title: 'Photography Masterclass',
@@ -177,7 +245,8 @@ describe('Events API', () => {
           refundPolicy: 'Full refund available up to 7 days before the event',
           organiser: 'Melbourne Photography Institute',
           orgDescription: 'Professional photography education and training',
-          orgContact: 'masterclass@melbournephoto.edu'
+          orgContact: 'masterclass@melbournephoto.edu',
+          eventOrgId: 8
         },
         {
           title: 'Comedy Night',
@@ -196,7 +265,8 @@ describe('Events API', () => {
           refundPolicy: 'Full refund available up to 24 hours before the show',
           organiser: 'Brisbane Comedy Collective',
           orgDescription: 'Showcasing the best local and international comedy talent',
-          orgContact: 'shows@brisbanecomedy.com'
+          orgContact: 'shows@brisbanecomedy.com',
+          eventOrgId: 9
         }
       ];
 
@@ -217,6 +287,7 @@ describe('Events API', () => {
         expect(res.body).to.have.property('organiser', event.organiser);
         expect(res.body).to.have.property('orgDescription', event.orgDescription);
         expect(res.body).to.have.property('orgContact', event.orgContact);
+        expect(res.body).to.have.property('eventOrgId', event.eventOrgId);
       }
     });
   });

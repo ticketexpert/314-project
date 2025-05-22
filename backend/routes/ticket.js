@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Ticket, Event, User } = require('../models');
 const EventDataModel = require('../models/eventData');
+const UserNotificationModel = require('../models/userNotifcations');
 const { Op, literal } = require('sequelize');
 const axios = require('axios');
 
@@ -23,6 +24,21 @@ router.post('/', async (req, res) => {
     }
 
     try {
+      await UserNotificationModel.update({
+        currentNotifs: {
+          title: "Ticket Booked!",
+          message: "Your ticket to " + eventName + " awaits!"
+        }
+      }, {
+        where: {
+          userId: req.body.userId
+        }
+      });
+    } catch (createError) {
+      console.error('Error creating user notification:', createError);
+    }
+
+    try {
       //Working the whole time, I was just pinging an old version of the backend, points at production backend
       await axios.patch(`https://www.api.ticketexpert.me/api/events/${eventId}/tickets/${type}`, {
         "quantity": 1
@@ -32,6 +48,8 @@ router.post('/', async (req, res) => {
       console.log('ERROR: Parmas are: ' + eventId + ' ' + type + ' ' + req.body.quantity);
       // TODO, if error stop creating?
     }
+
+    
 
     let ticketCost = 0;
     try {
@@ -57,6 +75,7 @@ router.post('/', async (req, res) => {
     }
 
     try {
+      console.log('------ Posting user notification for event:', eventName);
       await axios.put(`https://www.api.ticketexpert.me/api/userNotification/${req.body.userId}`, {
         "currentNotifs": {"title": "Ticket Booked!", "message": "Your ticket to " + eventName + " awaits!"}
       });

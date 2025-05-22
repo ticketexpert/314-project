@@ -7,6 +7,10 @@ const eventData = sequelize.define('eventData', {
     primaryKey: true,
     allowNull: false
   },
+  eventOrgId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
   eventStatus: {
     type: DataTypes.STRING,
     allowNull: false
