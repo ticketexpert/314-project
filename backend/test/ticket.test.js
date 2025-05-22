@@ -29,7 +29,7 @@ describe('Ticket API', () => {
       name: 'Test User',
       email: 'test@example.com',
       password: 'password123',
-      role: 'user'
+      role: 'Customer'
     });
 
     // Create test event
