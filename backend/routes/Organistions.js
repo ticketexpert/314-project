@@ -27,29 +27,20 @@ router.patch('/:eventOrgId', async (req, res) => {
     const organisation = await Organisation.findByPk(req.params.eventOrgId);
     if (!organisation) {
       return res.status(404).json({ message: 'Organisation not found' });
-    }
-
-    // If userId is provided in the request body, add it to the users array
-    if (req.body.userId) {
-      const user = await User.findByPk(req.body.userId);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+    } else {
+      if (req.body.users) {
+        if (!organisation.users) {
+          organisation.users = [];
+        }
+        const newUsers = Array.isArray(req.body.users) ? req.body.users : [req.body.users];
+        organisation.users = [...new Set([...organisation.users, ...newUsers])];
+        delete req.body.users;
       }
-
-      // Initialize users array if it doesn't exist
-      const currentUsers = organisation.users || [];
-      
-      // Add user ID if it's not already in the array
-      if (!currentUsers.includes(req.body.userId)) {
-        currentUsers.push(req.body.userId);
-        req.body.users = currentUsers;
-      }
+     
+      const updatedOrg = await organisation.update(req.body);
+      res.json(updatedOrg);
     }
-    
-    const updatedOrg = await organisation.update(req.body);
-    res.json(updatedOrg);
   } catch (error) {
-    console.error('Error updating organisation:', error);
     res.status(500).json({ message: error.message });
   }
 });
