@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
+import Cookies from 'js-cookie'
 
 export function LoginForm() {
   const router = useRouter()
-  const { setUserId, setOrganizationId } = useAuth()
+  const { setUserId, setOrganizationId, setUser } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [formData, setFormData] = useState({
@@ -39,21 +40,35 @@ export function LoginForm() {
         throw new Error(data.message || "Login failed")
       }
 
+      // Check if user is an organiser
+      if (data.role !== "Organiser") {
+        throw new Error("Access denied. Only organisers can access this portal.")
+      }
+
       // Set auth state using context
       setUserId(data.userId.toString())
       if (data.organizationId) {
         setOrganizationId(data.organizationId.toString())
       }
 
-      // Store role in localStorage (since it's not part of our auth context)
-      localStorage.setItem("userRole", data.role)
+      // Set user data in context
+      setUser({
+        id: data.userId.toString(),
+        token: data.token,
+        email: data.email,
+        name: data.name
+      })
 
-      // Redirect based on role
-      if (data.role === "Organiser") {
-        router.push("/dashboard")
-      } else {
-        router.push("/")
+      // Store auth data in cookies
+      Cookies.set('userId', data.userId.toString(), { expires: 7 }) // 7 days expiry
+      Cookies.set('userRole', data.role, { expires: 7 })
+      Cookies.set('token', data.token, { expires: 7 })
+      if (data.organizationId) {
+        Cookies.set('organizationId', data.organizationId.toString(), { expires: 7 })
       }
+
+      // Redirect to dashboard
+      router.push("/dashboard")
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred during login")
     } finally {

@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import TELogo from "@/components/logo"
-import { useAuth } from "@/app/hooks/useAuth"
+import { useAuth } from "@/contexts/auth-context"
+import Cookies from 'js-cookie'
 
 interface Organization {
   eventOrgId: number
@@ -27,7 +28,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3): P
       return response
     } catch (error) {
       if (i === retries - 1) throw error
-      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))) // Exponential backoff
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
     }
   }
   throw new Error("Failed after retries")
@@ -35,17 +36,16 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3): P
 
 export default function OrganiserDetailsPage() {
   const router = useRouter()
-  const { isAuthenticated } = useAuth()
+  const { setUserId, setOrganizationId, setUser } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [eventOrgId, setEventOrgId] = useState("")
   const [organization, setOrganization] = useState<Organization | null>(null)
   const [isSearching, setIsSearching] = useState(false)
 
-  // Check for userId on component mount
   useEffect(() => {
-    const userId = localStorage.getItem('userId')
-    const userRole = localStorage.getItem('userRole')
+    const userId = Cookies.get('userId')
+    const userRole = Cookies.get('userRole')
     
     if (!userId || userRole !== 'Organiser') {
       router.push('/signup')
@@ -62,7 +62,6 @@ export default function OrganiserDetailsPage() {
     setError("")
 
     try {
-      console.log('Searching for organization:', eventOrgId)
       const res = await fetchWithRetry(
         `https://api.ticketexpert.me/api/organisations/${eventOrgId}`,
         {
@@ -73,34 +72,16 @@ export default function OrganiserDetailsPage() {
         }
       )
 
-      console.log('Search response status:', res.status)
-      console.log('Search response headers:', Object.fromEntries(res.headers.entries()))
-
-      // Check if response is JSON
-      const contentType = res.headers.get("content-type")
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await res.text()
-        console.error('Non-JSON response:', text)
-        throw new Error("Server returned non-JSON response")
-      }
-
       if (!res.ok) {
         const errorData = await res.json()
-        console.error('Search error response:', errorData)
         throw new Error(errorData.message || `HTTP error! status: ${res.status}`)
       }
 
       const data = await res.json()
-      console.log('Organization data:', data)
       setOrganization(data)
     } catch (err) {
-      console.error('Search error:', err)
       if (err instanceof Error) {
-        if (err.message.includes("non-JSON response")) {
-          setError("Server error. Please try again later.")
-        } else {
-          setError(err.message)
-        }
+        setError(err.message)
       } else {
         setError("Failed to fetch organization details")
       }
@@ -118,22 +99,50 @@ export default function OrganiserDetailsPage() {
     setError("")
 
     try {
-      const userId = localStorage.getItem('userId')
-      const userRole = localStorage.getItem('userRole')
+      const userId = Cookies.get('userId')
+      const userRole = Cookies.get('userRole')
+      const token = Cookies.get('token')
       
-      if (!userId || userRole !== 'Organiser') {
+      if (!userId || userRole !== 'Organiser' || !token) {
         throw new Error("User data not found. Please try signing up again.")
       }
 
-      console.log('Updating organization:', organization.eventOrgId)
-      // Update organization with user using PATCH as per backend route
+      console.log('Sending request with:', {
+        organizationId: organization.eventOrgId,
+        userId,
+        currentUsers: organization.users
+      })
+
+      // First, update the user's eventOrgId
+      const updateUserRes = await fetchWithRetry(
+        `https://api.ticketexpert.me/api/users/${userId}`,
+        {
+          method: "PATCH",
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            eventOrgId: organization.eventOrgId
+          }),
+        }
+      )
+
+      if (!updateUserRes.ok) {
+        const userError = await updateUserRes.json()
+        throw new Error(userError.message || 'Failed to update user')
+      }
+
+      // Then, update the organization's users array
       const updateOrgRes = await fetchWithRetry(
         `https://api.ticketexpert.me/api/organisations/${organization.eventOrgId}`,
         {
           method: "PATCH",
           headers: { 
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({
             users: [...(organization.users || []), userId]
@@ -141,36 +150,25 @@ export default function OrganiserDetailsPage() {
         }
       )
 
-      console.log('Organization update response status:', updateOrgRes.status)
-      console.log('Organization update response headers:', Object.fromEntries(updateOrgRes.headers.entries()))
-
-      // Check if response is JSON
-      const orgContentType = updateOrgRes.headers.get("content-type")
-      if (!orgContentType || !orgContentType.includes("application/json")) {
-        const text = await updateOrgRes.text()
-        console.error('Non-JSON response for organization update:', text)
-        throw new Error("Server returned non-JSON response when updating organization")
-      }
+      const responseData = await updateOrgRes.json()
+      console.log('API Response:', responseData)
 
       if (!updateOrgRes.ok) {
-        const errorData = await updateOrgRes.json()
-        console.error('Organization update error response:', errorData)
-        throw new Error(errorData.message || `Failed to update organization: ${updateOrgRes.status}`)
+        throw new Error(responseData.message || `Failed to update organization: ${updateOrgRes.status}`)
       }
 
-      // Save organization ID to localStorage
-      localStorage.setItem('organizationId', organization.eventOrgId.toString())
+      // Update auth context
+      setOrganizationId(organization.eventOrgId.toString())
       
-      // Redirect to dashboard after successful creation
+      // Save organization ID to cookies
+      Cookies.set('organizationId', organization.eventOrgId.toString(), { expires: 7 })
+      
+      // Redirect to dashboard
       router.push('/home')
     } catch (err) {
-      console.error('Submit error:', err)
+      console.error('Error updating organization:', err)
       if (err instanceof Error) {
-        if (err.message.includes("non-JSON response")) {
-          setError("Server error. Please try again later.")
-        } else {
-          setError(err.message)
-        }
+        setError(err.message)
       } else {
         setError("Network error. Please try again.")
       }

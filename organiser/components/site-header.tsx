@@ -2,6 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEffect, useState } from "react"
+import { useAuth } from "@/contexts/auth-context"
 
 interface User {
   userId: string;
@@ -14,6 +15,7 @@ export function SiteHeader({ tabValue, setTabValue }: {
   tabValue: string
   setTabValue: (value: string) => void
 }) {
+  const { userId } = useAuth()
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +23,6 @@ export function SiteHeader({ tabValue, setTabValue }: {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userId = localStorage.getItem('userId');
         if (!userId) {
           setError('No user ID found');
           setLoading(false);
@@ -44,7 +45,7 @@ export function SiteHeader({ tabValue, setTabValue }: {
     };
 
     fetchUser();
-  }, []);
+  }, [userId]);
 
   return (
     <header className="flex flex-col h-[--header-height] shrink-0 border-b px-4 lf:px-6 py-2">

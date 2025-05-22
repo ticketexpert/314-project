@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { format } from "date-fns"
+import { useAuth } from "@/contexts/auth-context"
 
 interface Pricing {
   type: string
@@ -43,6 +44,7 @@ interface Event {
 
 export function DataTable() {
   const router = useRouter()
+  const { organizationId } = useAuth()
   const [events, setEvents] = useState<Event[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
@@ -50,8 +52,6 @@ export function DataTable() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        // Get organization ID from localStorage
-        const organizationId = localStorage.getItem('organizationId')
         if (!organizationId) {
           throw new Error("Organization ID not found")
         }
@@ -64,7 +64,7 @@ export function DataTable() {
         const allEvents: Event[] = await eventsResponse.json()
 
         // Filter events for this organization
-        const orgEvents = allEvents.filter(event => event.eventOrgId === parseInt(organizationId))
+        const orgEvents = allEvents.filter(event => event.eventOrgId === Number(organizationId))
         setEvents(orgEvents)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load events")
@@ -74,7 +74,7 @@ export function DataTable() {
     }
 
     fetchEvents()
-  }, [])
+  }, [organizationId])
 
   const handleEventClick = (eventId: number) => {
     router.push(`/events/${eventId}`)

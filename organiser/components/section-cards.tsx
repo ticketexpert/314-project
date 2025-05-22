@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { useAuth } from "@/contexts/auth-context"
 
 interface Event {
   eventId: number;
@@ -46,6 +47,7 @@ interface Ticket {
 }
 
 export function SectionCards() {
+  const { organizationId } = useAuth()
   const [stats, setStats] = useState({
     totalRevenue: 0,
     totalEvents: 0,
@@ -60,7 +62,6 @@ export function SectionCards() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const organizationId = localStorage.getItem('organizationId');
         if (!organizationId) {
           throw new Error("Organization ID not found");
         }
@@ -75,7 +76,7 @@ export function SectionCards() {
         const ticketsData: Ticket[] = await ticketsResponse.json();
 
         // Filter events for this organization
-        const orgEvents = eventsData.filter(event => event.eventOrgId === parseInt(organizationId));
+        const orgEvents = eventsData.filter(event => event.eventOrgId === Number(organizationId));
         
         // Create a map of event prices by type
         const eventPrices = new Map<number, Map<string, number>>();
@@ -176,7 +177,7 @@ export function SectionCards() {
     };
 
     fetchData();
-  }, []);
+  }, [organizationId]);
 
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">

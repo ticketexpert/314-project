@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from "@/contexts/auth-context"
 
 interface Organization {
   orgId: number
@@ -27,13 +28,13 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
   const { toast } = useToast()
+  const { organizationId } = useAuth()
 
   useEffect(() => {
     const fetchOrganization = async () => {
       try {
-        const organizationId = localStorage.getItem('organizationId')
         if (!organizationId) {
-          throw new Error("Organization ID not found in localStorage")
+          throw new Error("Organization ID not found")
         }
 
         console.log("Fetching organization with ID:", organizationId)
@@ -82,7 +83,7 @@ export default function Page() {
     if (tabValue === "organisation-profile") {
       fetchOrganization()
     }
-  }, [tabValue, toast])
+  }, [tabValue, toast, organizationId])
 
   const handleSave = async () => {
     if (!organization) return

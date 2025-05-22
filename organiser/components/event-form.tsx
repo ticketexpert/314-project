@@ -11,8 +11,9 @@ import { format, isAfter, isBefore } from "date-fns"
 import { CalendarIcon, AlertCircle, Plus, Trash2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Textarea } from "@/components/ui/textarea"
-import { toast } from "sonner"
+import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
 
 interface Pricing {
   type: string
@@ -71,6 +72,8 @@ interface EventFormProps {
 }
 
 export function EventForm({ event, mode, onSuccess }: EventFormProps) {
+  const router = useRouter()
+  const { toast } = useToast()
   const { organizationId } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -193,15 +196,27 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
 
   const addPricing = () => {
     if (!currentPricing.type.trim()) {
-      toast.error("Please enter a ticket type")
+      toast({
+        title: "Error",
+        description: "Please enter a ticket type",
+        variant: "destructive",
+      })
       return
     }
     if (currentPricing.price <= 0) {
-      toast.error("Price must be greater than 0")
+      toast({
+        title: "Error",
+        description: "Price must be greater than 0",
+        variant: "destructive",
+      })
       return
     }
     if (currentPricing.numTicketsAvailable <= 0) {
-      toast.error("Number of tickets must be greater than 0")
+      toast({
+        title: "Error",
+        description: "Number of tickets must be greater than 0",
+        variant: "destructive",
+      })
       return
     }
 
@@ -214,7 +229,10 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
       price: 0,
       numTicketsAvailable: 0
     })
-    toast.success("Pricing tier added")
+    toast({
+      title: "Success",
+      description: "Pricing tier added",
+    })
   }
 
   const removePricing = (index: number) => {
@@ -222,93 +240,55 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
       ...prev,
       pricing: prev.pricing.filter((_, i) => i !== index)
     }))
-    toast.success("Pricing tier removed")
+    toast({
+      title: "Success",
+      description: "Pricing tier removed",
+    })
   }
 
-  const handleSubmit = async () => {
-    if (!validateForm()) {
-      toast.error("Please fill in all required fields")
-      return
-    }
-
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     setIsLoading(true)
-    setError("")
 
     try {
-      const userRole = localStorage.getItem('userRole')
-
-      if (!organizationId || userRole !== 'Organiser') {
-        throw new Error("Organization details not found. Please link your organization first.")
+      if (!organizationId) {
+        throw new Error("Organization ID not found")
       }
 
-      const eventPayload = {
-        ...eventData,
-        eventOrgId: parseInt(organizationId),
-        fromDateTime: eventData.fromDateTime.toISOString(),
-        toDateTime: eventData.toDateTime.toISOString(),
-        orgFollow: [],
-        eventShareLinks: []
-      }
-
-      let response;
-      if (mode === 'edit' && event?.eventId) {
-        // Update existing event
-        response = await fetch(`https://api.ticketexpert.me/api/events/${event.eventId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(eventPayload)
-        })
-      } else {
-        // Create new event
-        response = await fetch('https://api.ticketexpert.me/api/events', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(eventPayload)
-        })
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || `Failed to ${mode === 'edit' ? 'update' : 'create'} event`)
-      }
-
-      toast.success(mode === 'edit' ? "Event updated successfully!" : "Event created successfully!")
-      
-      // Reset form
-      setEventData({
-        title: "",
-        category: "",
-        tags: [],
-        image: "",
-        description: "",
-        fromDateTime: new Date(),
-        toDateTime: new Date(new Date().setHours(new Date().getHours() + 1)),
-        region: "",
-        venue: "",
-        pricing: [],
-        refundPolicy: "",
-        organiser: "",
-        eventOrgId: 0,
-        orgDescription: "",
-        orgContact: "",
-        orgEmail: ""
+      const response = await fetch("https://api.ticketexpert.me/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...eventData,
+          organizationId: organizationId,
+        }),
       })
 
-      onSuccess()
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message)
-        toast.error(err.message)
-      } else {
-        setError("An unexpected error occurred")
-        toast.error("An unexpected error occurred")
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        throw new Error(
+          errorData?.message || 
+          `Failed to create event: ${response.status} ${response.statusText}`
+        )
       }
+
+      const data = await response.json()
+      toast({
+        title: "Success",
+        description: "Event created successfully",
+      })
+      onSuccess()
+      router.push(`/events/${data.eventId}`)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to create event"
+      console.error("Error creating event:", errorMessage)
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -415,19 +395,19 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
           <div>
             <Label className="mb-2">Start Date & Time *</Label>
             <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-              <Popover>
-                <PopoverTrigger asChild>
+          <Popover>
+            <PopoverTrigger asChild>
                   <Button 
                     variant="outline" 
                     className={`w-full sm:w-auto justify-start text-left font-normal ${errors.fromDateTime ? "border-red-500" : ""}`}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                <CalendarIcon className="mr-2 h-4 w-4" />
                     {format(eventData.fromDateTime, "PPP")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
                     selected={eventData.fromDateTime}
                     onSelect={(date) => {
                       if (date) {
@@ -438,10 +418,10 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
                         handleChange("fromDateTime", newDate)
                       }
                     }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
               <Input
                 type="time"
                 value={format(eventData.fromDateTime, "HH:mm")}
@@ -544,8 +524,8 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
               min="0"
               step="0.01"
             />
-            <Input
-              type="number"
+          <Input
+            type="number"
               placeholder="Available Tickets"
               value={currentPricing.numTicketsAvailable}
               onChange={(e) => handlePricingChange("numTicketsAvailable", parseInt(e.target.value))}

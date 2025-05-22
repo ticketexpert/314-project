@@ -10,6 +10,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import TELogo from "@/components/logo"
 import { Progress } from "@/components/ui/progress"
 import { CheckCircle } from "lucide-react"
+import Cookies from 'js-cookie'
+import { useAuth } from "@/contexts/auth-context"
 
 function getPasswordStrength(password: string) {
   let score = 0;
@@ -35,6 +37,7 @@ function getStrengthLabel(score: number) {
 
 export default function SignupPage() {
   const router = useRouter()
+  const { setUserId, setUser } = useAuth()
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -44,6 +47,7 @@ export default function SignupPage() {
   })
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -53,23 +57,34 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+    setError("")
+    setSuccess("")
+
     // Validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
       setError("Please fill in all fields.")
+      setIsLoading(false)
       return
     }
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.")
+      setIsLoading(false)
       return
     }
     if (getPasswordStrength(formData.password) < 3) {
       setError("Password is too weak. Please use a stronger password.")
+      setIsLoading(false)
       return
     }
+
     try {
       const res = await fetch("https://www.api.ticketexpert.me/api/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -79,23 +94,45 @@ export default function SignupPage() {
           role: "Organiser",
         }),
       })
+
       const data = await res.json()
+      
       if (!res.ok) {
         if (res.status === 401 && data.error === "User already exists") {
           setError("User already exists. Please use a different email.")
+        } else if (res.status === 400) {
+          setError(data.error || "Invalid input. Please check your details.")
+        } else if (res.status === 500) {
+          setError("Server error. Please try again later.")
         } else {
-          setError(data.error || "Signup failed.")
+          setError(data.error || "Signup failed. Please try again.")
         }
+        setIsLoading(false)
         return
       }
+
+      // Set auth state using context
+      setUserId(data.userId.toString())
+      setUser({
+        id: data.userId.toString(),
+        token: data.token,
+        email: data.email,
+        name: data.name
+      })
+
+      // Store auth data in cookies
+      Cookies.set('userId', data.userId.toString(), { expires: 7 })
+      Cookies.set('userRole', 'Organiser', { expires: 7 })
+      Cookies.set('token', data.token, { expires: 7 })
+
       setSuccess("Account created successfully!")
-      localStorage.setItem('isLoggedIn', 'true')
-      localStorage.setItem('userId', data.userId)
-      console.log('User ID: in signup page', data.userId || data.id)
-      localStorage.setItem('userRole', 'Organiser')
-      setTimeout(() => router.push("/signup/organiser-details"), 1000)
+      
+      // Redirect to organiser details page
+      router.push("/signup/organiser-details")
     } catch (err) {
-      setError("Network error. Please try again.")
+      console.error('Signup error:', err)
+      setError("Unable to connect to the server. Please check your internet connection and try again.")
+      setIsLoading(false)
     }
   }
 
@@ -119,7 +156,7 @@ export default function SignupPage() {
           </h2>
 
           <form onSubmit={handleSubmit} className="w-full max-w-[400px]">
-            <div className="space-y-4">
+          <div className="space-y-4">
               <div className="flex gap-2">
                 <Input
                   type="text"
@@ -128,6 +165,7 @@ export default function SignupPage() {
                   value={formData.firstName}
                   onChange={handleChange}
                   className="h-14"
+                  disabled={isLoading}
                 />
                 <Input
                   type="text"
@@ -136,6 +174,7 @@ export default function SignupPage() {
                   value={formData.lastName}
                   onChange={handleChange}
                   className="h-14"
+                  disabled={isLoading}
                 />
               </div>
 
@@ -146,6 +185,7 @@ export default function SignupPage() {
                 value={formData.email}
                 onChange={handleChange}
                 className="h-14"
+                disabled={isLoading}
               />
 
               <Input
@@ -155,6 +195,7 @@ export default function SignupPage() {
                 value={formData.password}
                 onChange={handleChange}
                 className="h-14"
+                disabled={isLoading}
               />
 
               {formData.password && (
@@ -176,6 +217,7 @@ export default function SignupPage() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 className="h-14"
+                disabled={isLoading}
               />
 
               {/* Password Requirements */}
@@ -195,8 +237,8 @@ export default function SignupPage() {
                 <div className="flex items-center gap-2">
                   <CheckCircle className={`w-4 h-4 ${/[^A-Za-z0-9]/.test(formData.password) ? 'text-green-500' : 'text-gray-300'}`} />
                   <span>At least one special character</span>
-                </div>
               </div>
+            </div>
 
               {error && (
                 <Alert variant="destructive">
@@ -213,8 +255,16 @@ export default function SignupPage() {
               <Button
                 type="submit"
                 className="w-full h-[50px] bg-[#1e40af] hover:bg-[#1e3a8a] text-white rounded-full font-bold text-lg tracking-wide shadow-[0_2px_8px_rgba(30,64,175,0.10)]"
+                disabled={isLoading}
               >
-                Sign Up
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Creating Account...</span>
+            </div>
+                ) : (
+                  "Sign Up"
+                )}
               </Button>
             </div>
 
@@ -224,8 +274,8 @@ export default function SignupPage() {
               Already have a TicketExpert account?{" "}
               <Link href="/login" className="text-[#1e40af] font-bold hover:underline">
                 Log in
-              </Link>
-            </p>
+            </Link>
+          </p>
           </form>
         </div>
       </div>

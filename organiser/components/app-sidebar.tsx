@@ -34,6 +34,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/contexts/auth-context"
 
 interface User {
   userId: number
@@ -135,14 +136,13 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [userData, setUserData] = useState(defaultUser)
   const [isLoading, setIsLoading] = useState(true)
+  const { userId } = useAuth()
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userId = localStorage.getItem('userId')
-        console.log(userId)
         if (!userId) {
-          console.error('No user ID found in localStorage')
+          console.error('No user ID found in auth context')
           return
         }
 
@@ -165,7 +165,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
 
     fetchUserData()
-  }, [])
+  }, [userId])
 
   return (
     <Sidebar className="" collapsible="offcanvas" {...props}>

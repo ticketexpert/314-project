@@ -13,9 +13,6 @@ export function LogoutButton() {
     // Clear auth state using context
     logout()
     
-    // Clear role from localStorage
-    localStorage.removeItem("userRole")
-    
     // Redirect to login page
     router.push("/login")
   }
