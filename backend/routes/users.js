@@ -171,5 +171,17 @@ router.get('/events', async (req, res) => {
   }
 });
 
+//GET /api/users/:eventOrgId
+router.get('/:eventOrgId', async (req, res) => {
+  try {
+    const { eventOrgId } = req.params;
+    const users = await User.findAll({ where: { eventOrgId } });
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 module.exports = router; 

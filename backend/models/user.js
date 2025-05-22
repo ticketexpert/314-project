@@ -41,7 +41,7 @@ const User = sequelize.define('User', {
     allowNull: true,
     defaultValue: []
   },
-  organisationId: {
+  eventOrgId: {
     type: DataTypes.INTEGER,
     allowNull: true,
     defaultValue: null
