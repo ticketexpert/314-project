@@ -136,13 +136,18 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [userData, setUserData] = useState(defaultUser)
   const [isLoading, setIsLoading] = useState(true)
-  const { userId } = useAuth()
+  const { userId, user, isInitialized } = useAuth()
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        if (!isInitialized) {
+          return // Wait for auth to initialize
+        }
+
         if (!userId) {
           console.error('No user ID found in auth context')
+          setUserData(defaultUser)
           return
         }
 
@@ -153,19 +158,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         const user: User = await response.json()
         setUserData({
-          name: user.name,
-          email: user.email,
-          avatar: "/avatars/shadcn.jpg", // You might want to add avatar to your user model
+          name: user.name || defaultUser.name,
+          email: user.email || defaultUser.email,
+          avatar: "/avatars/shadcn.jpg", 
         })
       } catch (error) {
         console.error('Error fetching user data:', error)
+        setUserData(defaultUser)
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchUserData()
-  }, [userId])
+  }, [userId, isInitialized])
 
   return (
     <Sidebar className="" collapsible="offcanvas" {...props}>
@@ -176,9 +182,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5 hover:bg-white/10 transition-colors rounded-md"
             >
-              <a href="#">
-                <NavUser />
-              </a>
+              <div className="w-full">
+                <NavUser userData={userData} isLoading={isLoading} />
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

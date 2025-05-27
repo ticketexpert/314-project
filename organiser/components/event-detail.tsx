@@ -27,6 +27,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { useAuth } from "@/contexts/auth-context"
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { useToast } from "@/components/ui/use-toast"
 
 interface Ticket {
   ticketId: string;
@@ -84,6 +85,7 @@ interface EventDetailProps {
 export function EventDetail({ onEditEvent }: EventDetailProps) {
   const params = useParams()
   const { user, organization: authOrganization } = useAuth()
+  const { toast } = useToast()
   const [event, setEvent] = useState<Event | null>(null)
   const [organization, setOrganization] = useState<Organization | null>(null)
   const [tickets, setTickets] = useState<Ticket[]>([])
@@ -99,16 +101,33 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
   const [statusMenu, setStatusMenu] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchEvent = async () => {
+    const fetchEventAndOrganization = async () => {
       try {
-        const response = await fetch(`https://api.ticketexpert.me/api/events/${params.eventId}`)
-        if (!response.ok) {
+        // Fetch event details
+        const eventResponse = await fetch(`https://api.ticketexpert.me/api/events/${params.eventId}`)
+        if (!eventResponse.ok) {
           throw new Error("Failed to fetch event")
         }
-        const data = await response.json()
-        setEvent(data)
+        const eventData = await eventResponse.json()
+        setEvent(eventData)
+
+        // Fetch organization details using eventOrgId
+        if (eventData.eventOrgId) {
+          const orgResponse = await fetch(`https://api.ticketexpert.me/api/organisations/${eventData.eventOrgId}`)
+          if (!orgResponse.ok) {
+            throw new Error("Failed to fetch organization")
+          }
+          const orgData = await orgResponse.json()
+          setOrganization(orgData)
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch event")
+        console.error("Error fetching data:", err)
+        setError(err instanceof Error ? err.message : "Failed to load data")
+        toast({
+          title: "Error",
+          description: "Failed to load event details",
+          variant: "destructive",
+        })
       } finally {
         setIsLoading(false)
       }
@@ -133,9 +152,9 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
       }
     }
 
-    fetchEvent()
+    fetchEventAndOrganization()
     fetchTickets()
-  }, [params.eventId, user?.token])
+  }, [params.eventId, user?.token, toast])
 
   const handleDeleteTicket = async (ticketId: string) => {
     if (!ticketId) return
@@ -210,16 +229,15 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
   }
 
   const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString)
-      if (isNaN(date.getTime())) {
-        return 'Invalid Date'
-      }
-      return format(date, 'MMM d, yyyy h:mm a')
-    } catch (error) {
-      console.error('Error formatting date:', error)
-      return 'Invalid Date'
-    }
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-AU', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    })
   }
 
   const handleViewTicket = (ticket: Ticket) => {
@@ -484,53 +502,92 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
     window.URL.revokeObjectURL(url)
   }
 
-  const handleShareEvent = async () => {
-    const eventUrl = `https://ticketexpert.me/event/${event?.eventId}`
-    
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: event?.title || 'Event',
-          text: `Check out this event: ${event?.title}`,
-          url: eventUrl
-        })
-      } else {
-        // Fallback for browsers that don't support Web Share API
-        await navigator.clipboard.writeText(eventUrl)
-        alert('Event URL copied to clipboard!')
-      }
-    } catch (error) {
-      console.error('Error sharing event:', error)
+  const handleShareEvent = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: event?.title,
+        text: event?.description,
+        url: window.location.href,
+      })
+    } else {
+      navigator.clipboard.writeText(window.location.href)
+      toast({
+        title: "Link Copied",
+        description: "Event link has been copied to clipboard",
+      })
     }
   }
 
   const handleChangeStatus = async (ticketId: string, newStatus: string) => {
     setActionLoading(ticketId)
     try {
+      // Map UI status to API status
+      const statusMap: { [key: string]: string } = {
+        'VALID': 'active',
+        'USED': 'scanned',
+        'CANCELLED': 'cancelled',
+        'REFUNDED': 'refunded',
+        'REFUND_REQUEST': 'refund_request'
+      }
+
+      const apiStatus = statusMap[newStatus] || newStatus.toLowerCase()
+
+      // Get the ticket to find its userId
+      const ticket = tickets.find(t => t.ticketId === ticketId)
+      if (!ticket) {
+        throw new Error('Ticket not found')
+      }
+
       const response = await fetch(`https://api.ticketexpert.me/api/tickets/${ticketId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           "Authorization": `Bearer ${user?.token}`
         },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ 
+          userId: ticket.userId, // Use the ticket's userId instead of the current user's
+          status: apiStatus 
+        })
       })
 
       if (!response.ok) {
-        throw new Error('Failed to update ticket status')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to update ticket status')
       }
 
-      setTickets(tickets.map(ticket => 
-        ticket.ticketId === ticketId 
-          ? { ...ticket, ticketStatus: newStatus }
-          : ticket
+      // Update local state
+      setTickets(tickets.map(t => 
+        t.ticketId === ticketId 
+          ? { ...t, ticketStatus: apiStatus }
+          : t
       ))
       setStatusMenu(null)
+      
+      toast({
+        title: "Success",
+        description: "Ticket status updated successfully",
+      })
     } catch (error) {
       console.error('Error updating ticket status:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update ticket status",
+        variant: "destructive",
+      })
     } finally {
       setActionLoading(null)
     }
+  }
+
+  // Update the status menu options
+  const getStatusOptions = (currentStatus: string) => {
+    const options = [
+      { value: 'VALID', label: 'Mark as Active', disabled: currentStatus === 'active' },
+      { value: 'USED', label: 'Mark as Scanned', disabled: currentStatus === 'scanned' },
+      { value: 'CANCELLED', label: 'Mark as Cancelled', disabled: currentStatus === 'cancelled' },
+      { value: 'REFUNDED', label: 'Mark as Refunded', disabled: currentStatus === 'refunded' }
+    ]
+    return options.filter(option => !option.disabled)
   }
 
   const handleGenerateReport = () => {
@@ -611,17 +668,16 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#004AAD]" />
+      <div className="flex items-center justify-center p-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     )
   }
 
   if (error || !event) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-        <h2 className="text-2xl font-bold text-red-600 mb-2">Event Not Found</h2>
-        <p className="text-gray-600">{error || 'The event you are looking for does not exist.'}</p>
+      <div className="p-4 text-center">
+        <p className="text-red-500">{error || "Event not found"}</p>
       </div>
     )
   }
@@ -903,33 +959,23 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
                         {/* Status menu dropdown */}
                         {statusMenu === ticket.ticketId && (
                           <div className="absolute z-50 bg-white border rounded shadow p-2 mt-2">
-                            <button 
-                              className="block w-full text-left px-2 py-1 hover:bg-gray-100" 
-                              onClick={() => handleChangeStatus(ticket.ticketId, 'active')}
-                              disabled={ticket.ticketStatus === 'active'}
-                            >
-                              Set Active
-                            </button>
-                            <button 
-                              className="block w-full text-left px-2 py-1 hover:bg-gray-100" 
-                              onClick={() => handleChangeStatus(ticket.ticketId, 'scanned')}
-                              disabled={ticket.ticketStatus === 'scanned'}
-                            >
-                              Mark as Scanned
-                            </button>
-                            <button 
-                              className="block w-full text-left px-2 py-1 hover:bg-gray-100" 
-                              onClick={() => handleChangeStatus(ticket.ticketId, 'refunded')}
-                              disabled={ticket.ticketStatus === 'refunded'}
-                            >
-                              Mark as Refunded
-                            </button>
-                            <button 
-                              className="block w-full text-left px-2 py-1 hover:bg-gray-100" 
-                              onClick={() => setStatusMenu(null)}
-                            >
-                              Close
-                            </button>
+                            {getStatusOptions(ticket.ticketStatus).map(option => (
+                              <button
+                                key={option.value}
+                                className="block w-full text-left px-2 py-1 hover:bg-gray-100"
+                                onClick={() => handleChangeStatus(ticket.ticketId, option.value)}
+                                disabled={actionLoading === ticket.ticketId}
+                              >
+                                {actionLoading === ticket.ticketId ? (
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                                    Updating...
+                                  </div>
+                                ) : (
+                                  option.label
+                                )}
+                              </button>
+                            ))}
                           </div>
                         )}
                       </TableCell>
@@ -1051,24 +1097,23 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
       {statusMenu && (
         <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
           <div className="py-1" role="menu" aria-orientation="vertical">
-            <button
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              onClick={() => handleChangeStatus(statusMenu, 'VALID')}
-            >
-              Mark as Valid
-            </button>
-            <button
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              onClick={() => handleChangeStatus(statusMenu, 'USED')}
-            >
-              Mark as Used
-            </button>
-            <button
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              onClick={() => handleChangeStatus(statusMenu, 'CANCELLED')}
-            >
-              Mark as Cancelled
-            </button>
+            {getStatusOptions(tickets.find(t => t.ticketId === statusMenu)?.ticketStatus || '').map(option => (
+              <button
+                key={option.value}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={() => handleChangeStatus(statusMenu, option.value)}
+                disabled={actionLoading === statusMenu}
+              >
+                {actionLoading === statusMenu ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Updating...
+                  </div>
+                ) : (
+                  option.label
+                )}
+              </button>
+            ))}
           </div>
         </div>
       )}

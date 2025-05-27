@@ -71,6 +71,29 @@ interface EventFormProps {
   onSuccess: () => void;
 }
 
+// Add these helper functions before the EventForm component
+const isValidImageUrl = (url: string): boolean => {
+  try {
+    new URL(url);
+    return url.match(/\.(jpeg|jpg|gif|png)$/) != null;
+  } catch {
+    return false;
+  }
+}
+
+const isValidEmail = (email: string): boolean => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+const isValidPhoneNumber = (phone: string): boolean => {
+  return /^\+?[\d\s-]{8,}$/.test(phone);
+}
+
+const hasDuplicatePricingTypes = (pricing: Pricing[]): boolean => {
+  const types = pricing.map(p => p.type.toLowerCase());
+  return new Set(types).size !== types.length;
+}
+
 export function EventForm({ event, mode, onSuccess }: EventFormProps) {
   const router = useRouter()
   const { toast } = useToast()
@@ -138,44 +161,81 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
   // Validate form fields
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
+    const now = new Date()
     
     if (!eventData.title.trim()) {
       newErrors.title = "Event title is required"
+    } else if (eventData.title.length < 3) {
+      newErrors.title = "Event title must be at least 3 characters long"
     }
+
     if (!eventData.category) {
       newErrors.category = "Category is required"
     }
+
     if (eventData.tags.length === 0) {
       newErrors.tags = "At least one tag is required"
+    } else if (eventData.tags.some(tag => tag.length < 2)) {
+      newErrors.tags = "Each tag must be at least 2 characters long"
     }
+
     if (!eventData.image.trim()) {
       newErrors.image = "Image URL is required"
+    } else if (!isValidImageUrl(eventData.image)) {
+      newErrors.image = "Please enter a valid image URL (jpg, jpeg, png, or gif)"
     }
+
     if (!eventData.description.trim()) {
       newErrors.description = "Description is required"
+    } else if (eventData.description.length < 50) {
+      newErrors.description = "Description must be at least 50 characters long"
     }
+
     if (!eventData.region.trim()) {
       newErrors.region = "Region is required"
     }
+
     if (!eventData.venue.trim()) {
       newErrors.venue = "Venue is required"
     }
+
     if (eventData.pricing.length === 0) {
       newErrors.pricing = "At least one pricing tier is required"
-    }
-    if (!eventData.refundPolicy.trim()) {
-      newErrors.refundPolicy = "Refund policy is required"
-    }
-    if (!eventData.orgDescription.trim()) {
-      newErrors.orgDescription = "Organization description is required"
-    }
-    if (!eventData.orgContact.trim()) {
-      newErrors.orgContact = "Organization contact is required"
+    } else if (hasDuplicatePricingTypes(eventData.pricing)) {
+      newErrors.pricing = "Duplicate pricing types are not allowed"
     }
 
-    // Validate dates
+    if (!eventData.refundPolicy.trim()) {
+      newErrors.refundPolicy = "Refund policy is required"
+    } else if (eventData.refundPolicy.length < 30) {
+      newErrors.refundPolicy = "Refund policy must be at least 30 characters long"
+    }
+
+    if (!eventData.orgDescription.trim()) {
+      newErrors.orgDescription = "Organization description is required"
+    } else if (eventData.orgDescription.length < 30) {
+      newErrors.orgDescription = "Organization description must be at least 30 characters long"
+    }
+
+    if (!eventData.orgContact.trim()) {
+      newErrors.orgContact = "Organization contact is required"
+    } else if (!isValidEmail(eventData.orgContact) && !isValidPhoneNumber(eventData.orgContact)) {
+      newErrors.orgContact = "Please enter a valid email address or phone number"
+    }
+
+    // Date validation
+    if (isBefore(eventData.fromDateTime, now)) {
+      newErrors.fromDateTime = "Start date must be in the future"
+    }
+
     if (isBefore(eventData.toDateTime, eventData.fromDateTime)) {
       newErrors.toDateTime = "End date must be after start date"
+    }
+
+    // Ensure event duration is at least 30 minutes
+    const durationInMinutes = (eventData.toDateTime.getTime() - eventData.fromDateTime.getTime()) / (1000 * 60)
+    if (durationInMinutes < 30) {
+      newErrors.toDateTime = "Event duration must be at least 30 minutes"
     }
 
     setErrors(newErrors)
@@ -248,6 +308,16 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validateForm()) {
+      toast({
+        title: "Validation Error",
+        description: "Please check all required fields and fix any errors",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
 
     try {

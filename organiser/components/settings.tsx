@@ -40,14 +40,34 @@ export function Settings() {
           throw new Error("Organization ID not found")
         }
 
+        // First try to get the organization by ID
         const response = await fetch(`https://api.ticketexpert.me/api/organisations/${organizationId}`)
         
         if (!response.ok) {
-          const errorData = await response.json().catch(() => null)
-          throw new Error(
-            errorData?.message || 
-            `Failed to fetch organization details: ${response.status} ${response.statusText}`
-          )
+          // If that fails, try to get the organization by user ID
+          const userResponse = await fetch(`https://api.ticketexpert.me/api/users/${organizationId}/organization`)
+          
+          if (!userResponse.ok) {
+            throw new Error("Failed to fetch organization details")
+          }
+          
+          const userData = await userResponse.json()
+          
+          if (!userData || !userData.eventOrgId) {
+            throw new Error("Invalid organization data received")
+          }
+
+          const organization: Organization = {
+            orgId: userData.eventOrgId,
+            name: userData.name || "My Organization",
+            description: userData.description || "",
+            contact: userData.contact || "",
+            email: userData.email || "",
+            follow: []
+          }
+
+          setOrganization(organization)
+          return
         }
 
         const data = await response.json()
@@ -58,10 +78,10 @@ export function Settings() {
 
         const organization: Organization = {
           orgId: data.eventOrgId,
-          name: data.name,
-          description: data.description,
-          contact: data.contact,
-          email: data.contact,
+          name: data.name || "My Organization",
+          description: data.description || "",
+          contact: data.contact || "",
+          email: data.email || "",
           follow: []
         }
 
@@ -97,6 +117,7 @@ export function Settings() {
           name: organization.name,
           description: organization.description,
           contact: organization.contact,
+          email: organization.email,
         }),
       })
 
@@ -124,20 +145,46 @@ export function Settings() {
   }
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    )
   }
 
   if (error) {
-    return <div>Error: {error}</div>
+    return (
+      <div className="p-4 text-center">
+        <p className="text-red-500">{error}</p>
+        <Button 
+          variant="outline" 
+          className="mt-4"
+          onClick={() => window.location.reload()}
+        >
+          Try Again
+        </Button>
+      </div>
+    )
   }
 
   if (!organization) {
-    return <div>No organization found</div>
+    return (
+      <div className="p-4 text-center">
+        <p className="text-muted-foreground">No organization found</p>
+        <Button 
+          variant="outline" 
+          className="mt-4"
+          onClick={() => router.push("/dashboard")}
+        >
+          Return to Dashboard
+        </Button>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
-          <div>
+      <div>
         <h3 className="text-lg font-medium">Organization Settings</h3>
         <p className="text-sm text-muted-foreground">
           Manage your organization details and preferences.
@@ -182,10 +229,10 @@ export function Settings() {
             onChange={(e) => setOrganization({ ...organization, contact: e.target.value })}
             rows={2}
           />
-          </div>
+        </div>
 
         <Button onClick={handleSave}>Save Changes</Button>
-          </div>
+      </div>
     </div>
   )
 }
