@@ -21,7 +21,7 @@ export default function Login() {
     setError("");
     try {
       const res = await fetch(
-        `http://localhost:3020/api/users/auth?email=${encodeURIComponent(formData.email)}&password=${encodeURIComponent(formData.password)}`
+        `https://api.ticketexpert.me/api/users/auth?email=${encodeURIComponent(formData.email)}&password=${encodeURIComponent(formData.password)}`
       );
       if (!res.ok) {
         const data = await res.json();
