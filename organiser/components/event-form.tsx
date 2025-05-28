@@ -71,15 +71,7 @@ interface EventFormProps {
   onSuccess: () => void;
 }
 
-// Add these helper functions before the EventForm component
-const isValidImageUrl = (url: string): boolean => {
-  try {
-    new URL(url);
-    return url.match(/\.(jpeg|jpg|gif|png)$/) != null;
-  } catch {
-    return false;
-  }
-}
+
 
 const isValidEmail = (email: string): boolean => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -179,16 +171,10 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
       newErrors.tags = "Each tag must be at least 2 characters long"
     }
 
-    if (!eventData.image.trim()) {
-      newErrors.image = "Image URL is required"
-    } else if (!isValidImageUrl(eventData.image)) {
-      newErrors.image = "Please enter a valid image URL (jpg, jpeg, png, or gif)"
-    }
-
     if (!eventData.description.trim()) {
       newErrors.description = "Description is required"
-    } else if (eventData.description.length < 50) {
-      newErrors.description = "Description must be at least 50 characters long"
+    } else if (eventData.description.length < 10) {
+      newErrors.description = "Description must be at least 10 characters long"
     }
 
     if (!eventData.region.trim()) {
@@ -207,14 +193,14 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
 
     if (!eventData.refundPolicy.trim()) {
       newErrors.refundPolicy = "Refund policy is required"
-    } else if (eventData.refundPolicy.length < 30) {
-      newErrors.refundPolicy = "Refund policy must be at least 30 characters long"
+    } else if (eventData.refundPolicy.length < 10) {
+      newErrors.refundPolicy = "Refund policy must be at least 10 characters long"
     }
 
     if (!eventData.orgDescription.trim()) {
       newErrors.orgDescription = "Organization description is required"
-    } else if (eventData.orgDescription.length < 30) {
-      newErrors.orgDescription = "Organization description must be at least 30 characters long"
+    } else if (eventData.orgDescription.length < 10) {
+      newErrors.orgDescription = "Organization description must be at least 10 characters long"
     }
 
     if (!eventData.orgContact.trim()) {

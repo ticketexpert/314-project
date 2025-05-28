@@ -161,17 +161,43 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
     
     setActionLoading(ticketId)
     try {
-      const res = await fetch(`https://api.ticketexpert.me/api/tickets/${ticketId}`, {
-        method: 'DELETE',
+      // Instead of deleting, update the status to 'deleted'
+      const response = await fetch(`https://api.ticketexpert.me/api/tickets/${ticketId}/status`, {
+        method: 'PATCH',
         headers: {
+          'Content-Type': 'application/json',
           "Authorization": `Bearer ${user?.token}`
-        }
+        },
+        body: JSON.stringify({
+          userId: tickets.find(t => t.ticketId === ticketId)?.userId,
+          status: 'deleted'
+        })
       })
-      if (!res.ok) throw new Error('Failed to delete ticket')
-      setTickets(tickets => tickets.filter(t => t.ticketId !== ticketId))
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to update ticket status')
+      }
+
+      // Update local state
+      setTickets(tickets.map(t => 
+        t.ticketId === ticketId 
+          ? { ...t, ticketStatus: 'deleted' }
+          : t
+      ))
       setConfirmDelete({ open: false, ticket: null })
+      
+      toast({
+        title: "Success",
+        description: "Ticket has been marked as deleted",
+      })
     } catch (error) {
-      console.error('Error deleting ticket:', error)
+      console.error('Error updating ticket status:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update ticket status",
+        variant: "destructive",
+      })
     } finally {
       setActionLoading(null)
     }
@@ -913,7 +939,9 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tickets.map((ticket) => (
+                  {tickets
+                    .filter(ticket => ticket.ticketStatus !== 'deleted')
+                    .map((ticket) => (
                     <TableRow key={ticket.ticketId}>
                       <TableCell>#{ticket.ticketId}</TableCell>
                       <TableCell>

@@ -68,8 +68,8 @@ export default function LoginPage() {
         name: userData.name
       })
 
-      // Redirect to dashboard
-      router.push("/dashboard")
+      // Redirect to home
+      router.push("/home")
     } catch (err) {
       console.error('Login error:', err)
       setError(err instanceof Error ? err.message : "An error occurred during login")
