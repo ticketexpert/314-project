@@ -58,7 +58,7 @@ export default function EventDetail() {
         const eventData = await eventResponse.json();
         setEvent(eventData);
 
-        // Fetch organization details using eventOrgId
+        // Fetch organisation details using eventOrgId
         if (eventData.eventOrgId) {
           const orgResponse = await fetch(`https://api.ticketexpert.me/api/organisations/${eventData.eventOrgId}`);
           const orgData = await orgResponse.json();
@@ -300,7 +300,7 @@ export default function EventDetail() {
                   variant="contained" 
                   size="small"
                       component={RouterLink}
-                      to={`/organization/${organization.eventOrgId}`}
+                      to={`/organisation/${organization.eventOrgId}`}
                   sx={{ 
                     bgcolor: colorScheme.green.primary,
                     borderRadius: 99,
@@ -311,7 +311,7 @@ export default function EventDetail() {
                     '&:hover': { bgcolor: colorScheme.green.hover }
                   }}
                 >
-                      View Organization
+                      View Organisation
                 </Button>
                 <Button 
                   variant="outlined" 
@@ -330,7 +330,7 @@ export default function EventDetail() {
                     }
                   }}
                 >
-                      Contact Organizer
+                      Contact Organiser
                 </Button>
               </Stack>
                   <Box mt={3}>
@@ -344,7 +344,7 @@ export default function EventDetail() {
                 </>
               ) : (
                 <Typography variant="body2" color="text.secondary">
-                  Organization information not available
+                  Organisation information not available
                 </Typography>
               )}
             </Paper>

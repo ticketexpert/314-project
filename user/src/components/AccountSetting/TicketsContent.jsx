@@ -140,11 +140,32 @@ export default function TicketsContent() {
       case 'scanned':
         return 'Ticket Scanned';
       case 'refund_request':
-        return 'Ticket Requested Refund';
+        return 'Refund Requested';
+      case 'refunded':
+        return 'Refunded';
+      case 'cancelled':
+        return 'Cancelled';
       case 'active':
         return 'Active';
       default:
         return status;
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active':
+        return 'success';
+      case 'refund_request':
+        return 'warning';
+      case 'refunded':
+        return 'info';
+      case 'cancelled':
+        return 'error';
+      case 'scanned':
+        return 'default';
+      default:
+        return 'default';
     }
   };
 
@@ -719,7 +740,7 @@ export default function TicketsContent() {
                       <Chip 
                         label={getStatusDisplay(ticket.ticketStatus)} 
                         size="small" 
-                        color={ticket.ticketStatus === 'active' ? 'success' : 'default'} 
+                        color={getStatusColor(ticket.ticketStatus)}
                       />
                     </Stack>
 
@@ -764,25 +785,26 @@ export default function TicketsContent() {
                       </Button>
                     </Box>
                   </Box>
-                  {ticket.ticketStatus === 'active' && <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" mt={{ xs: 3, md: 0 }} ml={{ md: 4 }}>
-                    <Tooltip title="Show QR Code">
-                      <Box sx={{ 
-                        width: 90, 
-                        height: 90, 
-                        bgcolor: '#fff', 
-                        border: '1px solid #e0e0e0', 
-                        borderRadius: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mb: 1
-                      }}>
-                        <QRCodeSVG value={ticket.ticketId} size={80} />
-                      </Box>
-                    </Tooltip>
-                    <Typography fontSize="12px" color="gray">Scan at entry</Typography>
-                  </Box>}
-                  
+                  {ticket.ticketStatus === 'active' && (
+                    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" mt={{ xs: 3, md: 0 }} ml={{ md: 4 }}>
+                      <Tooltip title="Show QR Code">
+                        <Box sx={{ 
+                          width: 90, 
+                          height: 90, 
+                          bgcolor: '#fff', 
+                          border: '1px solid #e0e0e0', 
+                          borderRadius: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mb: 1
+                        }}>
+                          <QRCodeSVG value={ticket.ticketId} size={80} />
+                        </Box>
+                      </Tooltip>
+                      <Typography fontSize="12px" color="gray">Scan at entry</Typography>
+                    </Box>
+                  )}
                 </Box>
               </Paper>
             </Zoom>
@@ -837,7 +859,7 @@ export default function TicketsContent() {
             <DialogContent sx={{ p: 0 }}>
               <Box sx={{ p: 3 }} ref={ticketRef}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={selectedTicket.ticketStatus === 'active' ? 6 : 12}>
                     <Box sx={{ 
                       mb: 3,
                       p: 2,
@@ -865,7 +887,7 @@ export default function TicketsContent() {
                           <Chip 
                             label={getStatusDisplay(selectedTicket.ticketStatus)} 
                             size="small" 
-                            color={selectedTicket.ticketStatus === 'active' ? 'success' : 'default'}
+                            color={getStatusColor(selectedTicket.ticketStatus)}
                             sx={{ 
                               fontWeight: 'bold',
                               '& .MuiChip-label': { px: 1 }
@@ -899,60 +921,61 @@ export default function TicketsContent() {
                       </Stack>
                     </Box>
                   </Grid>
-                  {selectedTicket.status ==='active' && <Grid item xs={12} md={6}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '100%'
-                    }}>
+                  {selectedTicket.ticketStatus === 'active' && (
+                    <Grid item xs={12} md={6}>
                       <Box sx={{ 
-                        bgcolor: 'white',
-                        p: 3,
-                        borderRadius: 2,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        mb: 2,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'scale(1.02)',
-                          boxShadow: '0 6px 16px rgba(0,0,0,0.15)'
-                        }
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%'
                       }}>
-                        <QRCodeSVG 
-                          value={selectedTicket.ticketId} 
-                          size={180} 
-                          data-ticket-id={selectedTicket.ticketId}
-                        />
+                        <Box sx={{ 
+                          bgcolor: 'white',
+                          p: 3,
+                          borderRadius: 2,
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          mb: 2,
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'scale(1.02)',
+                            boxShadow: '0 6px 16px rgba(0,0,0,0.15)'
+                          }
+                        }}>
+                          <QRCodeSVG 
+                            value={selectedTicket.ticketId} 
+                            size={180} 
+                            data-ticket-id={selectedTicket.ticketId}
+                          />
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" align="center" gutterBottom>
+                          Scan at entry
+                        </Typography>
+                        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                          <Button
+                            startIcon={<PrintIcon />}
+                            onClick={handlePrintTicket}
+                            sx={{ 
+                              color: '#166534',
+                              '&:hover': { bgcolor: 'rgba(22,101,52,0.1)' }
+                            }}
+                          >
+                            Print
+                          </Button>
+                          <Button
+                            startIcon={<ShareIcon />}
+                            onClick={handleShareTicket}
+                            sx={{ 
+                              color: '#166534',
+                              '&:hover': { bgcolor: 'rgba(22,101,52,0.1)' }
+                            }}
+                          >
+                            Share
+                          </Button>
+                        </Stack>
                       </Box>
-                      <Typography variant="body2" color="text.secondary" align="center" gutterBottom>
-                        Scan at entry
-                      </Typography>
-                      <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                        <Button
-                          startIcon={<PrintIcon />}
-                          onClick={handlePrintTicket}
-                          sx={{ 
-                            color: '#166534',
-                            '&:hover': { bgcolor: 'rgba(22,101,52,0.1)' }
-                          }}
-                        >
-                          Print
-                        </Button>
-                        <Button
-                          startIcon={<ShareIcon />}
-                          onClick={handleShareTicket}
-                          sx={{ 
-                            color: '#166534',
-                            '&:hover': { bgcolor: 'rgba(22,101,52,0.1)' }
-                          }}
-                        >
-                          Share
-                        </Button>
-                      </Stack>
-                    </Box>
-                  </Grid>}
-                  
+                    </Grid>
+                  )}
                 </Grid>
 
                 <Box sx={{ 

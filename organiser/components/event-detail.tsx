@@ -204,27 +204,51 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
   }
 
   const handleApproveRefund = async (ticketId: string) => {
+    setActionLoading(ticketId)
     try {
-      const response = await fetch(`https://api.ticketexpert.me/api/tickets/${ticketId}/refund`, {
-        method: "POST",
+      // Get the ticket to find its userId
+      const ticket = tickets.find(t => t.ticketId === ticketId)
+      if (!ticket) {
+        throw new Error('Ticket not found')
+      }
+
+      const response = await fetch(`https://api.ticketexpert.me/api/tickets/${ticketId}/status`, {
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           "Authorization": `Bearer ${user?.token}`
-        }
+        },
+        body: JSON.stringify({
+          userId: ticket.userId,
+          status: 'refunded'
+        })
       })
 
       if (!response.ok) {
-        throw new Error("Failed to approve refund")
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to update ticket status')
       }
 
       // Update local state
-      setTickets(tickets.map(ticket => 
-        ticket.ticketId === ticketId 
-          ? { ...ticket, ticketStatus: "REFUNDED" }
-          : ticket
+      setTickets(tickets.map(t => 
+        t.ticketId === ticketId 
+          ? { ...t, ticketStatus: 'refunded' }
+          : t
       ))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to approve refund")
+      
+      toast({
+        title: "Success",
+        description: "Ticket status updated to refunded",
+      })
+    } catch (error) {
+      console.error('Error updating ticket status:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update ticket status",
+        variant: "destructive",
+      })
+    } finally {
+      setActionLoading(null)
     }
   }
 
@@ -545,7 +569,7 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
           "Authorization": `Bearer ${user?.token}`
         },
         body: JSON.stringify({ 
-          userId: ticket.userId, // Use the ticket's userId instead of the current user's
+          userId: ticket.userId,
           status: apiStatus 
         })
       })
@@ -565,7 +589,7 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
       
       toast({
         title: "Success",
-        description: "Ticket status updated successfully",
+        description: `Ticket status updated to ${apiStatus}`,
       })
     } catch (error) {
       console.error('Error updating ticket status:', error)
@@ -585,7 +609,8 @@ export function EventDetail({ onEditEvent }: EventDetailProps) {
       { value: 'VALID', label: 'Mark as Active', disabled: currentStatus === 'active' },
       { value: 'USED', label: 'Mark as Scanned', disabled: currentStatus === 'scanned' },
       { value: 'CANCELLED', label: 'Mark as Cancelled', disabled: currentStatus === 'cancelled' },
-      { value: 'REFUNDED', label: 'Mark as Refunded', disabled: currentStatus === 'refunded' }
+      { value: 'REFUNDED', label: 'Mark as Refunded', disabled: currentStatus === 'refunded' },
+      { value: 'REFUND_REQUEST', label: 'Request Refund', disabled: currentStatus === 'refund_request' }
     ]
     return options.filter(option => !option.disabled)
   }
