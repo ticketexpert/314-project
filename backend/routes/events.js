@@ -82,6 +82,25 @@ router.post('/', async (req, res) => {
   }
 });
 
+// PATCH /api/events/:eventId
+router.patch('/:eventId', async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { numTicketsAvailable, ...updateData } = req.body;
+
+    const event = await Event.findByPk(eventId);
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    await event.update(updateData);
+
+    res.status(200).json({ message: 'Event updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Update event
 router.put('/:id', async (req, res) => {
   try {
@@ -112,7 +131,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// PATCH numTicketsAvailable
+
 
 
 // GET /api/events → with optional filters
