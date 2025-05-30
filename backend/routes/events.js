@@ -3,6 +3,7 @@ const router = express.Router();
 const Event = require('../models/event');
 const EventDataModel = require('../models/eventData');
 const Organisation = require('../models/organisations');
+const UserNotificationModel = require('../models/userNotifcations');
 const Tickets = require('../models/tickets');
 const { Op, literal } = require('sequelize');
 const axios = require('axios');
@@ -91,6 +92,14 @@ router.patch('/:eventId', async (req, res) => {
     const event = await Event.findByPk(eventId);
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
+    }
+
+    var userEmails = Array;
+    
+
+
+    var updateEmail = {
+      updateMessage: updateData,
     }
 
     await event.update(updateData);
