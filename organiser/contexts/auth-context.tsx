@@ -113,9 +113,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (organizationId) {
       localStorage.setItem('organizationId', organizationId)
       Cookies.set('organizationId', organizationId, { expires: 7 })
+      Cookies.set('userRole', 'Organiser', {expires: 7})
     } else {
       localStorage.removeItem('organizationId')
       Cookies.remove('organizationId')
+      Cookies.remove('userRole')
     }
   }, [organizationId])
 
