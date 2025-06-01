@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box, Button, TextField, Typography, Alert, Divider, List, ListItem, ListItemIcon, ListItemText, Switch, LinearProgress, Stack
 } from "@mui/material";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SecurityIcon from '@mui/icons-material/Security';
+import { useAuth } from "../../context/AuthContext";
 
 function getPasswordStrength(password) {
   let score = 0;
@@ -28,6 +29,7 @@ function getStrengthLabel(score) {
 }
 
 export default function SecurityContent() {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -36,6 +38,29 @@ export default function SecurityContent() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [twoFA, setTwoFA] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`https://api.ticketexpert.me/api/users/${user.userId}`, {
+          headers: {
+            'Authorization': `Bearer ${user.token}`
+          }
+        });
+        if (!response.ok) throw new Error('Failed to fetch user data');
+        const data = await response.json();
+        setUserData(data);
+      } catch (err) {
+        console.error('Error fetching user data:', err);
+      }
+    };
+
+    if (user?.userId) {
+      fetchUserData();
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -43,7 +68,7 @@ export default function SecurityContent() {
     setSuccess("");
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
       setError("Please fill in all fields.");
       return;
@@ -56,8 +81,65 @@ export default function SecurityContent() {
       setError("Password must be at least 8 characters.");
       return;
     }
-    setSuccess("Password changed successfully!");
-    setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`https://api.ticketexpert.me/api/users/${user.userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          password: formData.newPassword,
+          currentPassword: formData.currentPassword
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update password');
+      }
+
+      const updatedUser = await response.json();
+      setUserData(updatedUser);
+      setSuccess("Password changed successfully!");
+      setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (err) {
+      setError(err.message || "Failed to update password. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleToggle2FA = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`https://api.ticketexpert.me/api/users/${user.userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          twoFactorEnabled: !twoFA
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update 2FA settings');
+      }
+
+      const updatedUser = await response.json();
+      setUserData(updatedUser);
+      setTwoFA(!twoFA);
+      setSuccess(`Two-factor authentication ${!twoFA ? 'enabled' : 'disabled'} successfully!`);
+    } catch (err) {
+      setError(err.message || "Failed to update 2FA settings. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const passwordStrength = getPasswordStrength(formData.newPassword);
@@ -77,6 +159,23 @@ export default function SecurityContent() {
         Login and Security
       </Typography>
 
+      {userData && (
+        <Box mb={3}>
+          <Typography variant="subtitle1" color="text.secondary">
+            Account Information
+          </Typography>
+          <Typography>
+            <strong>Name:</strong> {userData.name}
+          </Typography>
+          <Typography>
+            <strong>Email:</strong> {userData.email}
+          </Typography>
+          <Typography>
+            <strong>Role:</strong> {userData.role}
+          </Typography>
+        </Box>
+      )}
+
       <Typography mb={2} color="text.secondary">
         For your security, we recommend using a strong, unique password for your account.
       </Typography>
@@ -91,6 +190,7 @@ export default function SecurityContent() {
           type="password"
           value={formData.currentPassword}
           onChange={handleChange}
+          disabled={isLoading}
           sx={{
             '& .MuiOutlinedInput-root': {
               '&:hover fieldset': { borderColor: '#166534' },
@@ -108,6 +208,7 @@ export default function SecurityContent() {
           type="password"
           value={formData.newPassword}
           onChange={handleChange}
+          disabled={isLoading}
           sx={{
             '& .MuiOutlinedInput-root': {
               '&:hover fieldset': { borderColor: '#166534' },
@@ -151,6 +252,7 @@ export default function SecurityContent() {
           type="password"
           value={formData.confirmPassword}
           onChange={handleChange}
+          disabled={isLoading}
           sx={{
             '& .MuiOutlinedInput-root': {
               '&:hover fieldset': { borderColor: '#166534' },
@@ -184,8 +286,9 @@ export default function SecurityContent() {
           variant="contained"
           sx={{ backgroundColor: "#166534", mt: 2, fontWeight: "bold", fontSize: "1rem" }}
           onClick={handleChangePassword}
+          disabled={isLoading}
         >
-          Change Password
+          {isLoading ? "Updating..." : "Change Password"}
         </Button>
       </Box>
 
@@ -199,7 +302,8 @@ export default function SecurityContent() {
         </Stack>
         <Switch
           checked={twoFA}
-          onChange={() => setTwoFA((prev) => !prev)}
+          onChange={handleToggle2FA}
+          disabled={isLoading}
           sx={{
             "& .MuiSwitch-switchBase.Mui-checked": {
               color: "#166534",
