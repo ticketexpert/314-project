@@ -3,6 +3,7 @@ const router = express.Router();
 const Event = require('../models/event');
 const EventDataModel = require('../models/eventData');
 const Organisation = require('../models/organisations');
+const User = require('../models/user');
 const UserNotificationModel = require('../models/userNotifcations');
 const Tickets = require('../models/tickets');
 const { Op, literal } = require('sequelize');
@@ -88,22 +89,48 @@ router.patch('/:eventId', async (req, res) => {
   try {
     const { eventId } = req.params;
     const { numTicketsAvailable, ...updateData } = req.body;
+    const attendees = await Tickets.findAll({ where: { eventId } });
 
     const event = await Event.findByPk(eventId);
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    var userEmails = Array;
-    
+    var userEmails = [];
 
+    for (const attendee of attendees) {
+      const user = await User.findByPk(attendee.userId);
+      userEmails.push(user.email);
+      console.log(user.email, 'Is customer email');
 
-    var updateEmail = {
-      updateMessage: updateData,
+      /* THIS DOES NOT WORK OUTSIDE BROWSER :(
+      var updateEmail = {
+        template_id: 'template_5gfwsyi',
+        user_id: '5iRFCEJQiqd2IKEnv',
+        service_id: 'service_wjfn4j7',
+        template_params: {
+          email: user.email,
+          userName: user.name,
+          eventName: event.title,
+          updatedContent: updateData,
+        }
+      }
+
+      try {
+        await axios.post(
+          'https://api.emailjs.com/api/v1.0/email/send',
+          updateEmail,
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        console.error('Email Send error', error.response ? error.response.data : error.message);
+      }
     }
 
-    await event.update(updateData);
+    */
 
+    await event.update(updateData);
+    }
     res.status(200).json({ message: 'Event updated successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
