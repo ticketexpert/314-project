@@ -398,4 +398,82 @@ describe('Events API', () => {
       }
     });
   });
+
+  describe('POST /api/users (organiser accounts)', () => {
+    it('should create organiser user accounts for each organisation', async () => {
+      const organiserUsers = [
+        {
+          name: 'Sydney Tech Events',
+          email: 'sydneytechevents@org.com',
+          password: 'password123',
+          role: 'Organiser',
+          eventOrgId: 1
+        },
+        {
+          name: 'Melbourne Music Events',
+          email: 'melbournemusic@org.com',
+          password: 'password123',
+          role: 'Organiser',
+          eventOrgId: 2
+        },
+        {
+          name: 'Business Growth Australia',
+          email: 'businessgrowthaustralia@org.com',
+          password: 'password123',
+          role: 'Organiser',
+          eventOrgId: 3
+        },
+        {
+          name: 'Perth Arts Council',
+          email: 'perthartscouncil@org.com',
+          password: 'password123',
+          role: 'Organiser',
+          eventOrgId: 4
+        },
+        {
+          name: 'South Australian Food & Wine Association',
+          email: 'safoodwine@org.com',
+          password: 'password123',
+          role: 'Organiser',
+          eventOrgId: 5
+        },
+        {
+          name: 'Sydney Startup Network',
+          email: 'sydneystartupnetwork@org.com',
+          password: 'password123',
+          role: 'Organiser',
+          eventOrgId: 6
+        },
+        {
+          name: 'Gold Coast Fitness Academy',
+          email: 'gcfitnessacademy@org.com',
+          password: 'password123',
+          role: 'Organiser',
+          eventOrgId: 7
+        },
+        {
+          name: 'Melbourne Photography Institute',
+          email: 'melbournephotoinstitute@org.com',
+          password: 'password123',
+          role: 'Organiser',
+          eventOrgId: 8
+        },
+        {
+          name: 'Brisbane Comedy Collective',
+          email: 'brisbanecomedycollective@org.com',
+          password: 'password123',
+          role: 'Organiser',
+          eventOrgId: 9
+        }
+      ];
+
+      for (const user of organiserUsers) {
+        const res = await chai.request(app).post('/api/users').send(user);
+        expect(res).to.have.status(201);
+        expect(res.body).to.have.property('name', user.name);
+        expect(res.body).to.have.property('email', user.email);
+        expect(res.body).to.have.property('role', 'Organiser');
+      }
+    });
+  });
 });
