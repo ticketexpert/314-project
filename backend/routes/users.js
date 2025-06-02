@@ -24,6 +24,40 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Email and Password method
+//Auth url
+router.get('/auth', async (req, res) => {
+  try {
+    const { email, password } = req.query;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Both email and password are required' });
+    }
+
+    const user = await User.findOne({
+      where: {
+        email: email,
+        password: password
+      }
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    const userResponse = {
+      userId: user.userId,
+      email: user.email,
+      role: user.role,
+      eventOrgId: user.eventOrgId,
+      events: user.events
+    };
+
+    res.status(200).json(userResponse);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error during authentication' });
+  }
+});
+
 //GET /api/users
 router.get('/', async (req, res) => {
   try {
@@ -64,40 +98,6 @@ router.get('/role/:searchRole', async (req, res) => {
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
-});
-
-// Email and Password method
-//Auth url
-router.get('/auth', async (req, res) => {
-  try {
-    const { email, password } = req.query;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Both email and password are required' });
-    }
-
-    const user = await User.findOne({
-      where: {
-        email: email,
-        password: password
-      }
-    });
-
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-    const userResponse = {
-      userId: user.userId,
-      email: user.email,
-      role: user.role,
-      eventOrgId: user.eventOrgId,
-      events: user.events
-    };
-
-    res.status(200).json(userResponse);
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error during authentication' });
   }
 });
 
