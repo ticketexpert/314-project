@@ -27,9 +27,31 @@ router.post('/', async (req, res) => {
 //GET /api/users
 router.get('/', async (req, res) => {
   try {
-      const users = await User.findAll();
-      return res.status(200).json(users);
+    const { userId } = req.query;
+    if (userId) {
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      return res.status(200).json(user);
+    }
+    const users = await User.findAll();
+    return res.status(200).json(users);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    console.error('Error fetching user details:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -76,17 +98,6 @@ router.get('/auth', async (req, res) => {
     res.status(200).json(userResponse);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error during authentication' });
-  }
-});
-
-//GET /api/users/:userId
-router.get('/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const user = await User.findByPk(userId);
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
   }
 });
 

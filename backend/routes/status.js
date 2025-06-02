@@ -8,7 +8,7 @@ router.get('/', (req, res) => {
 
 // GET /status/version - Returns the version of the site
 router.get('/version', (req, res) => {
-    res.json({ version: 'Sun 1June 3:50PM' });
+    res.json({ version: 'Mon 2June 5:40PM' });
 });
 
 module.exports = router;
