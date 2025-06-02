@@ -48,17 +48,17 @@ export default function AccountSettings() {
 
   const fetchUserDetails = async (userId) => {
     try {
-      const response = await fetch(`https://www.api.ticketexpert.me/api/users?userId=${userId}`);
+      const response = await fetch(`https://www.api.ticketexpert.me/api/users/${userId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch user details');
       }
       const userData = await response.json();
       
-      if (!Array.isArray(userData) || userData.length === 0) {
+      if (!userData || userData.error) {
         throw new Error('User not found');
       }
 
-      const userDetails = userData[0];
+      const userDetails = userData;
       
       const mappedUserData = {
         name: userDetails.name || `${userDetails.firstName || ''} ${userDetails.lastName || ''}`.trim(),
@@ -78,7 +78,9 @@ export default function AccountSettings() {
       });
     } catch (err) {
       console.error('Error fetching user details:', err);
+      console.log('userId', userId);
       setError("Failed to load user details. Please try again later.");
+      console.log(err);
       setUser({
         name: localStorage.getItem("userName") || "User",
         email: localStorage.getItem("userEmail") || "",
