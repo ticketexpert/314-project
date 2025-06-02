@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box, Button, TextField, Typography, Alert, Divider, List, ListItem, ListItemIcon, ListItemText, Switch, LinearProgress, Stack
 } from "@mui/material";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SecurityIcon from '@mui/icons-material/Security';
-import { useAuth } from "../../context/AuthContext";
+import { useUser } from "../../context/UserContext";
 
 function getPasswordStrength(password) {
   let score = 0;
@@ -29,7 +29,7 @@ function getStrengthLabel(score) {
 }
 
 export default function SecurityContent() {
-  const { user } = useAuth();
+  const { user } = useUser(); // Updated to use useUser instead of useAuth
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -39,28 +39,6 @@ export default function SecurityContent() {
   const [success, setSuccess] = useState("");
   const [twoFA, setTwoFA] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [userData, setUserData] = useState(null);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch(`https://api.ticketexpert.me/api/users/${user.userId}`, {
-          headers: {
-            'Authorization': `Bearer ${user.token}`
-          }
-        });
-        if (!response.ok) throw new Error('Failed to fetch user data');
-        const data = await response.json();
-        setUserData(data);
-      } catch (err) {
-        console.error('Error fetching user data:', err);
-      }
-    };
-
-    if (user?.userId) {
-      fetchUserData();
-    }
-  }, [user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -91,8 +69,8 @@ export default function SecurityContent() {
           'Authorization': `Bearer ${user.token}`
         },
         body: JSON.stringify({
-          password: formData.newPassword,
-          currentPassword: formData.currentPassword
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword
         })
       });
 
@@ -101,8 +79,6 @@ export default function SecurityContent() {
         throw new Error(errorData.error || 'Failed to update password');
       }
 
-      const updatedUser = await response.json();
-      setUserData(updatedUser);
       setSuccess("Password changed successfully!");
       setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
@@ -131,8 +107,6 @@ export default function SecurityContent() {
         throw new Error(errorData.error || 'Failed to update 2FA settings');
       }
 
-      const updatedUser = await response.json();
-      setUserData(updatedUser);
       setTwoFA(!twoFA);
       setSuccess(`Two-factor authentication ${!twoFA ? 'enabled' : 'disabled'} successfully!`);
     } catch (err) {
@@ -158,23 +132,6 @@ export default function SecurityContent() {
       <Typography variant="h4" fontWeight="bold" mb={3} sx={{ color: "#166534" }}>
         Login and Security
       </Typography>
-
-      {userData && (
-        <Box mb={3}>
-          <Typography variant="subtitle1" color="text.secondary">
-            Account Information
-          </Typography>
-          <Typography>
-            <strong>Name:</strong> {userData.name}
-          </Typography>
-          <Typography>
-            <strong>Email:</strong> {userData.email}
-          </Typography>
-          <Typography>
-            <strong>Role:</strong> {userData.role}
-          </Typography>
-        </Box>
-      )}
 
       <Typography mb={2} color="text.secondary">
         For your security, we recommend using a strong, unique password for your account.

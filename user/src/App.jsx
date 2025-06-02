@@ -23,6 +23,7 @@ import OrganisationProfile from './components/Homepage/OrganisationProfile';
 import OrganisationEvents from './components/Homepage/OrganisationEvents';
 import OrganisationsList from './components/Homepage/OrganisationsList';
 import { CartProvider } from './context/CartContext';
+import { UserProvider } from './context/UserContext';
 
 // Layout component to wrap pages with common elements
 function Layout({ children }) {
@@ -292,111 +293,113 @@ export default function MyApp() {
 	}
 
 	return (
-		<CartProvider>
-			<Router>
-				<Routes>
-					<Route path="/" element={
-						<Layout>
-							<Home />
-						</Layout>
-					} />
-					<Route path="/events" element={
-						<Layout>
-							<EventsList />
-						</Layout>
-					} />
-					<Route path="/artists" element={
-						<Layout>
-							<Artists />
-						</Layout>
-					} />
-					<Route path="/profile" element={
-						<Layout>
-							<Profile />
-						</Layout>
-					} />
-					<Route path="/login" element={
-						<AuthLayout>
-							<Login />
-						</AuthLayout>
-					} />
-					<Route path="/signup" element={
-						<AuthLayout>
-							<Signup />
-						</AuthLayout>
-					} />
-					<Route path="*" element={
-						<Layout>
-							<NotFound />
-						</Layout>
-					} />
-					<Route path="/signup/favorite" element={
-						<AuthLayout>
-							<FavoritePage />
-						</AuthLayout>
-					} />
-					<Route path="/signup/place" element={
-						<AuthLayout>
-							<EnterPlace />
-						</AuthLayout>
-					} />
-					<Route path="/account" element={
-						<AuthLayout>
-							<AccountSettings/>
-						</AuthLayout>
-					} />
-					<Route path="/event/:id" element={
-						<Layout>
-							<EventDetail />
-						</Layout>
-					} />
-					<Route path="locations" element={
-						<Layout>
-							<LocationsList />
-						</Layout>
-					} />
-					<Route path="categories" element={
-						<Layout>
-							<CategoriesList />
-						</Layout>
-					} />
-					<Route path="/event/:id/tickets" element={
-						<Layout>
-							<TicketBooking />
-						</Layout>
-					} />
-					<Route path="/cart" element={
-						<Layout>
-							<Cart />
-						</Layout>
-					} />
-					<Route path="/checkout" element={
-						<Layout>
-							<Checkout />
-						</Layout>
-					} />
-					<Route path="/checkout/success" element={
-						<Layout>
-							<CheckoutSuccess />
-						</Layout>
-					} />
-					<Route path="/organisations" element={
-						<Layout>
-							<OrganisationsList />
-						</Layout>
-					} />
-					<Route path="/organisation/:id" element={
-						<Layout>
-							<OrganisationProfile />
-						</Layout>
-					} />
-					<Route path="/organisation/:id/events" element={
-						<Layout>
-							<OrganisationEvents />
-						</Layout>
-					} />
-				</Routes>
-			</Router>
-		</CartProvider>
+		<UserProvider>
+			<CartProvider>
+				<Router>
+					<Routes>
+						<Route path="/" element={
+							<Layout>
+								<Home />
+							</Layout>
+						} />
+						<Route path="/events" element={
+							<Layout>
+								<EventsList />
+							</Layout>
+						} />
+						<Route path="/artists" element={
+							<Layout>
+								<Artists />
+							</Layout>
+						} />
+						<Route path="/profile" element={
+							<Layout>
+								<Profile />
+							</Layout>
+						} />
+						<Route path="/login" element={
+							<AuthLayout>
+								<Login />
+							</AuthLayout>
+						} />
+						<Route path="/signup" element={
+							<AuthLayout>
+								<Signup />
+							</AuthLayout>
+						} />
+						<Route path="*" element={
+							<Layout>
+								<NotFound />
+							</Layout>
+						} />
+						<Route path="/signup/favorite" element={
+							<AuthLayout>
+								<FavoritePage />
+							</AuthLayout>
+						} />
+						<Route path="/signup/place" element={
+							<AuthLayout>
+								<EnterPlace />
+							</AuthLayout>
+						} />
+						<Route path="/account" element={
+							<AuthLayout>
+								<AccountSettings/>
+							</AuthLayout>
+						} />
+						<Route path="/event/:id" element={
+							<Layout>
+								<EventDetail />
+							</Layout>
+						} />
+						<Route path="locations" element={
+							<Layout>
+								<LocationsList />
+							</Layout>
+						} />
+						<Route path="categories" element={
+							<Layout>
+								<CategoriesList />
+							</Layout>
+						} />
+						<Route path="/event/:id/tickets" element={
+							<Layout>
+								<TicketBooking />
+							</Layout>
+						} />
+						<Route path="/cart" element={
+							<Layout>
+								<Cart />
+							</Layout>
+						} />
+						<Route path="/checkout" element={
+							<Layout>
+								<Checkout />
+							</Layout>
+						} />
+						<Route path="/checkout/success" element={
+							<Layout>
+								<CheckoutSuccess />
+							</Layout>
+						} />
+						<Route path="/organisations" element={
+							<Layout>
+								<OrganisationsList />
+							</Layout>
+						} />
+						<Route path="/organisation/:id" element={
+							<Layout>
+								<OrganisationProfile />
+							</Layout>
+						} />
+						<Route path="/organisation/:id/events" element={
+							<Layout>
+								<OrganisationEvents />
+							</Layout>
+						} />
+					</Routes>
+				</Router>
+			</CartProvider>
+		</UserProvider>
 	);
 }

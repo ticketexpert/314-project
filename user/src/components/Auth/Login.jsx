@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { Box, Button, Grid, TextField, Typography, Link as MuiLink, Paper, Divider, Alert } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import TELogo from "../../logo";
+import { useUser } from "../../context/UserContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useUser();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -28,9 +30,8 @@ export default function Login() {
         setError(data.error || "Login failed.");
         return;
       }
-      const user = await res.json();
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userId', user.userId || user.id);
+      const userData = await res.json();
+      await login(userData);
       navigate("/");
     } catch (err) {
       setError("Network error. Please try again.");

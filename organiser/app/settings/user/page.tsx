@@ -36,7 +36,7 @@ export default function UserSettingsPage() {
     try {
       // Update profile logic here
       const response = await fetch(`https://api.ticketexpert.me/api/users/${user?.id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
