@@ -58,6 +58,30 @@ router.get('/auth', async (req, res) => {
   }
 });
 
+//Get events for user
+router.get('/events', async (req, res) => {
+  try {
+    const { userId } = req.query; 
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const events = await Event.findAll({
+      where: {
+        eventId: {
+          [Op.in]: user.events
+        }
+      }
+    });
+
+    res.status(200).json(events);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 //GET /api/users
 router.get('/', async (req, res) => {
   try {
@@ -149,30 +173,6 @@ router.post('/addEvent', async (req, res) => {
     });
   } catch (err) {
     console.error('Error adding event:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-//Get events for user
-router.get('/events', async (req, res) => {
-  try {
-    const { userId } = req.query; 
-
-    const user = await User.findByPk(userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const events = await Event.findAll({
-      where: {
-        eventId: {
-          [Op.in]: user.events
-        }
-      }
-    });
-
-    res.status(200).json(events);
-  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
