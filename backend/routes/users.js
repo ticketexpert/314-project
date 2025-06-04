@@ -136,47 +136,6 @@ router.get('/:eventOrgId', async (req, res) => {
   }
 });
 
-//Add event to user
-router.post('/addEvent', async (req, res) => {
-  try {
-    const userId = req.query.userId || req.body.userId;
-    const eventId = req.query.eventId || req.body.eventId;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'userId parameter is required' });
-    }
-
-    if (!eventId) {
-      return res.status(400).json({ error: 'eventId parameter is required' });
-    }
-
-    const user = await User.findByPk(userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    } 
-    if (!user.events) {
-      user.events = [];
-    }
-
-    if (user.events.includes(parseInt(eventId))) {
-      return res.status(400).json({ error: 'Event already in user\'s events' });
-    }
-    user.events = [...user.events, parseInt(eventId)];
-    
-    await user.save();
-
-    const updatedUser = await User.findByPk(userId);
-    
-    res.status(200).json({ 
-      message: 'Event added to user\'s events', 
-      events: updatedUser.events 
-    });
-  } catch (err) {
-    console.error('Error adding event:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // PATCH /api/users/:userId
 router.patch('/:userId', async (req, res) => {
   try {

@@ -35,11 +35,6 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  events: {
-    type: DataTypes.ARRAY(DataTypes.INTEGER),
-    allowNull: true,
-    defaultValue: []
-  },
   eventOrgId: {
     type: DataTypes.INTEGER,
     allowNull: true,

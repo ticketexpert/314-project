@@ -320,67 +320,33 @@ describe('Events API', () => {
     });
   });
 
-  describe('Create registrations', () => {
-    it('register 50 customers', async function() {
-      this.timeout(30000); // Increase timeout to 30 seconds
+  describe('User Creation', () => {
+    it('should create multiple users', async () => {
       const users = [];
-      
-      // Create 50 Customers
+
+       // Create 50 Customers
       for (let i = 1; i <= 50; i++) {
         users.push({
           name: `Customer${i}`,
           email: `customer${i}@example.com`,
           password: 'password123',
-          role: 'Customer',
-          events: []
+          role: 'Customer'
         });
       }
 
-      // Create each user
       for (const user of users) {
         const res = await chai.request(app).post('/api/users').send(user);
         expect(res).to.have.status(201);
         expect(res.body).to.have.property('name', user.name);
         expect(res.body).to.have.property('role', user.role);
-        expect(res.body).to.have.property('events').that.is.an('array');
       }
-
-      // Get all events
-      const eventsRes = await chai.request(app).get('/api/events');
-      expect(eventsRes).to.have.status(200);
-      const allEvents = eventsRes.body;
-      expect(allEvents).to.be.an('array');
-
-      // Create 50 registrations by randomly assigning events to customers
-      const registrations = [];
-      for (let customerId = 1; customerId <= 50; customerId++) {
-        // Randomly select an event
-        const randomEvent = allEvents[Math.floor(Math.random() * allEvents.length)];
-        
-        // Add event to customer
-        const res = await chai.request(app)
-          .post('/api/users/addEvent')
-          .send({
-            userId: customerId,
-            eventId: randomEvent.eventId
-          });
-        
-        expect(res).to.have.status(200);
-        expect(res.body).to.have.property('message', 'Event added to user\'s events');
-        registrations.push({
-          userId: customerId,
-          eventId: randomEvent.eventId
-        });
-      }
-
-      // Verify total number of registrations
-      expect(registrations.length).to.equal(50);
     });
   });
 
   describe('Ticket Management', () => {
     it('should create tickets for multiple registrations', async function() {
       this.timeout(30000); // Increase timeout for multiple ticket creation
+      console.log('---------Creating tickets for multiple registrations---------');
       
       // Get all events and users
       const eventsRes = await chai.request(app).get('/api/events');
@@ -410,7 +376,7 @@ describe('Events API', () => {
         const res = await chai.request(app)
           .post('/api/tickets')
           .send(ticketData);
-
+        console.log('---------Ticket created---------');
         expect(res).to.have.status(201);
         expect(res.body).to.have.property('ticketId');
         expect(res.body.eventId).to.equal(ticketData.eventId);
