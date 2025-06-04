@@ -130,7 +130,7 @@ router.patch('/:eventId', async (req, res) => {
 
     try {
       await axios.put(`https://www.api.ticketexpert.me/api/userNotification/${attendee.userId}`, {
-        "currentNotifs": {"title": "Event Update", "message": "The event you are attending has been updated. here is what has changed: " + updateData}
+        "currentNotifs": {"title": "Event Update", "message": "The event you are attending has been updated. here is what has changed: " + req.body}
       });
     } catch (postError) {
       console.error('Error posting user notification:', postError);
