@@ -101,7 +101,6 @@ router.patch('/:eventId', async (req, res) => {
     for (const attendee of attendees) {
       const user = await User.findByPk(attendee.userId);
       userEmails.push(user.email);
-      console.log(user.email, 'Is customer email');
 
       /* THIS DOES NOT WORK OUTSIDE BROWSER :(
       var updateEmail = {
@@ -129,8 +128,17 @@ router.patch('/:eventId', async (req, res) => {
 
     */
 
-    await event.update(updateData);
+    try {
+      await axios.put(`https://www.api.ticketexpert.me/api/userNotification/${attendee.userId}`, {
+        "currentNotifs": {"title": "Event Update", "message": "The event you are attending has been updated. here is what has changed: " + updateData}
+      });
+    } catch (postError) {
+      console.error('Error posting user notification:', postError);
     }
+
+    
+    }
+    await event.update(updateData);
     res.status(200).json({ message: 'Event updated successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
