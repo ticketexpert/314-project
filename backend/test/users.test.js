@@ -68,10 +68,10 @@ describe('Users API', () => {
 
   describe('GET /api/users', () => {
     it('should get all users', async () => {
-      const res = await chai.request(app).get('/api/users?userId=30');
+      const res = await chai.request(app).get('/api/users/30');
+      console.log("res.body of user 30: ", res.body);
       expect(res).to.have.status(200);
-      expect(res.body).to.be.an('array');
-      console.log(res.body);
+      expect(res.body).to.be.an('object');
     });
   });
 });

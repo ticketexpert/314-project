@@ -267,6 +267,26 @@ describe('Events API', () => {
           orgDescription: 'Showcasing the best local and international comedy talent',
           orgContact: 'shows@brisbanecomedy.com',
           eventOrgId: 9
+        },
+        {
+          title: 'Developer Conference',
+          category: 'conference',
+          tags: ['developer', 'programming', 'technology'],
+          image: 'https://sm.lifehacker.com/t/lifehacker_au/news/w/which-appl/which-apple-announcements-to-expect-from-wwdc-2025_r87r.2048.jpg',
+          description: 'Developer conference featuring top developers and industry leaders',
+          fromDateTime: '2025-09-01T07:00:00.000Z',
+          toDateTime: '2025-09-01T01:59:00.000Z',
+          region: 'Sydney',
+          venue: 'Sydney Convention Centre',
+          pricing: [
+            { type: 'General Admission', price: 45, numTicketsAvailable: 150 },
+            { type: 'VIP Table', price: 150, numTicketsAvailable: 20 }
+          ],
+          refundPolicy: 'Full refund available up to 24 hours before the event',
+          organiser: 'Sydney Tech Events',
+          orgDescription: 'Leading technology event organizer in Sydney',
+          orgContact: 'info@sydneytechevents.com',
+          eventOrgId: 1
         }
       ];
 
