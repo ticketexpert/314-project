@@ -133,7 +133,7 @@ export default function EnterPlace() {
                 backgroundColor: "#f5f5f5",
               },
             }}
-            onClick={() => navigate("/next-step")}
+            onClick={() => navigate("/")}
           >
             Next
           </Button>
