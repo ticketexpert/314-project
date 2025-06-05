@@ -19,12 +19,6 @@ eventData.belongsTo(Event, { foreignKey: 'eventId' });
 User.hasOne(UserNotifications, { foreignKey: 'userId' });
 UserNotifications.belongsTo(User, { foreignKey: 'userId' });
 
-
-/* TODO - FINISH THIS LATER ONCE ORG TABLE IS DONE
-Event.hasOne(eventData, { foreignKey: 'eventOrgId' });
-eventData.belongsTo(Event, { foreignKey: 'eventOrgId' });
-*/
-
 module.exports = { 
   sequelize,
   Event,

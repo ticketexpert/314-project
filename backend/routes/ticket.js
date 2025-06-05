@@ -46,7 +46,6 @@ router.post('/', async (req, res) => {
     } catch (patchError) {
       console.error('Error updating event ticket quantity:', patchError);
       console.log('ERROR: Parmas are: ' + eventId + ' ' + type + ' ' + req.body.quantity);
-      // TODO, if error stop creating?
     }
 
     
