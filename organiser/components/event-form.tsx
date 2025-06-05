@@ -347,7 +347,7 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
         description: "Event created successfully",
       })
       //onSuccess()
-      router.push(`/events/${data.eventId}`)
+      router.push(`/home`)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create event"
       console.error("Error creating event:", errorMessage)
