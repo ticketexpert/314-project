@@ -15,7 +15,7 @@ describe('Sample Test Suite', () => {
 
 describe('Users API', () => {
   before(async function() {
-    this.timeout(5000); // Increase timeout to 5 seconds
+    this.timeout(9000); // Increase timeout to 9 seconds
     await sequelize.sync({ force: true }); // Reset DB before tests
   });
 
@@ -34,7 +34,7 @@ describe('Users API', () => {
     });
 
     it('should create multiple users with different roles', async function() {
-      this.timeout(20000); // Increase timeout to 20 seconds
+      this.timeout(9000); // Increase timeout to 9 seconds
       const users = [];
       
       // Create 10 Organisers

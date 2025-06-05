@@ -6,6 +6,11 @@ const app = require('../app'); // This is just a boilerplate but it keeps it wor
 const Event = require('../models'); // Sequelize model
 const { sequelize } = require('../models'); // Sequelize instance
 
+
+let numRegistrations = 0;
+let numUsers = 0;
+let numOrganisers = 0;
+
 //This one is just testing mocha and chai are working and return when run
 describe('Sample Test Suite', () => {
   it('should return true', () => {
@@ -67,6 +72,11 @@ describe('Events API', () => {
           name: 'Brisbane Comedy Collective',
           description: 'Showcasing the best local and international comedy talent',
           contact: 'shows@brisbanecomedy.com'
+        },
+        {
+          name: 'Brisbane Tech Events',
+          description: 'Leading technology event organizer in Brisbane',
+          contact: 'info@brisbanetechevents.com'
         }
       ];
 
@@ -287,6 +297,26 @@ describe('Events API', () => {
           orgDescription: 'Leading technology event organizer in Sydney',
           orgContact: 'info@sydneytechevents.com',
           eventOrgId: 1
+        },
+        {
+          title: 'Tech Conference 2025',
+          category: 'conference',
+          tags: ['technology', 'networking', 'professional'],
+          image: 'https://plus.unsplash.com/premium_photo-1679547202671-f9dbbf466db4?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+          description: 'Annual technology conference featuring industry leaders',
+          fromDateTime: '2025-09-01T07:00:00.000Z',
+          toDateTime: '2025-09-01T01:59:00.000Z',
+          region: 'Brisbane',
+          venue: 'Brisbane Convention Centre',
+          pricing: [
+            { type: 'General Admission', price: 45, numTicketsAvailable: 150 },
+            { type: 'VIP Table', price: 150, numTicketsAvailable: 20 }
+          ],
+          refundPolicy: 'Full refund available up to 24 hours before the event',
+          organiser: 'Brisbane Tech Events',
+          orgDescription: 'Leading technology event organizer in Brisbane',
+          orgContact: 'info@brisbanetechevents.com',
+          eventOrgId: 10
         }
       ];
 
@@ -339,6 +369,7 @@ describe('Events API', () => {
         expect(res).to.have.status(201);
         expect(res.body).to.have.property('name', user.name);
         expect(res.body).to.have.property('role', user.role);
+        numUsers++;
       }
     });
   });
@@ -376,12 +407,16 @@ describe('Events API', () => {
         const res = await chai.request(app)
           .post('/api/tickets')
           .send(ticketData);
-        console.log('---------Ticket created---------');
         expect(res).to.have.status(201);
         expect(res.body).to.have.property('ticketId');
         expect(res.body.eventId).to.equal(ticketData.eventId);
         expect(res.body.userId).to.equal(ticketData.userId);
       }
+      // Check that all registrations are made
+      const ticketsRes = await chai.request(app).get('/api/tickets');
+      expect(ticketsRes).to.have.status(200);
+      expect(ticketsRes.body.length).to.be.at.least(50);
+      numRegistrations = ticketsRes.body.length;
     });
   });
 
@@ -450,6 +485,13 @@ describe('Events API', () => {
           password: 'password123',
           role: 'Organiser',
           eventOrgId: 9
+        },
+        {
+          name: 'Brisbane Tech Events',
+          email: 'brisbanetechevents@org.com',
+          password: 'password123',
+          role: 'Organiser',
+          eventOrgId: 10
         }
       ];
 
@@ -459,7 +501,11 @@ describe('Events API', () => {
         expect(res.body).to.have.property('name', user.name);
         expect(res.body).to.have.property('email', user.email);
         expect(res.body).to.have.property('role', 'Organiser');
+        numOrganisers++;
       }
+      console.log('---------Organisers created ' + numOrganisers + '---------');
+      console.log('---------Users created ' + numUsers + '---------');
+      console.log('---------Regristraions made ' + numRegistrations + '---------');
     });
   });
 });

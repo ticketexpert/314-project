@@ -312,7 +312,7 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
       }
 
       const response = await fetch("https://api.ticketexpert.me/api/events", {
-        method: "POST",
+        method: mode === "create" ? "POST" : "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
