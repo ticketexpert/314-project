@@ -302,6 +302,11 @@ export default function MyApp() {
 								<Home />
 							</Layout>
 						} />
+						<Route path="/home" element={
+							<Layout>
+								<Home />
+							</Layout>
+						} />
 						<Route path="/events" element={
 							<Layout>
 								<EventsList />
