@@ -148,3 +148,48 @@ jobs:
         with:
           name: organiser-build
           path: organiser/.next/
+
+  deploy-user:
+    name: Deploy User App to GitHub Pages
+    needs: frontend
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: user
+
+      - name: Build Vite app
+        run: npm run build
+        working-directory: user
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: user/dist
+
+  deploy-organiser:
+    name: Simulate Organiser Deployment
+    needs: organiser
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download organiser build
+        uses: actions/download-artifact@v4
+        with:
+          name: organiser-build
+          path: organiser/.next/
+
+      - name: Simulate deployment step
+        run: echo "Deploying organiser app..."
