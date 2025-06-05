@@ -310,40 +310,44 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
       if (!organizationId) {
         throw new Error("Organization ID not found")
       }
+
+      let response;
       if (mode === "create") {
-        const response = await fetch("https://api.ticketexpert.me/api/events", {
+        response = await fetch("https://api.ticketexpert.me/api/events", {
           method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...eventData,
-          organizationId: organizationId,
-        }),
-      })
-    } else {
-      const response = await fetch(`https://api.ticketexpert.me/api/events/${event?.eventId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null)
-        throw new Error(
-          errorData?.message || 
-          `Failed to create event: ${response.status} ${response.statusText}`
-        )
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...eventData,
+            organizationId: organizationId,
+          }),
+        });
+      } else if (mode === "edit") {
+        response = await fetch(`https://api.ticketexpert.me/api/events/${event?.eventId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        });
       }
 
-      const data = await response.json()
+      if (!response?.ok) {
+        const errorData = await response?.json().catch(() => null);
+        throw new Error(
+          errorData?.message || 
+          `Failed to ${mode} event: ${response?.status} ${response?.statusText}`
+        );
+      }
+
+      const data = await response?.json()
       toast({
         title: "Success",
         description: "Event created successfully",
       })
-      onSuccess()
+      //onSuccess()
       router.push(`/events/${data.eventId}`)
-    }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create event"
       console.error("Error creating event:", errorMessage)
