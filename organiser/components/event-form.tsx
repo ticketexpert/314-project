@@ -310,9 +310,9 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
       if (!organizationId) {
         throw new Error("Organization ID not found")
       }
-
-      const response = await fetch("https://api.ticketexpert.me/api/events", {
-        method: mode === "create" ? "POST" : "PATCH",
+      if (mode === "create") {
+        const response = await fetch("https://api.ticketexpert.me/api/events", {
+          method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -321,7 +321,13 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
           organizationId: organizationId,
         }),
       })
-
+    } else {
+      const response = await fetch(`https://api.ticketexpert.me/api/events/${event?.eventId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
       if (!response.ok) {
         const errorData = await response.json().catch(() => null)
         throw new Error(
@@ -337,6 +343,7 @@ export function EventForm({ event, mode, onSuccess }: EventFormProps) {
       })
       onSuccess()
       router.push(`/events/${data.eventId}`)
+    }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create event"
       console.error("Error creating event:", errorMessage)
