@@ -33,8 +33,9 @@ export default function Login() {
       const userData = await res.json();
       await login(userData);
       navigate("/");
-    } catch (err) {
+    } catch (error) {
       setError("Network error. Please try again.");
+      console.error("Login error:", error);
     }
   };
 

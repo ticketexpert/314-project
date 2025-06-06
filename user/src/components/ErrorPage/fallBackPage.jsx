@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Button, Typography, Box } from '@mui/material';
 
-const FallbackPage = () => {
-  const handleRedirect = () => {
-    window.location.href = 'https://www.userFallback.ticketexpert.me';
-  };
+export default function FallbackPage() {
+  const [countdown, setCountdown] = useState(5);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
@@ -46,6 +45,4 @@ const FallbackPage = () => {
       </Typography>
     </Box>
   );
-};
-
-export default FallbackPage;
+}

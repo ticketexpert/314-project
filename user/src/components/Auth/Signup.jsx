@@ -86,17 +86,14 @@ export default function SignUp() {
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userId', data.userId || data.id); // Save userId for later use
       setTimeout(() => navigate("/signup/favorite"), 1000);
-    } catch (err) {
+    } catch (error) {
       setError("Network error. Please try again.");
+      console.error("Signup error:", error);
     }
   };
 
   const passwordStrength = getPasswordStrength(formData.password);
   const { label: strengthLabel, color: strengthColor } = getStrengthLabel(passwordStrength);
-
-  const handleError = (errorMessage) => {
-    setError(errorMessage);
-  };
 
   return (
     <Box

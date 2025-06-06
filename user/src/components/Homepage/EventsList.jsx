@@ -24,7 +24,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { Link as RouterLink, useSearchParams, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 
 const getUniqueCategories = (events) => [
   'All',
@@ -54,7 +54,7 @@ export default function EventsList() {
   const [loading, setLoading] = useState(true);
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [showFilters, setShowFilters] = useState(!isMobile);
-  const navigate = useNavigate();
+  const [error, setError] = useState(null);
 
   // Reset all filters when component mounts or when navigating to /events
   useEffect(() => {
@@ -282,11 +282,6 @@ export default function EventsList() {
   const handleSearchChange = (newSearch) => {
     setSearch(newSearch);
     updateURL(location, category, newSearch, date, priceRange);
-  };
-
-  const handleDateChange = (newDate) => {
-    setDate(newDate);
-    updateURL(location, category, search, newDate, priceRange);
   };
 
   const handlePriceRangeChange = (event, newValue) => {

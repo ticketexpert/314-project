@@ -60,8 +60,11 @@ export default function TicketBooking() {
     fetchEvent();
   }, [id]);
 
-  const handleQtyChange = (type, qty) => {
-    setSelected({ ...selected, [type]: qty });
+  const handleQuantityChange = (ticketType, newQuantity) => {
+    setSelected(prev => ({
+      ...prev,
+      [ticketType]: newQuantity
+    }));
   };
 
   // Subtotal calculation
@@ -206,7 +209,7 @@ export default function TicketBooking() {
                             '&:hover': { bgcolor: '#fff3cd' }
                           }}
                           disabled={qty <= 0 || soldOut}
-                          onClick={() => handleQtyChange(ticket.type, Math.max(0, qty - 1))}
+                          onClick={() => handleQuantityChange(ticket.type, Math.max(0, qty - 1))}
                           aria-label={`Decrease ${ticket.type} tickets`}
                         >
                           <RemoveIcon fontSize="medium" />
@@ -220,7 +223,7 @@ export default function TicketBooking() {
                             let val = Number(e.target.value);
                             if (isNaN(val) || val < 0) val = 0;
                             if (val > (ticket.numTicketsAvailable || 0)) val = ticket.numTicketsAvailable || 0;
-                            handleQtyChange(ticket.type, val);
+                            handleQuantityChange(ticket.type, val);
                           }}
                           style={{
                             width: 56,
@@ -252,7 +255,7 @@ export default function TicketBooking() {
                             '&:hover': { bgcolor: '#fff3cd' }
                           }}
                           disabled={qty >= (ticket.numTicketsAvailable || 0) || soldOut}
-                          onClick={() => handleQtyChange(ticket.type, Math.min(qty + 1, ticket.numTicketsAvailable || 0))}
+                          onClick={() => handleQuantityChange(ticket.type, Math.min(qty + 1, ticket.numTicketsAvailable || 0))}
                           aria-label={`Increase ${ticket.type} tickets`}
                         >
                           <AddIcon fontSize="medium" />

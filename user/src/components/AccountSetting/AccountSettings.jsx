@@ -148,27 +148,6 @@ export default function AccountSettings() {
     }
   };
 
-  const fetchUserEvents = async () => {
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
-      setError("User not authenticated");
-      return [];
-    }
-
-    try {
-      const response = await fetch(`https://www.api.ticketexpert.me/api/users/events?userId=${userId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch user events');
-      }
-      const events = await response.json();
-      return events;
-    } catch (err) {
-      console.error('Error fetching user events:', err);
-      setError("Failed to load your events. Please try again later.");
-      return [];
-    }
-  };
-
   const renderContent = () => {
     if (loading) {
       return (

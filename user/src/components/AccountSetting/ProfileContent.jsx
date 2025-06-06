@@ -71,8 +71,9 @@ export default function ProfileContent({ user, onUpdateProfile, setError }) {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
       }
-    } catch (err) {
+    } catch (error) {
       setError("Failed to update profile. Please try again.");
+      console.error("Error updating profile:", error);
     } finally {
       setLoading(false);
     }

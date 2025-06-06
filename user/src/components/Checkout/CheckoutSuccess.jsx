@@ -4,12 +4,11 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useNavigate } from 'react-router-dom';
 import emailjs from '@emailjs/browser';
 
-const CheckoutSuccess = () => {
+export default function CheckoutSuccess() {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState(null);
   const [emailSent, setEmailSent] = useState(false);
-  const [orderNum, setOrderNum] = useState(null);
 
   const sendConfirmationEmail = async (orderData) => {
     try {
@@ -160,6 +159,4 @@ const CheckoutSuccess = () => {
       </Paper>
     </Box>
   );
-};
-
-export default CheckoutSuccess; 
+} 

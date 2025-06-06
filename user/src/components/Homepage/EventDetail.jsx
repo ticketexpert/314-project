@@ -14,12 +14,6 @@ import { useParams, Link as RouterLink } from 'react-router-dom';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 
-const shareIcons = {
-  instagram: <InstagramIcon sx={{ color: '#e1306c' }} />,
-  whatsapp: <WhatsAppIcon sx={{ color: '#25d366' }} />,
-  facebook: <FacebookIcon sx={{ color: '#0084ff' }} />,
-};
-
 const colorScheme = {
   blue: {
     primary: '#034AA6',

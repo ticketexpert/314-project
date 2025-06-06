@@ -30,7 +30,6 @@ export default function EventSearch() {
     query: ''
   });
   const [locations, setLocations] = useState([]);
-  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -47,10 +46,8 @@ export default function EventSearch() {
           
           // Extract unique locations and categories
           const uniqueLocations = [...new Set(data.map(event => event.region).filter(Boolean))];
-          const uniqueCategories = [...new Set(data.map(event => event.category).filter(Boolean))];
           
           setLocations(uniqueLocations);
-          setCategories(uniqueCategories);
         } else {
           console.error('Invalid data format received from API');
           setEvents([]);
