@@ -135,6 +135,15 @@ export default function AccountSettings() {
       };
       
       setUser(newUserData);
+
+      console.log("newUserData: ", newUserData)
+      const response = await fetch(`https://api.ticketexpert.me/api/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newUserData),
+      });
       
       Object.entries(newUserData).forEach(([key, value]) => {
         localStorage.setItem(`user${key.charAt(0).toUpperCase() + key.slice(1)}`, value);
