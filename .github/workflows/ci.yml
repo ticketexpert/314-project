@@ -128,7 +128,7 @@ jobs:
           cache-dependency-path: organiser/package-lock.json
 
       - name: Install organiser dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
         working-directory: organiser
 
       - name: Run organiser lint
