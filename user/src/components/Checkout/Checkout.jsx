@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box, Container, Typography, Paper, Stack, TextField,
   Checkbox, FormControlLabel, Button, Divider, Grid, Chip, Link,
@@ -130,7 +130,6 @@ const Checkout = () => {
   const { cartItems, getCartTotal, clearCart } = useCart();
   const navigate = useNavigate();
   const tickets = flattenTickets(cartItems);
-  const event = cartItems[0];
   const isCartEmpty = !cartItems || cartItems.length === 0;
 
   // State management

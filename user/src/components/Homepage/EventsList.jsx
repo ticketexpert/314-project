@@ -54,7 +54,6 @@ export default function EventsList() {
   const [loading, setLoading] = useState(true);
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [showFilters, setShowFilters] = useState(!isMobile);
-  const [error, setError] = useState(null);
 
   // Reset all filters when component mounts or when navigating to /events
   useEffect(() => {

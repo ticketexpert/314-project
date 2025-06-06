@@ -503,7 +503,7 @@ export default function TicketsContent() {
           </style>
         </head>
         <body>
-          ${tickets.map((ticket, index) => {
+          ${tickets.map((ticket) => {
             const event = events[ticket.eventId];
             return `
               <div class="ticket">

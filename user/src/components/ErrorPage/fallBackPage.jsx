@@ -3,7 +3,6 @@ import axios from "axios";
 import { Button, Typography, Box } from '@mui/material';
 
 export default function FallbackPage() {
-  const [countdown, setCountdown] = useState(5);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
@@ -19,8 +18,6 @@ export default function FallbackPage() {
     fetchErrorMessage();
   }, []);
   
-  
-
   return (
     <Box
       display="flex"
