@@ -40,7 +40,6 @@ export default function OrganisationEvents() {
   useEffect(() => {
     const fetchOrganisationAndEvents = async () => {
       try {
-        // Fetch organisation details
         const orgResponse = await fetch(`https://api.ticketexpert.me/api/organisations/${id}`);
         if (!orgResponse.ok) {
           throw new Error('Failed to fetch organisation');
@@ -48,14 +47,12 @@ export default function OrganisationEvents() {
         const orgData = await orgResponse.json();
         setOrganisation(orgData);
 
-        // Fetch all events
         const eventsResponse = await fetch('https://api.ticketexpert.me/api/events');
         if (!eventsResponse.ok) {
           throw new Error('Failed to fetch events');
         }
         const eventsData = await eventsResponse.json();
         
-        // Filter events for this organisation
         const orgEvents = eventsData.filter(event => event.eventOrgId === parseInt(id));
         setEvents(orgEvents);
       } catch (error) {
@@ -126,7 +123,6 @@ export default function OrganisationEvents() {
           </Typography>
         </Breadcrumbs>
 
-        {/* Organisation Header */}
         <Paper elevation={0} sx={{ p: 4, borderRadius: 4, mb: 4, bgcolor: colorScheme.blue.light }}>
           <Stack spacing={2}>
             <Stack direction="row" alignItems="center" spacing={1}>
@@ -140,8 +136,6 @@ export default function OrganisationEvents() {
             </Typography>
           </Stack>
         </Paper>
-
-        {/* Events Grid */}
         <Typography variant="h5" fontWeight="bold" color={colorScheme.blue.primary} mb={3}>
           Upcoming Events
         </Typography>

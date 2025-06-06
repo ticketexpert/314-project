@@ -90,7 +90,6 @@ export default function OrganisationProfile() {
           </Typography>
         </Breadcrumbs>
 
-        {/* Organisation Header */}
         <Paper elevation={0} sx={{ p: 4, borderRadius: 4, mb: 4, bgcolor: colorScheme.blue.light }}>
           <Grid container spacing={4}>
             <Grid item xs={12} md={8}>
@@ -156,8 +155,6 @@ export default function OrganisationProfile() {
             </Grid>
           </Grid>
         </Paper>
-
-        {/* Social Media Links */}
         <Paper elevation={0} sx={{ p: 4, borderRadius: 4, mb: 4 }}>
           <Typography variant="h6" fontWeight="bold" color={colorScheme.blue.primary} mb={3}>
             Connect With Us

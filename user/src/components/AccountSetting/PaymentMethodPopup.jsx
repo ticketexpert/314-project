@@ -29,7 +29,6 @@ const PaymentMethodPopup = ({ open, onClose, card, onUpdate, onDelete, mode }) =
   const [isEditing, setIsEditing] = useState(false);
   const [cardType, setCardType] = useState('unknown');
 
-  // Update form data when card prop changes
   useEffect(() => {
     if (card) {
       setFormData({
@@ -55,19 +54,16 @@ const PaymentMethodPopup = ({ open, onClose, card, onUpdate, onDelete, mode }) =
   const validateForm = () => {
     const newErrors = {};
     
-    // Card number validation
     if (!formData.cardNumber) {
       newErrors.cardNumber = 'Card number is required';
     } else if (!validateCardNumber(formData.cardNumber)) {
       newErrors.cardNumber = 'Invalid card number';
     }
 
-    // Cardholder name validation
     if (!formData.cardHolder) {
       newErrors.cardHolder = 'Cardholder name is required';
     }
 
-    // Expiry date validation
     if (!formData.expiryDate) {
       newErrors.expiryDate = 'Expiry date is required';
     } else {
@@ -83,7 +79,6 @@ const PaymentMethodPopup = ({ open, onClose, card, onUpdate, onDelete, mode }) =
       }
     }
 
-    // CVV validation
     if (!formData.cvv) {
       newErrors.cvv = 'CVV is required';
     } else if (formData.cvv.length < 3 || formData.cvv.length > 4) {
@@ -98,19 +93,16 @@ const PaymentMethodPopup = ({ open, onClose, card, onUpdate, onDelete, mode }) =
     const { name, value } = e.target;
     let formattedValue = value;
 
-    // Format card number with spaces
     if (name === 'cardNumber') {
       formattedValue = value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
       setCardType(getCardType(formattedValue));
     }
-    // Format expiry date
     else if (name === 'expiryDate') {
       formattedValue = value
         .replace(/\D/g, '')
         .replace(/(\d{2})(\d{0,2})/, '$1/$2')
         .substring(0, 5);
     }
-    // Format CVV
     else if (name === 'cvv') {
       formattedValue = value.replace(/\D/g, '').substring(0, 4);
     }
@@ -120,7 +112,6 @@ const PaymentMethodPopup = ({ open, onClose, card, onUpdate, onDelete, mode }) =
       [name]: formattedValue
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -152,7 +143,6 @@ const PaymentMethodPopup = ({ open, onClose, card, onUpdate, onDelete, mode }) =
   const handleCancel = () => {
     if (isEditing) {
       setIsEditing(false);
-      // Reset form data to original card data
       setFormData({
         cardNumber: card.cardNumber || '',
         cardHolder: card.cardHolder || '',

@@ -20,7 +20,7 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setError(""); 
     try {
       const res = await fetch(
         `https://api.ticketexpert.me/api/users/auth?email=${encodeURIComponent(formData.email)}&password=${encodeURIComponent(formData.password)}`
@@ -58,7 +58,6 @@ export default function Login() {
           overflow: "hidden",
         }}
       >
-        {/* Left Side */}
         <Box
           sx={{
             width: "60%",
@@ -71,8 +70,7 @@ export default function Login() {
         >
           <TELogo />
         </Box>
-
-        {/* Right Side */}
+      
         <Box
           sx={{
             width: "60%",

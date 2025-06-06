@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Box, Typography, TextField, InputAdornment, MenuItem, Select, FormControl, InputLabel, Stack, Grid, Card, CardContent, Button, Chip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import CategoryIcon from '@mui/icons-material/Category';
 import EventIcon from '@mui/icons-material/Event';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -25,8 +24,7 @@ export default function CategoriesList() {
         }
         const events = await response.json();
         
-        // Process events to get category data
-        const categoryMap = events.reduce((acc, event) => {
+      const categoryMap = events.reduce((acc, event) => {
           if (!acc[event.category]) {
             acc[event.category] = {
               name: event.category,

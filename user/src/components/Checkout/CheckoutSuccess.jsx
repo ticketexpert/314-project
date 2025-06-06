@@ -25,19 +25,18 @@ export default function CheckoutSuccess() {
 
 
       await emailjs.send(
-        'service_wjfn4j7', //ServiceID
+        'service_wjfn4j7', //ServiceID      
         'template_il509uq', //TemplateID,
         templateParams,
         '5iRFCEJQiqd2IKEnv' //Public Key
       );
       console.log('Confirmation email sent successfully');
-      setEmailSent(true);
+      setEmailSent(true);   
     } catch (error) {
       console.error('Failed to send confirmation email:', error);
     }
   };
 
-  // First useEffect to load order data
   useEffect(() => {
     try {
       const stored = localStorage.getItem('orderSummary');
@@ -53,16 +52,14 @@ export default function CheckoutSuccess() {
       console.error('Error retrieving order summary:', err);
       setError('Error loading order details');
     }
-  }, []); // Empty dependency array means this runs once on mount
+}, []);
 
-  // Second useEffect to handle email sending
   useEffect(() => {
     if (order && !emailSent) {
       sendConfirmationEmail(order);
     }
-  }, [order, emailSent]); // Only run when order or emailSent changes
+  }, [order, emailSent]);
 
-  // If there's an error, show a message and provide a way to go back
   if (error) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8 }}>
@@ -93,7 +90,6 @@ export default function CheckoutSuccess() {
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           Thank you for your purchase. Your tickets have been booked and a confirmation email has been sent to you.
         </Typography>
-        {/* Order summary section */}
         <Box sx={{ mb: 3, textAlign: 'left' }}>
           <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1, textAlign: 'center' }}>
             Order Summary
@@ -105,7 +101,6 @@ export default function CheckoutSuccess() {
               </Typography> <br/>
               <Typography variant="body2" sx={{ mb: 0.5 }}>
                 <b>Contact:</b> {order.contact.firstName} {order.contact.lastName} ({order.contact.email})
-                {/* CONTACT INFO, USE TO SEND EMAIL */}
               </Typography> <br/> 
               <Divider sx={{ my: 1 }} />
               {order.cartItems.map((item, idx) => (

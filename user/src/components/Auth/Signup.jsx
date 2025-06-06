@@ -46,7 +46,6 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
       setError("Please fill in all fields.");
       return;
@@ -74,7 +73,6 @@ export default function SignUp() {
       });
       const data = await res.json();
       if (!res.ok) {
-        // Your backend returns 401 for duplicate user
         if (res.status === 401 && data.error === "User already exists") {
           setError("User already exists. Please use a different email.");
         } else {
@@ -84,7 +82,7 @@ export default function SignUp() {
       }
       setSuccess("Account created successfully!");
       localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userId', data.userId || data.id); // Save userId for later use
+      localStorage.setItem('userId', data.userId || data.id);
       setTimeout(() => navigate("/signup/favorite"), 1000);
     } catch (error) {
       setError("Network error. Please try again.");
@@ -128,7 +126,6 @@ export default function SignUp() {
         >
           <TELogo style={{ width: 120, marginBottom: 0 }} />
         </Box>
-        {/* Right Side */}
         <Box
           sx={{
             width: { xs: '100%', md: '55%' },
@@ -223,7 +220,6 @@ export default function SignUp() {
               sx={{ height: '56px' }}
             />
 
-            {/* Password Requirements */}
             <List dense sx={{ mb: 2 }}>
               <ListItem>
                 <ListItemIcon>

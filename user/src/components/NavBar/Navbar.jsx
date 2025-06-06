@@ -19,7 +19,6 @@ const Navbar = () => {
   const { getCartCount } = useCart();
 
   useEffect(() => {
-    // Check localStorage on component mount
     const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
     setIsLoggedIn(loggedIn);
 
@@ -38,11 +37,10 @@ const Navbar = () => {
 
   const fetchNotifications = async () => {
     try {
-      const userId = localStorage.getItem('userId'); // Assuming you store userId in localStorage
+      const userId = localStorage.getItem('userId');
       const response = await fetch(`https://api.ticketexpert.me/api/userNotification/${userId}`);
       if (response.ok) {
         const data = await response.json();
-        // Convert single notification to array if needed
         const notifsArray = Array.isArray(data.currentNotifs) 
           ? data.currentNotifs 
           : [data.currentNotifs];

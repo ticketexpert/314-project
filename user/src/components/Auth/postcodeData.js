@@ -173,7 +173,6 @@ const postcodeData = {
       { suburb: "Werribee", postcode: "3030" },
       { suburb: "Sunshine", postcode: "3020" },
       { suburb: "Reservoir", postcode: "3073" },
-      // +80 more VIC suburbs...
     ],
     QLD: [
       { suburb: "Brisbane City", postcode: "4000" },
@@ -196,7 +195,6 @@ const postcodeData = {
       { suburb: "Robina", postcode: "4226" },
       { suburb: "Burleigh Heads", postcode: "4220" },
       { suburb: "Maroochydore", postcode: "4558" },
-      // +80 more QLD suburbs...
     ],
     SA: [
       { suburb: "Adelaide", postcode: "5000" },
@@ -219,7 +217,6 @@ const postcodeData = {
       { suburb: "Burnside", postcode: "5066" },
       { suburb: "Happy Valley", postcode: "5159" },
       { suburb: "Port Lincoln", postcode: "5606" },
-      // +80 more SA suburbs...
     ],
     WA: [
       { suburb: "Perth", postcode: "6000" },
@@ -242,7 +239,6 @@ const postcodeData = {
       { suburb: "Morley", postcode: "6062" },
       { suburb: "Scarborough", postcode: "6019" },
       { suburb: "South Perth", postcode: "6151" },
-      // +80 more WA suburbs...
     ],
     TAS: [
       { suburb: "Hobart", postcode: "7000" },
@@ -265,7 +261,6 @@ const postcodeData = {
       { suburb: "Margate", postcode: "7054" },
       { suburb: "Montrose", postcode: "7010" },
       { suburb: "Moonah", postcode: "7009" },
-      // +80 more TAS suburbs...
     ],
     ACT: [
       { suburb: "Canberra City", postcode: "2600" },
@@ -278,7 +273,6 @@ const postcodeData = {
       { suburb: "Phillip", postcode: "2606" },
       { suburb: "Narrabundah", postcode: "2604" },
       { suburb: "Lyneham", postcode: "2602" },
-      // +90 more ACT suburbs...
     ],
     NT: [
       { suburb: "Darwin", postcode: "0800" },
@@ -291,7 +285,6 @@ const postcodeData = {
       { suburb: "Larrakeyah", postcode: "0820" },
       { suburb: "Tennant Creek", postcode: "0860" },
       { suburb: "Coolalinga", postcode: "0835" },
-      // +90 more NT suburbs...
     ],
   };
   

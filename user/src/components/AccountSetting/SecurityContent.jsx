@@ -29,7 +29,7 @@ function getStrengthLabel(score) {
 }
 
 export default function SecurityContent() {
-  const { user } = useUser(); // Updated to use useUser instead of useAuth
+  const { user } = useUser();
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -176,7 +176,6 @@ export default function SecurityContent() {
             },
           }}
         />
-        {/* Password Strength Meter */}
         {formData.newPassword && (
           <Box mb={2}>
             <Box display="flex" alignItems="center" mb={0.5}>
@@ -251,7 +250,6 @@ export default function SecurityContent() {
 
       <Divider sx={{ my: 4 }} />
 
-      {/* 2FA Section */}
       <Box display="flex" alignItems="center" justifyContent="space-between" mt={2} mb={1}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <SecurityIcon color={twoFA ? "success" : "disabled"} />

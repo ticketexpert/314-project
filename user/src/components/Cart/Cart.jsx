@@ -34,7 +34,6 @@ const Cart = () => {
   const { cartItems, removeFromCart, getCartTotal, clearCart } = useCart();
   const navigate = useNavigate();
 
-  // Debug log to check cart items
   console.log('Cart Items:', cartItems);
 
   if (cartItems.length === 0) {
@@ -94,7 +93,6 @@ const Cart = () => {
         
         <Stack spacing={3}>
           {cartItems.map((item) => {
-            // Calculate subtotal for this event
             const eventSubtotal = Object.values(item.tickets).reduce((total, ticket) => {
               return total + (ticket.price * ticket.quantity);
             }, 0);

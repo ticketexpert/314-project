@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Box, Button, Chip, Typography, Paper, Grid, Stack } from "@mui/material";
 import favoriteData from "./favoriteData";
-import TELogo from "../../logo"; // Your logo component
+import TELogo from "../../logo";
 import { useNavigate } from "react-router-dom";
 
 export default function FavoritePage() {
@@ -39,12 +39,10 @@ export default function FavoritePage() {
         }}
       >
         <Box>
-          {/* Title */}
           <Typography variant="h5" color="white" fontWeight="bold" mb={4}>
             Tell us what is your favourites
           </Typography>
 
-          {/* White card */}
           <Paper
             elevation={3}
             sx={{
@@ -88,7 +86,6 @@ export default function FavoritePage() {
           </Paper>
         </Box>
 
-        {/* Bottom Buttons */}
         <Box display="flex" justifyContent="flex-end" gap={2} mt={4}>
           <Button
             variant="outlined"
@@ -123,7 +120,6 @@ export default function FavoritePage() {
           </Button>
         </Box>
 
-        {/* Logo bottom left */}
         <Box mt={4}>
           <TELogo />
         </Box>

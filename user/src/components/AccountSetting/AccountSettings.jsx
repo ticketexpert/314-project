@@ -28,11 +28,9 @@ export default function AccountSettings() {
   const location = useLocation();
 
   useEffect(() => {
-    // Get the tab parameter from URL
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get('tab');
-    
-    // Map URL parameter to tab name
+  
     const tabMapping = {
       'tickets': 'My Tickets',
       'profile': 'Profile',
@@ -216,7 +214,6 @@ export default function AccountSettings() {
           display: "flex",
         }}
       >
-        {/* Sidebar */}
         <Box
           width="25%"
           display="flex"
@@ -228,7 +225,6 @@ export default function AccountSettings() {
             borderRight: "1px solid #e0e0e0",
           }}
         >
-          {/* Big Avatar Section */}
           <Box
             sx={{
               width: "100%",
@@ -263,7 +259,6 @@ export default function AccountSettings() {
             )}
           </Box>
 
-          {/* Menu Items */}
           <Box display="flex" flexDirection="column" width="100%" gap={1}>
             {menuItems.map((text) => (
               <Button
@@ -289,7 +284,6 @@ export default function AccountSettings() {
             ))}
           </Box>
 
-          {/* Logout Button */}
           <Button
             variant="text"
             sx={{
@@ -304,7 +298,6 @@ export default function AccountSettings() {
           </Button>
         </Box>
 
-        {/* Main Content */}
         <Box
           width="75%"
           p={6}
@@ -315,7 +308,6 @@ export default function AccountSettings() {
           bgcolor="white"
           overflow="auto"
         >
-          {/* Breadcrumb Navigation */}
           <Breadcrumbs 
             separator={<NavigateNext fontSize="small" />} 
             aria-label="breadcrumb"

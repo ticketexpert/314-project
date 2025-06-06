@@ -47,7 +47,6 @@ const colorScheme = {
 const steps = ['Contact Information', 'Ticket Details', 'Review & Payment'];
 let pageOrderNumber = 0;
 
-// Add payment methods data
 const paymentMethods = [
   {
     id: 'credit',
@@ -64,7 +63,6 @@ const paymentMethods = [
 ];
 
 function flattenTickets(cartItems) {
-  // Returns an array of { event, ticketType, ticket, eventImage, eventTitle, eventDate, eventVenue }
   const result = [];
   cartItems.forEach((item, eventIndex) => {
     Object.entries(item.tickets).forEach(([type, ticket]) => {
@@ -86,11 +84,10 @@ function flattenTickets(cartItems) {
   return result;
 }
 
-// Update groupTicketsByEvent to maintain event order
 function groupTicketsByEvent(tickets) {
   const groupedTickets = {};
   tickets.forEach(ticket => {
-    const key = `${ticket.eventIndex}-${ticket.eventId}`; // Use combined key to maintain order
+    const key = `${ticket.eventIndex}-${ticket.eventId}`;
     if (!groupedTickets[key]) {
       groupedTickets[key] = {
         eventId: ticket.eventId,
@@ -132,7 +129,6 @@ const Checkout = () => {
   const tickets = flattenTickets(cartItems);
   const isCartEmpty = !cartItems || cartItems.length === 0;
 
-  // State management
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -174,7 +170,6 @@ const Checkout = () => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [promoApplied, setPromoApplied] = useState(false);
 
-  // Get card brand logo
   const getCardBrandLogo = (cardType) => {
     switch (cardType) {
       case 'visa': return visaLogo;
@@ -184,7 +179,6 @@ const Checkout = () => {
     }
   };
 
-  // Enhanced card validation
   const validateCardDetails = () => {
     const errors = {
       number: { isValid: true, message: '' },
@@ -193,14 +187,12 @@ const Checkout = () => {
       name: { isValid: true, message: '' }
     };
 
-    // Card number validation
     if (!cardDetails.number) {
       errors.number = { isValid: false, message: 'Card number is required' };
     } else if (!validateCardNumber(cardDetails.number)) {
       errors.number = { isValid: false, message: 'Invalid card number' };
     }
 
-    // Expiry date validation
     if (!cardDetails.expiry) {
       errors.expiry = { isValid: false, message: 'Expiry date is required' };
     } else {
@@ -216,14 +208,12 @@ const Checkout = () => {
       }
     }
 
-    // CVC validation
     if (!cardDetails.cvc) {
       errors.cvc = { isValid: false, message: 'CVC is required' };
     } else if (cardDetails.cvc.length < 3 || cardDetails.cvc.length > 4) {
       errors.cvc = { isValid: false, message: 'Invalid CVC' };
     }
-
-    // Name validation
+  
     if (!cardDetails.name) {
       errors.name = { isValid: false, message: 'Name is required' };
     }
@@ -232,23 +222,19 @@ const Checkout = () => {
     return Object.values(errors).every(error => error.isValid);
   };
 
-  // Enhanced card details change handler
   const handleCardDetailsChange = (e) => {
     const { name, value } = e.target;
     let formattedValue = value;
 
-    // Format card number with spaces
     if (name === 'number') {
       formattedValue = value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
     }
-    // Format expiry date
     else if (name === 'expiry') {
       formattedValue = value
         .replace(/\D/g, '')
         .replace(/(\d{2})(\d{0,2})/, '$1/$2')
         .substring(0, 5);
     }
-    // Format CVC
     else if (name === 'cvc') {
       formattedValue = value.replace(/\D/g, '').substring(0, 4);
     }
@@ -258,7 +244,6 @@ const Checkout = () => {
       [name]: formattedValue
     }));
 
-    // Clear validation error when user starts typing
     if (cardValidation[name]) {
       setCardValidation(prev => ({
         ...prev,
@@ -267,7 +252,6 @@ const Checkout = () => {
     }
   };
 
-  // Validation functions
   const validateEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
@@ -305,22 +289,18 @@ const Checkout = () => {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-
-  // Handlers
   const handleContactChange = e => {
     const { name, value, checked, type } = e.target;
     setContact(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    // Clear error when field is modified
     if (formErrors[`contact${name.charAt(0).toUpperCase() + name.slice(1)}`]) {
       setFormErrors(prev => ({
         ...prev,
         [`contact${name.charAt(0).toUpperCase() + name.slice(1)}`]: undefined
       }));
     }
-    // Prefill ticket holders if empty
     if (["firstName", "lastName", "email"].includes(name)) {
       setTicketHolders(ths => {
         const updated = { ...ths };
@@ -343,7 +323,6 @@ const Checkout = () => {
         [name]: type === 'checkbox' ? checked : value
       }
     }));
-    // Clear error when field is modified
     if (formErrors[`ticket${eventKey}-${ticketIdx}${name.charAt(0).toUpperCase() + name.slice(1)}`]) {
       setFormErrors(prev => ({
         ...prev,
@@ -352,12 +331,10 @@ const Checkout = () => {
     }
   };
 
-  // Add payment method handlers
   const handlePaymentMethodChange = (method) => {
     setSelectedPaymentMethod(method);
   };
 
-  // Handle promo code application
   const handlePromoApply = () => {
     if (!promo) {
       setSnackbar({
@@ -367,7 +344,6 @@ const Checkout = () => {
       });
       return;
     }
-    // TODO: Implement actual promo code validation
     setPromoApplied(true);
     setSnackbar({
       open: true,
@@ -376,24 +352,19 @@ const Checkout = () => {
     });
   };
 
-  // Add function to create tickets
   const createTickets = async (orderData) => {
     try {
-      const userId = localStorage.getItem('userId'); // Get current user's ID
+      const userId = localStorage.getItem('userId');
       if (!userId) {
         throw new Error('User not logged in');
       }
 
-      // Generate order number from timestamp
       const orderNumber = Date.now().toString();
       pageOrderNumber = orderNumber;
 
-
-      // Create tickets for each cart item
       for (const item of orderData.cartItems) {
         for (const [ticketType, ticketInfo] of Object.entries(item.tickets)) {
           for (let i = 0; i < ticketInfo.quantity; i++) {
-            // Generate random 6-letter ticket ID
             const ticketId = Array.from({length: 6}, () => 
               String.fromCharCode(65 + Math.floor(Math.random() * 26))
             ).join('');
@@ -433,7 +404,6 @@ const Checkout = () => {
     }
   };
 
-  // Enhanced submit handler with ticket creation
   const handleSubmit = async e => {
     e.preventDefault();
     if (!validateStep(activeStep)) return;
@@ -442,7 +412,6 @@ const Checkout = () => {
     setError('');
 
     try {
-      // Prepare order data
       const orderData = {
         contact,
         cartItems,
@@ -451,7 +420,6 @@ const Checkout = () => {
         date: new Date().toISOString()
       };
 
-      // Store order summary in localStorage before payment processing
       localStorage.setItem('orderSummary', JSON.stringify(orderData));
 
       if (selectedPaymentMethod === 'credit') {
@@ -460,10 +428,9 @@ const Checkout = () => {
           return;
         }
 
-        // Prepare payment data with only necessary information
         const paymentData = {
           amount: getCartTotal(),
-          cardNumber: cardDetails.number.replace(/\s/g, ''), // Remove spaces from card number
+          cardNumber: cardDetails.number.replace(/\s/g, ''),
           cardName: cardDetails.name,
           cardExpiry: cardDetails.expiry,
           cardCvc: cardDetails.cvc
@@ -490,9 +457,7 @@ const Checkout = () => {
         }
       }
 
-      // Handle PayPal payment
       if (selectedPaymentMethod === 'paypal') {
-        // Simulate successful PayPal payment
         await new Promise(resolve => setTimeout(resolve, 1500));
         setSnackbar({
           open: true,
@@ -500,14 +465,11 @@ const Checkout = () => {
           severity: 'success'
         });
       }
-
-      // Create tickets after successful payment
+    
       await createTickets(orderData);
 
-      // Clear the cart after successful checkout
       clearCart();
 
-      // Navigate to success page
       navigate('/checkout/success');
     } catch (err) {
       console.error('Payment error:', err);
@@ -575,7 +537,6 @@ const Checkout = () => {
   return (
     <Box sx={{ bgcolor: 'white', minHeight: '100vh', py: 4 }}>
       <Container maxWidth="lg" sx={{ pb: 6 }}>
-        {/* Progress Stepper with improved mobile view */}
         <Box sx={{ 
           mb: 4, 
           display: { xs: 'none', md: 'block' },
@@ -606,7 +567,6 @@ const Checkout = () => {
           </Stepper>
         </Box>
 
-        {/* Mobile Progress Indicator */}
         <Box sx={{ 
           display: { xs: 'flex', md: 'none' }, 
           mb: 3,
@@ -624,10 +584,8 @@ const Checkout = () => {
         </Box>
 
         <Grid container spacing={5}>
-          {/* Left: Event info, contact, ticket holders */}
           <Grid item xs={12} md={7} lg={8}>
             <Box sx={{ px: { xs: 0, md: 2 }, pb: 4 }}>
-              {/* Back link with improved hover state */}
               <Button
                 startIcon={<ArrowBackIcon />}
                 onClick={() => navigate(-1)}
@@ -658,7 +616,6 @@ const Checkout = () => {
                 </Alert>
               )}
 
-              {/* Event info card - support multiple events */}
               {cartItems.length > 1 ? (
                 <Stack spacing={2} mb={3}>
                   {cartItems.map((evt, idx) => (
@@ -687,7 +644,6 @@ const Checkout = () => {
                 </Paper>
               )}
 
-              {/* Contact info */}
               {activeStep === 0 && (
                 <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, mb: 3, bgcolor: colorScheme.grey.background, boxShadow: '0 2px 12px rgba(159,27,50,0.04)' }}>
                   <Typography variant="h6" fontWeight={800} sx={{ mb: 3, color: colorScheme.red.primary, letterSpacing: 0.5 }}>
@@ -763,7 +719,6 @@ const Checkout = () => {
                 </Paper>
               )}
 
-              {/* Ticket holders */}
               {activeStep === 1 && (
                 <Stack spacing={3}>
                   {tickets.length === 0 ? (

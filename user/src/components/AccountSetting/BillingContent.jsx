@@ -26,7 +26,6 @@ export default function BillingContent() {
   const [popupMode, setPopupMode] = useState('view');
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
 
-  // Load cards on component mount
   useEffect(() => {
     const loadedCards = getCards();
     setCards(loadedCards);
@@ -99,7 +98,6 @@ export default function BillingContent() {
         Payment and Billing Address
       </Typography>
 
-      {/* Payment Methods */}
       <Typography variant="h6" mb={2}>
         Saved Payment Methods
       </Typography>
@@ -208,9 +206,7 @@ export default function BillingContent() {
         </Alert>
       </Snackbar>
 
-      <Divider sx={{ my: 4 }} />
-
-      {/* Billing Address */}
+      <Divider sx={{ my: 4 }} />   
       <Typography variant="h6" mb={2}>
         Billing Address
       </Typography>

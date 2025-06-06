@@ -24,7 +24,6 @@ export default function LocationsList() {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Initialize filters from URL parameters
   useEffect(() => {
     const regionParam = searchParams.get('region');
     if (regionParam) {
@@ -32,7 +31,6 @@ export default function LocationsList() {
     }
   }, [searchParams]);
 
-  // Update URL when filters change
   const updateURL = (newSearch, newState) => {
     const params = new URLSearchParams();
     if (newSearch) params.set('region', newSearch);
@@ -41,21 +39,18 @@ export default function LocationsList() {
     navigate(`?${params.toString()}`);
   };
 
-  // Handle search change
   const handleSearchChange = (e) => {
     const newSearch = e.target.value;
     setSearch(newSearch);
     updateURL(newSearch, state);
   };
 
-  // Handle state change
   const handleStateChange = (e) => {
     const newState = e.target.value;
     setState(newState);
     updateURL(search, newState);
   };
 
-  // Handle sort change
   const handleSortChange = (e) => {
     const newSort = e.target.value;
     setSort(newSort);
@@ -70,8 +65,6 @@ export default function LocationsList() {
           throw new Error('Failed to fetch events');
         }
         const events = await response.json();
-        
-        // Process events to get location data
         const locationMap = events.reduce((acc, event) => {
           if (!acc[event.region]) {
             acc[event.region] = {

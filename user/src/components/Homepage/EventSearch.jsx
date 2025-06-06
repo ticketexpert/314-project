@@ -40,11 +40,9 @@ export default function EventSearch() {
         }
         const data = await response.json();
         
-        // Ensure we have valid data
         if (Array.isArray(data)) {
           setEvents(data);
           
-          // Extract unique locations and categories
           const uniqueLocations = [...new Set(data.map(event => event.region).filter(Boolean))];
           
           setLocations(uniqueLocations);
@@ -145,7 +143,6 @@ export default function EventSearch() {
           justifyContent: 'center',
         }}
       >
-        {/* Left: Search Card */}
         <Card
           sx={{
             width: { xs: '95vw', md: '32vw' },
@@ -170,7 +167,6 @@ export default function EventSearch() {
             Enter your location, date, or event details to get started.
           </Typography>
           
-          {/* Location Autocomplete */}
           <Autocomplete
             freeSolo
             options={locations}
@@ -213,7 +209,6 @@ export default function EventSearch() {
             )}
           />
 
-          {/* Date Input */}
           <Box
             sx={{
               display: 'flex',
@@ -255,7 +250,6 @@ export default function EventSearch() {
             />
           </Box>
 
-          {/* Event Search Input */}
           <Box
             sx={{
               display: 'flex',
@@ -309,9 +303,7 @@ export default function EventSearch() {
           </Button>
         </Card>
 
-        {/* Right: Carousel + Event Details */}
         <Box sx={{ width: { xs: '95vw', md: '60vw' }, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          {/* Event Carousel */}
           <Box
             sx={{
               position: 'relative',
@@ -351,7 +343,6 @@ export default function EventSearch() {
               </Card>
             ))}
 
-            {/* Navigation Buttons */}
             {events.length > 1 && (
               <>
                 <IconButton
@@ -388,7 +379,6 @@ export default function EventSearch() {
                   <ArrowForwardIosIcon sx={{ color: 'white' }} />
                 </IconButton>
 
-                {/* Dots Indicator */}
                 <Box
                   sx={{
                     position: 'absolute',
@@ -419,7 +409,6 @@ export default function EventSearch() {
             )}
           </Box>
 
-          {/* Event Details Below Carousel */}
           {events.length > 0 && (
             <Box
               sx={{

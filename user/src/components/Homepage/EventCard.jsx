@@ -3,7 +3,6 @@ import { Box, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 export default function EventCard({ name, category, type = 'events', isLabel, label, eventId, region, image }) {
-  // Determine the link path based on the card type
   const getLinkPath = () => {
     if (type === 'events') {
       return `/event/${eventId}`;
@@ -70,8 +69,6 @@ export default function EventCard({ name, category, type = 'events', isLabel, la
             {type === 'artists' ? category : label}
           </Box>
         )}
-
-        {/* Bottom Content */}
         <Box sx={{ position: 'relative', zIndex: 2, color: 'white' }}>
           {type === 'events' ? (
             <>

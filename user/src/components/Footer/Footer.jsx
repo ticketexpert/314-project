@@ -20,11 +20,8 @@ export default function Footer() {
         }
         const data = await response.json();
         
-        // Extract unique categories
         const uniqueCategories = [...new Set(data.map(event => event.category))];
         setCategories(uniqueCategories);
-
-        // Get popular events (most recent 4 events)
         const sortedEvents = [...data].sort((a, b) => 
           new Date(b.fromDateTime) - new Date(a.fromDateTime)
         ).slice(0, 4);

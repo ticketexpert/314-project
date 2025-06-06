@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Box, Button, TextField, Typography, Paper, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import TELogo from "../../logo"; // Your logo
+import TELogo from "../../logo";
 import postcodeData from "../Auth/postcodeData"
 
 export default function EnterPlace() {
@@ -12,9 +12,8 @@ export default function EnterPlace() {
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearch(value);
-
+  
     if (value.length > 1) {
-      // Flatten all suburbs from all states
       const allSuburbs = Object.values(postcodeData).flat();
 
       const filtered = allSuburbs.filter((suburb) =>
@@ -22,7 +21,7 @@ export default function EnterPlace() {
         suburb.postcode.includes(value)
       );
 
-      setResults(filtered.slice(0, 10)); // Limit to top 10 matches
+      setResults(filtered.slice(0, 10));
     } else {
       setResults([]);
     }
@@ -56,12 +55,10 @@ export default function EnterPlace() {
         }}
       >
         <Box>
-          {/* Title */}
           <Typography variant="h5" color="white" fontWeight="bold" mb={4}>
             Tell us what is your place
           </Typography>
 
-          {/* White search box */}
           <Paper
             elevation={3}
             sx={{
@@ -89,7 +86,6 @@ export default function EnterPlace() {
               }}
             />
 
-            {/* Live Results */}
             {results.length > 0 && (
               <List>
                 {results.map((item, index) => (
@@ -104,7 +100,6 @@ export default function EnterPlace() {
           </Paper>
         </Box>
 
-        {/* Bottom Buttons */}
         <Box display="flex" justifyContent="flex-end" gap={2} mt={4}>
           <Button
             variant="outlined"
@@ -138,8 +133,6 @@ export default function EnterPlace() {
             Next
           </Button>
         </Box>
-
-        {/* Logo bottom left */}
         <Box mt={4}>
           <TELogo />
         </Box>

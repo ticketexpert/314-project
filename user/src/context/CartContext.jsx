@@ -11,7 +11,6 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-  // Initialize state from localStorage
   const [cartItems, setCartItems] = useState(() => {
     try {
       const savedCart = localStorage.getItem('cart');
@@ -22,7 +21,6 @@ export const CartProvider = ({ children }) => {
     }
   });
 
-  // Save to localStorage whenever cart changes
   useEffect(() => {
     try {
       localStorage.setItem('cart', JSON.stringify(cartItems));
@@ -33,11 +31,9 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (event, tickets) => {
     setCartItems(prevItems => {
-      // Check if the event already exists in the cart
       const existingEvent = prevItems.find(item => item.eventId === event.id);
 
       if (!existingEvent) {
-        // Event not in cart, add new event with tickets
         return [
           ...prevItems,
           {
@@ -52,11 +48,9 @@ export const CartProvider = ({ children }) => {
           }
         ];
       } else {
-        // Event exists, update tickets for this event only
         return prevItems.map(item => {
           if (item.eventId !== event.id) return item;
 
-          // Merge tickets: add new or update existing ticket types
           const updatedTickets = { ...item.tickets };
           Object.entries(tickets).forEach(([type, newTicket]) => {
             if (updatedTickets[type]) {
@@ -110,7 +104,6 @@ export const CartProvider = ({ children }) => {
           const updatedTickets = { ...item.tickets };
           delete updatedTickets[ticketType];
           
-          // If no tickets left, remove the entire event
           if (Object.keys(updatedTickets).length === 0) {
             return null;
           }
@@ -121,7 +114,7 @@ export const CartProvider = ({ children }) => {
           };
         }
         return item;
-      }).filter(Boolean); // Remove null items
+      }).filter(Boolean);
     });
   };
 

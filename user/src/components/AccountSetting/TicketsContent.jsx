@@ -567,8 +567,7 @@ export default function TicketsContent() {
 
     printWindow.document.write(htmlContent);
     printWindow.document.close();
-
-    // Wait for content to load before printing
+  
     printWindow.onload = () => {
       printWindow.focus();
       printWindow.print();

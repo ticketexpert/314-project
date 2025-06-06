@@ -23,13 +23,11 @@ export default function ProfileContent({ user, onUpdateProfile, setError }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Initialize form data when user data is available
   useEffect(() => {
     if (user) {
-      // Split the full name into first and last name
       const nameParts = (user.name || "").trim().split(" ");
       const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || ""; // Join the rest as last name
+      const lastName = nameParts.slice(1).join(" ") || "";
 
       setFormData({
         firstName,
@@ -52,10 +50,8 @@ export default function ProfileContent({ user, onUpdateProfile, setError }) {
     setError("");
     
     try {
-      // Combine first and last name back into full name
       const fullName = `${formData.firstName} ${formData.lastName}`.trim();
 
-      // Prepare the data to match the backend structure
       const updatedData = {
         name: fullName,
         email: formData.email,
