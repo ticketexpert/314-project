@@ -1,0 +1,95 @@
+name: User Frontend CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'user/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'user/**'
+
+jobs:
+  test:
+    name: User Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: user/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: user
+
+      - name: Run linting
+        run: npm run lint
+        working-directory: user
+
+      - name: Run tests
+        run: npm run test -- --coverage
+        working-directory: user
+
+      - name: Upload test coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: user-coverage
+          path: user/coverage/
+
+  build:
+    name: Build User Frontend
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: user/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: user
+
+      - name: Build
+        run: npm run build
+        working-directory: user
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: user-build
+          path: user/dist/
+
+  deploy:
+    name: Deploy User Frontend
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: user-build
+          path: user/dist/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: user/dist
+          publish_branch: gh-pages 
