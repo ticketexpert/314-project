@@ -33,7 +33,7 @@ export default function ProfileContent({ user, onUpdateProfile, setError }) {
         firstName,
         lastName,
         email: user.email || "",
-        phone: user.phone || "",
+        phone: user.userPhone || "",
         bio: user.bio || "",
         preferredLocation: user.location || "",
         country: user.country || "",

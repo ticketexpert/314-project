@@ -161,6 +161,7 @@ router.patch('/:userId', async (req, res) => {
         });
       }
     }
+    console.log("updateData: ", updateData)
     await user.update(updateData);
     const updatedUser = await User.findByPk(userId);
     res.status(200).json(updatedUser);

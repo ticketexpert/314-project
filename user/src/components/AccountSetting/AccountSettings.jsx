@@ -66,7 +66,8 @@ export default function AccountSettings() {
         firstName: userDetails.firstName || '',
         lastName: userDetails.lastName || '',
         role: userDetails.role || 'Customer',
-        userId: userDetails.userId
+        userId: userDetails.userId,
+        userPhone: userDetails.phone
       };
 
       setUser(mappedUserData);
@@ -87,7 +88,8 @@ export default function AccountSettings() {
         firstName: localStorage.getItem("userFirstName") || "",
         lastName: localStorage.getItem("userLastName") || "",
         role: localStorage.getItem("userRole") || "Customer",
-        userId: localStorage.getItem("userId") || ""
+        userId: localStorage.getItem("userId") || "",
+        userPhone: localStorage.getItem("userPhone") || ""
       });
     } finally {
       setLoading(false);
@@ -116,6 +118,7 @@ export default function AccountSettings() {
     localStorage.removeItem("userFirstName");
     localStorage.removeItem("userLastName");
     localStorage.removeItem("userRole");
+    localStorage.removeItem("userPhone");
     navigate("/login");
   };
 
@@ -135,7 +138,7 @@ export default function AccountSettings() {
       setUser(newUserData);
 
       console.log("newUserData: ", newUserData)
-      const response = await fetch(`https://api.ticketexpert.me/api/users/${userId}`, {
+      const response = await fetch(`https://www.api.ticketexpert.me/api/users/${userId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

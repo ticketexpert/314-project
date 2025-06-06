@@ -18,7 +18,6 @@ import TicketBooking from "./components/Tickets/TicketBooking";
 import Cart from "./components/Cart/Cart";
 import Checkout from "./components/Checkout/Checkout";
 import CheckoutSuccess from './components/Checkout/CheckoutSuccess';
-import FallbackPage from './components/ErrorPage/fallBackPage';
 import OrganisationProfile from './components/Homepage/OrganisationProfile';
 import OrganisationEvents from './components/Homepage/OrganisationEvents';
 import OrganisationsList from './components/Homepage/OrganisationsList';
