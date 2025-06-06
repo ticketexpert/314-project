@@ -137,7 +137,7 @@ export default function AccountSettings() {
       setUser(newUserData);
 
       console.log("newUserData: ", newUserData)
-      const response = await fetch(`http://localhost:3020/api/users/${userId}`, {
+      const response = await fetch(`https://api.ticketexpert.me/api/users/${userId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
