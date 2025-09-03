@@ -4,7 +4,7 @@ const favoriteData = [
       items: ["Pop", "Rock", "Rap", "Classical", "Jazz", "Electronic", "R&B", "Country"],
     },
     {
-      category: "Sport",
+      category: "Activities",
       items: ["Football (Soccer)", "Basketball", "Tennis", "Cricket", "Baseball", "Golf", "Rugby", "Swimming"],
     },
     {
